@@ -146,8 +146,8 @@ class GrowthEfficiencyReport:
     # 보스 도전 가능 여부
     boss_clear_prediction: Optional[Dict[str, bool]] = None
     
-    # 출처 및 신뢰도 정보 (기획서 반영)
-    data_reliability: str = "High (Official API)"
+    # 출처 및 신뢰도 정보
+    data_reliability: str = ""
     timestamp: str = ""
     attack: int
     boss_damage: float
