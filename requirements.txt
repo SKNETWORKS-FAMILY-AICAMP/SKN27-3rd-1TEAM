@@ -1,0 +1,37 @@
+# --- Core Orchestration (F & All) ---
+langchain>=0.1.0
+langgraph          # 멀티 에이전트 워크플로우 제어 (F의 핵심)
+langsmith          # 에이전트 간 대화 트레이싱 및 디버깅
+
+# --- LLM  ---
+langchain-groq
+langchain-openai
+
+# --- Vector & Graph Databases (B, D) ---
+psycopg2-binary    # PostgreSQL 연결 (캐릭터 데이터 저장)
+neo4j              # Neo4j 연결 (아이템/스킬 관계 그래프)
+pgvector           # Postgres 내 벡터 검색 기능 활용 시
+
+# --- Machine Learning & Data Processing (C의 핵심) ---
+pandas             # API JSON 데이터 가공 및 분석
+numpy
+scikit-learn       # RandomForest 모델 학습 및 예측
+joblib             # 학습된 ML 모델 저장 및 로드
+
+# --- RAG & Evaluation (A, D, E) ---
+ragas              # RAG 성능 평가 (A의 핵심)
+beautifulsoup4     # 웹 서칭 RAG를 위한 크롤링 (E의 핵심)
+langchain-community
+
+# --- API & Web UI (E ) ---
+requests           # 넥슨 Open API 호출
+streamlit          # 챗봇 UI 및 데이터 시각화 (E의 핵심)
+plotly             # 캐릭터 스탯 분석 차트 시각화 (E의 핵심)
+
+# --- Infrastructure  ---
+python-dotenv      # .env 파일의 API KEY 관리
+
+
+openapi-generator-cli # yaml로 model 자동 생성
+pydantic>=2.0      # 데이터 규격 정의 (API Spec 및 에이전트 통신용)
+

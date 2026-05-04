@@ -1,0 +1,1022 @@
+openapi: 3.0.3
+info:
+  title: MapleStory Chatbot - OpenAPI 3.0
+  version: 1.0.0
+  description: |-
+    ## 🍁 프로젝트 개요
+    본 API는 메이플스토리 오픈 API의 정형 데이터(캐릭터 스탯, 장비 등)와 게임 가이드/패치노트 등의 비정형 데이터를 결합하여,
+    사용자에게 지능형 답변, 판단, 추천 및 예측 서비스를 제공하는 RAG(Retrieval-Augmented Generation) 기반 시스템입니다.
+
+    ### ⚔️ 주요 기능
+    * **답변(Answer)**: 게임 시스템, 아이템, 콘텐츠에 대한 정확한 정보 제공
+    * **판단(Judgment)**: 캐릭터 스펙 기반 보스 클리어 가능 여부 및 효율 분석
+    * **추천(Recommendation)**: 유저 상태 및 진행 중인 이벤트에 최적화된 성장 경로 제시
+    * **예측(Prediction)**: 업데이트 패턴 및 테스트 월드 데이터를 바탕으로 한 향후 변화 예상
+
+    ### ⚠️ 이용 시 주의사항
+    1. **데이터 갱신**: 넥슨 Open API 데이터는 게임 반영 후 평균 15분의 지연이 발생할 수 있습니다.
+    2. **출처 표기**: 모든 응답은 신뢰도 등급(공식 API: 고, 커뮤니티: 중)과 함께 출처가 제공됩니다.
+    3. **정책 준수**: 본 시스템을 통해 수집된 데이터는 넥슨 가이드라인에 따라 30일 이내에 최신 데이터로 갱신되어야 합니다.
+
+tags:
+  - name: Character
+    description: 캐릭터의 기본 프로필, 스탯, 장비 정보를 조회합니다.
+  - name: Equipment
+    description: 장착 장비, 캐시 아이템, 세트 효과 등 상세 장비 내역을 조회합니다.
+  - name: Simulation
+    description: 가상 장비 및 버프를 적용하여 전투 성능(DPS)을 시뮬레이션합니다.
+  - name: Analysis
+    description: 보스 격파 가능성 분석 및 성장 효율이 낮은 구간(병목)을 분석하여 개선 우선순위를 도출합니다.
+  - name: Recommendation
+    description: 목표 달성을 위한 최적의 아이템 및 성장 루트를 추천합니다.
+  - name: Search
+    description: 공식 데이터베이스 및 신뢰도 높은 문서를 검색하여 정보를 제공합니다.
+  - name: Chat
+    description: 자연어 처리를 통한 지능형 통합 상담 인터페이스입니다.
+  - name: Prediction
+    description: 캐릭터의 성장 속도와 트렌드를 분석하여 정체 시점을 예측합니다.
+
+paths:
+  # -----------------------------------------------
+  # Character
+  # -----------------------------------------------
+
+  /maplestory/v1/id:
+    get:
+      tags: [Character]
+      summary: 캐릭터 식별자(ocid) 조회
+      description: 캐릭터명으로 넥슨 오픈 API의 고유 식별자(ocid)를 조회합니다. 다른 모든 캐릭터 관련 API 호출의 선행 단계입니다.
+      parameters:
+        - name: character_name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ocid:
+                    type: string
+                    description: 캐릭터 고유 식별자
+
+  /maplestory/v1/character/stat:
+    get:
+      tags: [Character]
+      summary: 종합 능력치 정보 조회
+      parameters:
+        - name: ocid
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseCharacter'
+
+  /maplestory/v1/character/vmatrix:
+    get:
+      tags: [Character]
+      summary: V매트릭스 코어 정보 조회
+      parameters:
+        - name: ocid
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  character_class:
+                    type: string
+                  v_core_equipment:
+                    type: array
+                    items:
+                      type: object
+
+  # -----------------------------------------------
+  # Equipment
+  # -----------------------------------------------
+
+  /maplestory/v1/character/item-equipment:
+    get:
+      tags: [Equipment]
+      summary: 장착 장비 정보 조회
+      description: 캐릭터가 현재 장착하고 있는 장비 아이템의 상세 정보(강화, 잠재능력, 추가옵션 등)를 조회합니다.
+      parameters:
+        - name: ocid
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 장비 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseEquipment'
+
+  /maplestory/v1/character/set-effect:
+    get:
+      tags: [Equipment]
+      summary: 적용 중인 세트 효과 정보 조회
+      parameters:
+        - name: ocid
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  set_effect:
+                    type: array
+                    items:
+                      type: object
+
+  # -----------------------------------------------
+  # Simulation
+  # -----------------------------------------------
+
+  /simulation/damage:
+    post:
+      tags: [Simulation]
+      summary: 맞춤형 딜 시뮬레이션 계산
+      description: |-
+        특정 보스를 대상으로 현재 또는 가상 세팅의 예상 데미지를 계산합니다.
+        장비 정보는 /maplestory/v1/character/item-equipment 에서 조회한 데이터를 equipment_preset에 그대로 전달할 수 있습니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationRequest'
+      responses:
+        '200':
+          description: 시뮬레이션 결과 반환 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSimulation'
+
+  # -----------------------------------------------
+  # Analysis
+  # -----------------------------------------------
+
+  /analysis/boss:
+    post:
+      tags: [Analysis]
+      summary: 보스 격파 가능성 분석
+      description: |-
+        캐릭터의 현재 스펙을 기준으로 목표 보스 클리어 성공 확률과 부족한 스탯을 분석합니다.
+        item_equipment / set_effect 미전달 시 ocid로 자동 조회합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BossAnalysisRequest'
+      responses:
+        '200':
+          description: 성공 확률 및 부족한 스탯 분석 결과 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseBossAnalysis'
+
+  /analysis/bottleneck:
+    post:
+      tags: [Analysis]
+      summary: 캐릭터 성장 정체 구간(병목) 분석
+      description: |-
+        장비 세부 옵션과 세트 효과를 전수 조사하여 전투력 상승 효율이 가장 낮은 부위를 찾아냅니다.
+        item_equipment / set_effect 미전달 시 ocid로 자동 조회합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ocid]
+              properties:
+                ocid:
+                  type: string
+                  description: 캐릭터 고유 식별자
+                item_equipment:
+                  type: array
+                  description: /maplestory/v1/character/item-equipment 응답의 item_equipment 배열 (선택)
+                  items:
+                    $ref: '#/components/schemas/Equipment'
+                set_effect:
+                  type: array
+                  description: /maplestory/v1/character/set-effect 응답의 set_effect 배열 (선택)
+                  items:
+                    $ref: '#/components/schemas/SetEffect'
+      responses:
+        '200':
+          description: 분석 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseAnalysis'
+
+  # -----------------------------------------------
+  # Recommendation
+  # -----------------------------------------------
+
+  /recommendation/equipment:
+    post:
+      tags: [Recommendation]
+      summary: 맞춤형 장비 업그레이드 추천
+      description: |-
+        캐릭터의 현재 장비 데이터를 기반으로, 예산 내에서 가장 효율적인 업그레이드 순서를 제안합니다.
+        item_equipment는 /maplestory/v1/character/item-equipment 응답의 item_equipment 배열을 그대로 전달합니다.
+        item_equipment 미전달 시 ocid로 장비 정보를 자동 조회합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EquipmentRecommendationRequest'
+      responses:
+        '200':
+          description: 현재 장비 정보와 비교 분석된 추천 리스트 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseRecommendation'
+
+  # -----------------------------------------------
+  # Search
+  # -----------------------------------------------
+
+  /search:
+    post:
+      tags: [Search]
+      summary: 게임 지식 RAG 검색
+      description: 게임 내 시스템이나 패치 노트 등 방대한 데이터를 바탕으로 질문에 답합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: 검색된 지식 기반 답변 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseSearch'
+
+  # -----------------------------------------------
+  # Chat
+  # -----------------------------------------------
+
+  /chat:
+    post:
+      tags: [Chat]
+      summary: 통합 지능형 챗봇
+      description: 대화형 인터페이스를 통해 캐릭터 분석부터 일반 질문까지 통합 대응합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: 챗봇 응답 메시지 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseChat'
+
+  # -----------------------------------------------
+  # Prediction
+  # -----------------------------------------------
+
+  /prediction/growth:
+    post:
+      tags: [Prediction]
+      summary: 캐릭터 성장 경로 최적화 예측
+      description: |-
+        목표 전투력 달성까지 소요될 기간과 비용을 시뮬레이션하여 예측합니다.
+        내부적으로 /maplestory/v1/character/stat 및 /maplestory/v1/character/item-equipment 데이터를 활용합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrowthRequest'
+      responses:
+        '200':
+          description: 성장 로드맵 예측 결과 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseGrowth'
+
+  /prediction/stagnation:
+    post:
+      tags: [Prediction]
+      summary: 성장 정체 구간 분석 및 예측
+      description: 성장이 무뎌지는 시점(데드 존)을 예측하고 이에 대한 돌파구를 제안합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StagnationRequest'
+      responses:
+        '200':
+          description: 정체 예측 및 해결책 반환
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponseStagnation'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-nxopen-api-key
+      description: 넥슨 오픈 API 키
+
+  schemas:
+
+    # -----------------------------------------------
+    # 공통 기반 스키마
+    # -----------------------------------------------
+
+    ApiResponseBase:
+      type: object
+      description: 모든 API 응답의 공통 기반 구조
+      properties:
+        success:
+          type: boolean
+          description: 요청 처리 성공 여부
+        message:
+          type: string
+          description: 상태 설명 메시지
+        confidence:
+          type: number
+          description: AI 답변의 신뢰도 수치 (0~1)
+
+    Source:
+      type: object
+      description: 답변의 근거가 된 출처 정보
+      properties:
+        title:
+          type: string
+          description: 출처 문서의 제목
+        url:
+          type: string
+          description: 해당 정보의 웹 링크
+        reliability:
+          type: string
+          enum: [HIGH, MEDIUM, LOW]
+          description: 출처의 데이터 신뢰 등급
+
+    # -----------------------------------------------
+    # 캐릭터 관련 스키마
+    # -----------------------------------------------
+
+    Stats:
+      type: object
+      description: 캐릭터의 주요 전투 수치
+      properties:
+        attack:
+          type: number
+          description: 공격력/마력 합산
+        crit_rate:
+          type: number
+          description: 크리티컬 확률 (%)
+        boss_damage:
+          type: number
+          description: 보스 데미지 (%)
+        ignore_def:
+          type: number
+          description: 방어율 무시 (%)
+        union_level:
+          type: integer
+          description: 유니온 총 레벨
+        arcane_force:
+          type: integer
+          description: 아케인포스 합계
+        authentic_force:
+          type: integer
+          description: 어센틱포스 합계
+        damage:
+          type: number
+          description: 일반 데미지 (%)
+        attack_speed:
+          type: integer
+          description: 공격 속도 단계
+
+    Character:
+      type: object
+      description: 캐릭터의 상세 통합 정보
+      properties:
+        ocid:
+          type: string
+          description: 캐릭터 고유 식별자 (넥슨 오픈 API 표준)
+        level:
+          type: integer
+        class:
+          type: string
+        combat_power:
+          type: number
+        stats:
+          $ref: '#/components/schemas/Stats'
+
+    # -----------------------------------------------
+    # 장비 관련 스키마
+    # -----------------------------------------------
+
+    ItemOption:
+      type: object
+      description: 아이템 내 능력치 옵션 상세 (기본, 추가, 강화, 잠재 등 합산 혹은 개별 수치)
+      properties:
+        str: { type: string, description: "STR" }
+        dex: { type: string, description: "DEX" }
+        int: { type: string, description: "INT" }
+        luk: { type: string, description: "LUK" }
+        attack_power: { type: string, description: "공격력" }
+        magic_power: { type: string, description: "마력" }
+        boss_damage: { type: string, description: "보스 데미지 (%)" }
+        ignore_def: { type: string, description: "방어율 무시 (%)" }
+        all_stat: { type: string, description: "올스탯 (%)" }
+        damage: { type: string, description: "데미지 (%)" }
+        equipment_level_decrease: { type: integer, description: "착용 레벨 감소" }
+
+    Equipment:
+      type: object
+      description: 장착 아이템 개별 상세 정보 (/maplestory/v1/character/item-equipment 응답 단일 항목)
+      properties:
+        item_equipment_part:
+          type: string
+          description: 장비 부위 (ex. 무기, 상의 등)
+        item_equipment_slot:
+          type: string
+          description: 장비 슬롯 위치
+        item_name:
+          type: string
+          description: 아이템 명칭
+        item_total_option:
+          allOf:
+            - $ref: '#/components/schemas/ItemOption'
+          description: 기본+추가+강화+잠재 합산 최종 옵션
+        item_base_option:
+          allOf:
+            - $ref: '#/components/schemas/ItemOption'
+          description: 아이템 기본 옵션
+        item_add_option:
+          allOf:
+            - $ref: '#/components/schemas/ItemOption'
+          description: 추가옵션 (작 옵션)
+        item_starforce_option:
+          allOf:
+            - $ref: '#/components/schemas/ItemOption'
+          description: 스타포스 강화로 추가된 옵션
+        starforce:
+          type: integer
+          description: 현재 스타포스 강화 수치
+          example: 17
+        scroll_upgradeable_count:
+          type: string
+          description: 남은 업그레이드 가능 횟수
+        potential_option_grade:
+          type: string
+          enum: [레전더리, 유니크, 에픽, 레어, 노멀]
+          description: 잠재능력 등급
+        potential_option_1: { type: string, description: "잠재옵션 1번째 줄" }
+        potential_option_2: { type: string, description: "잠재옵션 2번째 줄" }
+        potential_option_3: { type: string, description: "잠재옵션 3번째 줄" }
+        additional_potential_option_grade:
+          type: string
+          description: 에디셔널 잠재능력 등급
+        additional_potential_option_1: { type: string, description: "에디셔널 잠재옵션 1번째 줄" }
+        additional_potential_option_2: { type: string, description: "에디셔널 잠재옵션 2번째 줄" }
+        additional_potential_option_3: { type: string, description: "에디셔널 잠재옵션 3번째 줄" }
+
+    # -----------------------------------------------
+    # 요청 스키마
+    # -----------------------------------------------
+
+    CombatContext:
+      type: object
+      description: 시뮬레이션을 위한 전투 환경 데이터
+      properties:
+        v_matrix_levels:
+          type: object
+          description: 코어별 강화 레벨 정보
+        hexa_matrix_levels:
+          type: object
+          description: HEXA 코어 및 스탯 강화 단계
+        link_skills:
+          type: array
+          items:
+            type: string
+        union_blocks:
+          type: object
+          description: 유니온 점유 효과(크뎀, 보공 등)
+
+    SimulationRequest:
+      type: object
+      required: [ocid, target_boss]
+      description: 딜 시뮬레이션 요청. equipment_preset 미전달 시 ocid로 장비 정보를 자동 조회합니다.
+      properties:
+        ocid:
+          type: string
+          description: 캐릭터 고유 식별자
+        target_boss:
+          type: string
+          description: 테스트 대상 보스 명칭
+        combat_context:
+          $ref: '#/components/schemas/CombatContext'
+        equipment_preset:
+          type: array
+          description: 가상 장비 세팅. /maplestory/v1/character/item-equipment 응답의 item_equipment 배열을 그대로 사용 가능
+          items:
+            $ref: '#/components/schemas/Equipment'
+        additional_buffs:
+          type: array
+          items:
+            type: string
+        custom_stats:
+          $ref: '#/components/schemas/Stats'
+
+    GrowthRequest:
+      type: object
+      required: [ocid, target_combat_power]
+      description: 성장 경로 예측 요청. 내부적으로 ocid로 캐릭터 스탯 및 장비 데이터를 조회합니다.
+      properties:
+        ocid:
+          type: string
+          description: 캐릭터 고유 식별자
+        target_combat_power:
+          type: number
+          description: 목표 전투력 수치
+        current_assets:
+          type: object
+          properties:
+            meso: { type: number }
+            core_gemstones: { type: integer }
+            sol_erda: { type: integer }
+            arcane_symbols:
+              type: object
+              description: 지역별 보유 심볼 및 성장치
+            authentic_symbols:
+              type: object
+              description: 지역별 보유 어센틱 심볼 및 성장치
+        event_context:
+          type: string
+          description: 현재 진행 중인 버닝/코인샵 이벤트 정보
+
+    StagnationRequest:
+      type: object
+      required: [ocid]
+      description: 성장 정체 예측 요청. 내부적으로 ocid로 캐릭터 스탯 및 장비 데이터를 조회합니다.
+      properties:
+        ocid:
+          type: string
+          description: 캐릭터 고유 식별자
+        current_assets:
+          type: object
+          description: 현재 보유 자원 정보 (선택, 미전달 시 API 자동 조회)
+          properties:
+            meso:
+              type: number
+              description: 보유 메소
+            arcane_symbols:
+              type: object
+              description: 지역별 아케인심볼 현황 (레벨/경험치)
+            authentic_symbols:
+              type: object
+              description: 지역별 어센틱심볼 현황 (레벨/경험치)
+            union_level:
+              type: integer
+              description: 현재 유니온 총 레벨
+        efficiency_metrics:
+          type: object
+          description: 효율 지표 (선택, 미전달 시 API 자동 계산)
+          properties:
+            meso_per_combat_power:
+              type: number
+              description: 전투력 1만당 소요 비용
+            exp_per_hour:
+              type: number
+              description: 시간당 획득 경험치
+
+    BossAnalysisRequest:
+      type: object
+      required: [ocid, target_boss]
+      description: |-
+        보스 격파 가능성 분석 요청.
+        item_equipment / set_effect / character_stats 미전달 시 ocid로 자동 조회합니다.
+      properties:
+        ocid:
+          type: string
+          description: 캐릭터 고유 식별자
+        target_boss:
+          type: string
+          description: 분석 대상 보스 명칭 (ex. 노멀 스우, 하드 카링)
+        boss_difficulty:
+          type: string
+          enum: [EASY, NORMAL, HARD, CHAOS, EXTREME]
+          description: 보스 난이도
+        item_equipment:
+          type: array
+          description: /maplestory/v1/character/item-equipment 응답의 item_equipment 배열 (선택)
+          items:
+            $ref: '#/components/schemas/Equipment'
+        set_effect:
+          type: array
+          description: /maplestory/v1/character/set-effect 응답의 set_effect 배열 (선택)
+          items:
+            $ref: '#/components/schemas/SetEffect'
+        character_stats:
+          allOf:
+            - $ref: '#/components/schemas/Stats'
+          description: /maplestory/v1/character/stat 응답 데이터 (선택)
+        combat_context:
+          allOf:
+            - $ref: '#/components/schemas/CombatContext'
+          description: V/HEXA 매트릭스 및 유니온 정보 (선택)
+
+    SetEffect:
+      type: object
+      description: /maplestory/v1/character/set-effect 응답의 세트 효과 단일 항목
+      properties:
+        set_name:
+          type: string
+          description: 세트 명칭 (ex. 앱솔랩스 세트)
+        total_set_count:
+          type: integer
+          description: 세트 구성 아이템 총 개수
+        set_effect_info:
+          type: array
+          description: 세트 달성 단계별 효과 목록
+          items:
+            type: object
+            properties:
+              set_count:
+                type: integer
+                description: 해당 효과 발동에 필요한 세트 수
+              set_option:
+                type: string
+                description: 발동 효과 설명
+
+    EquipmentRecommendationRequest:
+      type: object
+      required: [ocid]
+      description: 장비 업그레이드 추천 요청. item_equipment 전달 시 해당 데이터를 우선 사용합니다.
+      properties:
+        ocid:
+          type: string
+          description: 캐릭터 고유 식별자
+        item_equipment:
+          type: array
+          description: |-
+            /maplestory/v1/character/item-equipment 응답의 item_equipment 배열.
+            전달 시 별도 장비 조회 없이 해당 데이터로 분석합니다.
+          items:
+            $ref: '#/components/schemas/Equipment'
+        budget:
+          type: number
+          description: 보유 메소 또는 투자 가능 금액 (선택)
+        upgrade_goal:
+          type: string
+          enum: [BOSS_CLEAR, SYMBOL_EFFICIENCY, COST_EFFICIENCY]
+          description: 업그레이드 목적 (보스 클리어 / 심볼 효율 / 비용 효율)
+          default: COST_EFFICIENCY
+
+    SearchRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+        ocid:
+          type: string
+          description: 캐릭터 맥락을 포함할 경우 제공 (선택)
+        reliability_filter:
+          type: string
+          enum: [ALL, HIGH_ONLY]
+          default: ALL
+
+    ChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        ocid:
+          type: string
+          description: 캐릭터 맥락을 포함할 경우 제공 (선택)
+
+    # -----------------------------------------------
+    # 응답 스키마
+    # -----------------------------------------------
+
+    ApiResponseCharacter:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Character'
+
+    ApiResponseEquipment:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                character_gender: { type: string }
+                character_class: { type: string }
+                item_equipment:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Equipment'
+                title:
+                  type: object
+                  description: 칭호 아이템 정보
+                mechanic_item_equipment:
+                  type: array
+                  description: 메카닉 전용 장비 목록
+                  items:
+                    $ref: '#/components/schemas/Equipment'
+
+    ApiResponseSimulation:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                total_damage: { type: number }
+                dps: { type: number }
+                clear_possible: { type: boolean }
+
+    ApiResponseBossAnalysis:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          description: 보스 격파 가능성 분석 응답 (딜 수치가 아닌 스펙 충족 여부 판단 중심)
+          properties:
+            data:
+              type: object
+              properties:
+                clear_possible:
+                  type: boolean
+                  description: 현재 스펙 기준 클리어 가능 여부
+                success_rate:
+                  type: number
+                  description: 예상 클리어 성공률 (0~1)
+                lacking_stats:
+                  type: array
+                  description: 부족한 스탯 목록
+                  items:
+                    type: string
+                recommendation:
+                  type: string
+                  description: 도전 전 보완 권고사항
+                sources:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Source'
+
+    ApiResponseAnalysis:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                bottleneck:
+                  type: string
+                  description: 가장 효율이 낮은 장비 부위 명칭
+                improvement_priority:
+                  type: array
+                  description: 개선 우선순위 부위 목록 (효율 낮은 순)
+                  items:
+                    type: object
+                    properties:
+                      item_slot:
+                        type: string
+                        description: 장비 슬롯명
+                      reason:
+                        type: string
+                        description: 해당 부위가 병목인 이유
+                      expected_gain:
+                        type: string
+                        description: 개선 시 예상 전투력 상승치
+                set_effect_summary:
+                  type: array
+                  description: 현재 세트 효과 달성 현황 및 다음 단계 달성 여부 분석
+                  items:
+                    type: object
+                    properties:
+                      set_name:
+                        type: string
+                        description: 세트 명칭
+                      current_count:
+                        type: integer
+                        description: 현재 달성한 세트 수
+                      next_threshold:
+                        type: integer
+                        description: 다음 효과 발동까지 필요한 세트 수
+                      next_effect:
+                        type: string
+                        description: 다음 단계 세트 효과 내용
+                      achievable:
+                        type: boolean
+                        description: 장비 교체만으로 다음 단계 달성 가능 여부
+
+    ApiResponseRecommendation:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                upgrade_priority:
+                  type: array
+                  description: 업그레이드 우선순위 목록 (우선순위 높은 순)
+                  items:
+                    type: object
+                    properties:
+                      rank:
+                        type: integer
+                        description: 우선순위 순번
+                      item_slot:
+                        type: string
+                        description: 장비 슬롯 (ex. 무기, 상의 등)
+                      current_item_name:
+                        type: string
+                        description: 현재 장착 아이템명
+                      current_starforce:
+                        type: integer
+                        description: 현재 스타포스 강화 수치
+                      current_potential_grade:
+                        type: string
+                        description: 현재 잠재능력 등급
+                      recommended_action:
+                        type: string
+                        enum: [STARFORCE, POTENTIAL_REROLL, ITEM_REPLACE, SCROLL]
+                        description: 추천 강화 액션 종류
+                      expected_gain:
+                        type: string
+                        description: 해당 강화 시 예상 전투력 상승치
+                      estimated_cost:
+                        type: number
+                        description: 예상 소요 메소
+                      reason:
+                        type: string
+                        description: 해당 슬롯을 우선 추천하는 근거
+
+    ApiResponseSearch:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                answer: { type: string }
+                sources:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Source'
+
+    ApiResponseChat:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                response: { type: string }
+                sources:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Source'
+                steps:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      agent: { type: string }
+                      action: { type: string }
+                      log: { type: string }
+
+    ApiResponseGrowth:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                expected_days: { type: integer }
+                recommendations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      category: { type: string }
+                      priority: { type: integer }
+                      expected_gain: { type: string }
+
+    ApiResponseStagnation:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponseBase'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                stagnation_point_level:
+                  type: integer
+                  description: 예상 정체 도달 전투력 수치
+                stagnation_cause:
+                  type: string
+                  enum: [SYMBOL, EQUIPMENT, UNION, HEXA, MIXED]
+                  description: 정체의 주요 원인 분류 (심볼/장비/유니온/HEXA/복합)
+                stagnation_reason:
+                  type: string
+                  description: 정체 원인 상세 설명
+                risk_score:
+                  type: number
+                  description: 정체 위험도 점수 (0~1, 높을수록 빠른 조치 필요)
+                cost_by_stage:
+                  type: array
+                  description: 성장 단계별 예상 소요 비용
+                  items:
+                    type: object
+                    properties:
+                      stage_label:
+                        type: string
+                        description: 단계 명칭 (ex. 현재 → 스타포스 17성, 심볼 만렙 등)
+                      target_combat_power:
+                        type: number
+                        description: 해당 단계의 목표 전투력
+                      estimated_meso:
+                        type: number
+                        description: 예상 소요 메소
+                      estimated_days:
+                        type: integer
+                        description: 예상 소요 일수
+                breakthrough_actions:
+                  type: array
+                  description: 정체 돌파를 위한 우선순위 액션 리스트
+                  items:
+                    type: object
+                    properties:
+                      priority:
+                        type: integer
+                        description: 실행 우선순위 (1이 가장 높음)
+                      action_type:
+                        type: string
+                        enum: [SYMBOL_GROWTH, STARFORCE, POTENTIAL_REROLL, UNION_EXPANSION, HEXA_UPGRADE]
+                        description: 액션 종류
+                      description:
+                        type: string
+                        description: 구체적인 실행 방법 설명
+                      expected_gain:
+                        type: string
+                        description: 해당 액션 수행 시 예상 전투력 상승치
+                      estimated_cost:
+                        type: number
+                        description: 예상 소요 메소
+
+security:
+  - ApiKeyAuth: []
