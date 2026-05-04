@@ -1,37 +1,37 @@
 # --- Core Orchestration (F & All) ---
-langchain>=0.1.0
-langgraph          # 멀티 에이전트 워크플로우 제어 (F의 핵심)
-langsmith          # 에이전트 간 대화 트레이싱 및 디버깅
+langchain==1.2.17
+langgraph==1.1.10          # 멀티 에이전트 워크플로우 제어 (F의 핵심)
+langsmith==0.8.0          # 에이전트 간 대화 트레이싱 및 디버깅
 
 # --- LLM  ---
-langchain-groq
-langchain-openai
+langchain-groq==1.1.2
+langchain-openai==1.2.1
 
 # --- Vector & Graph Databases (B, D) ---
-psycopg2-binary    # PostgreSQL 연결 (캐릭터 데이터 저장)
-neo4j              # Neo4j 연결 (아이템/스킬 관계 그래프)
-pgvector           # Postgres 내 벡터 검색 기능 활용 시
+psycopg2-binary==2.9.12   # PostgreSQL 연결 (캐릭터 데이터 저장)
+neo4j==6.1.0              # Neo4j 연결 (아이템/스킬 관계 그래프)
+pgvector==0.4.2           # Postgres 내 벡터 검색 기능 활용 시
 
 # --- Machine Learning & Data Processing (C의 핵심) ---
-pandas             # API JSON 데이터 가공 및 분석
-numpy
-scikit-learn       # RandomForest 모델 학습 및 예측
-joblib             # 학습된 ML 모델 저장 및 로드
+pandas==3.0.2            # API JSON 데이터 가공 및 분석
+numpy==2.4.4
+scikit-learn==1.8.0      # RandomForest 모델 학습 및 예측
+joblib==1.5.3            # 학습된 ML 모델 저장 및 로드
 
 # --- RAG & Evaluation (A, D, E) ---
-ragas              # RAG 성능 평가 (A의 핵심)
+ragas==0.4.3              # RAG 성능 평가 (A의 핵심)
 beautifulsoup4     # 웹 서칭 RAG를 위한 크롤링 (E의 핵심)
-langchain-community
+langchain-community==0.4.1
 
 # --- API & Web UI (E ) ---
-requests           # 넥슨 Open API 호출
-streamlit          # 챗봇 UI 및 데이터 시각화 (E의 핵심)
-plotly             # 캐릭터 스탯 분석 차트 시각화 (E의 핵심)
+requests==2.33.1           # 넥슨 Open API 호출
+streamlit==1.57.0          # 챗봇 UI 및 데이터 시각화 (E의 핵심)
+plotly==6.7.0            # 캐릭터 스탯 분석 차트 시각화 (E의 핵심)
 
 # --- Infrastructure  ---
-python-dotenv      # .env 파일의 API KEY 관리
+python-dotenv==1.2.2      # .env 파일의 API KEY 관리
 
 
 openapi-generator-cli # yaml로 model 자동 생성
-pydantic>=2.0      # 데이터 규격 정의 (API Spec 및 에이전트 통신용)
+pydantic==2.13.3    # 데이터 규격 정의 (API Spec 및 에이전트 통신용)
 
