@@ -1,0 +1,11 @@
+﻿boss_id,name,difficulty,required_level,boss_type,description
+boss_9bbe9a0ec62f2a5fb667,자쿰,Normal,50,daily,초반 성장 구간 보스
+boss_1360a46ade20851d62d0,카오스 자쿰,Chaos,90,daily,초중반 장비 파밍 보스
+boss_b644a6cb269cb3cea81a,노멀 스우,Normal,190,weekly,블랙헤븐 관련 주간 보스
+boss_6341c27e231a7a100e44,노멀 데미안,Normal,190,weekly,히어로즈 오브 메이플 관련 주간 보스
+boss_fc8cf81381227b0df645,노멀 루시드,Normal,220,weekly,아케인 리버 보스
+boss_f51e22909676399d720b,노멀 윌,Normal,235,weekly,아케인 리버 보스
+boss_03d2aeaa5f9189929911,하드 루시드,Hard,220,weekly,상위 아케인 리버 보스
+boss_9051bc01c59a4d2bf0c4,하드 윌,Hard,235,weekly,상위 아케인 리버 보스
+boss_c7e237e9789beee7f343,진 힐라,Normal,250,weekly,고난도 주간 보스
+boss_cc84ca6da67427899970,검은 마법사,Hard,255,monthly,최종장 보스

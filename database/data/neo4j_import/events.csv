@@ -1,0 +1,4 @@
+﻿event_id,name,event_type,target_user,description,start_date,end_date
+event_bdd636de4b667dab6ea1,하이퍼 버닝,growth,new_returning,성장 지원 이벤트,,
+event_8ab61b5e966577cc18a0,코인샵 이벤트,reward,all,이벤트 재화 기반 보상 교환,,
+event_54aee1ad5de80a0da8d9,썬데이 메이플,boost,all,주간 강화/성장 보너스 이벤트,,

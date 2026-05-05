@@ -1,0 +1,7 @@
+﻿reward_id,name,reward_type,value_type,description
+reward_b2a0c006409bbdfb5f96,강렬한 힘의 결정,meso,boss_crystal,보스 처치 후 판매 가능한 재화성 보상
+reward_539f23bfe6778c6e0180,앱솔랩스 장비,equipment,gear,중후반 장비 성장 보상
+reward_8e21ce0d22c138a70968,아케인셰이드 장비,equipment,gear,상위 장비 성장 보상
+reward_6981e7f7bd6c9bed3981,경험치 쿠폰,growth,exp,레벨업 속도를 높이는 보상
+reward_7e0289761558ba642eca,선택 심볼 교환권,growth,symbol,아케인/어센틱 심볼 성장 보상
+reward_4119a996e32d9273105b,코어 젬스톤,growth,v_matrix,V 매트릭스 성장 보상

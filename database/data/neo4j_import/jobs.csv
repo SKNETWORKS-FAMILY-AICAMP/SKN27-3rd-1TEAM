@@ -1,0 +1,18 @@
+﻿job_id,name,job_group,main_stat,description
+job_2c13e8024f3eb49d8d39,아델,전사,STR,레프 계열 전사
+job_b8ba33fb188026840a2d,히어로,전사,STR,모험가 전사
+job_9a6397b55c5d5ed9cb60,팔라딘,전사,STR,모험가 전사
+job_69b011ad64a31ee5da74,다크나이트,전사,STR,모험가 전사
+job_e29bbbb456fec6e62b29,섀도어,도적,LUK,모험가 도적
+job_9f2f6309582494b0e3f2,나이트로드,도적,LUK,모험가 도적
+job_c353b5c308f5c10415d3,듀얼블레이드,도적,LUK,모험가 도적
+job_96101ae9071d052bbee3,카데나,도적,LUK,노바 계열 도적
+job_08ce324166d7e257d366,메르세데스,궁수,DEX,영웅 계열 궁수
+job_4a80083930839e418161,보우마스터,궁수,DEX,모험가 궁수
+job_29aaa5f6799224828bca,패스파인더,궁수,DEX,모험가 궁수
+job_2a2a234c1c269e9bca10,메카닉,해적,DEX,레지스탕스 해적
+job_cf1c0586154417d98d1b,캡틴,해적,DEX,모험가 해적
+job_b7a6ef28998f5afebacc,키네시스,마법사,INT,프렌즈 월드 마법사
+job_f248d4515d76900ffb9d,비숍,마법사,INT,모험가 마법사
+job_bfee20045098c8019160,"아크메이지(불,독)",마법사,INT,모험가 마법사
+job_7ad68a5e2d28fca36ed0,은월,해적,STR,영웅 계열 해적

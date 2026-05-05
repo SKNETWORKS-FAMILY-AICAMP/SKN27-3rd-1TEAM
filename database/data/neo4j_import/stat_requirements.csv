@@ -1,0 +1,11 @@
+﻿requirement_id,boss_name,level,main_stat,arcane_force,boss_damage,ignore_def,authentic_force,confidence
+requirement_7421eadae6ad13181d01,자쿰,90,0,0,0,0,0,draft
+requirement_8478b62ccf3f221f9b23,카오스 자쿰,150,3000,0,50,0,0,draft
+requirement_764b3a7f85d20b792106,노멀 스우,220,15000,0,150,85,0,draft
+requirement_02b206c1423efdb0fd60,노멀 데미안,220,15000,0,150,85,0,draft
+requirement_833be4ea15d44fee8999,노멀 루시드,235,25000,360,200,90,0,draft
+requirement_7a12b872defcbcdab93f,노멀 윌,235,28000,760,220,90,0,draft
+requirement_da6bbdd85986aa5f2fda,하드 루시드,250,50000,360,300,93,0,draft
+requirement_f3623f3ad8f9a8fa8ce3,하드 윌,250,55000,760,320,93,0,draft
+requirement_3eb48e1436308af0fd7e,진 힐라,250,65000,900,350,94,0,draft
+requirement_0ad01b01c8216ad323b8,검은 마법사,255,90000,1320,400,95,0,draft
