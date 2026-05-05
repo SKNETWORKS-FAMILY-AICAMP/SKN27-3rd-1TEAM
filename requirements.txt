@@ -17,6 +17,9 @@ pandas==3.0.2            # API JSON 데이터 가공 및 분석
 numpy==2.4.4
 scikit-learn==1.8.0      # RandomForest 모델 학습 및 예측
 joblib==1.5.3            # 학습된 ML 모델 저장 및 로드
+# xgboost==3.0.4
+# seaborn==0.13.2
+# koreanize-matplotlib
 
 # --- RAG & Evaluation (A, D, E) ---
 ragas==0.4.3              # RAG 성능 평가 (A의 핵심)
