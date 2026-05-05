@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Optional, Dict, Any
 from dataclasses import field
 
 
@@ -23,7 +23,6 @@ class Equipment:
     starforce: int
 
     # 계산 기여 스탯 (핵심만 유지)from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
 
 @dataclass
 class StatPackage:
