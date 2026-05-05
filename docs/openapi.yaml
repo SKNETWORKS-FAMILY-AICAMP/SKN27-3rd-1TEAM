@@ -404,143 +404,295 @@ components:
 
     Stats:
       type: object
-      description: 캐릭터의 주요 전투 수치
+      description: 게임 내 스탯창 기준 캐릭터 전투 수치 (CharacterStatDetail 대응)
       properties:
-        attack:
+        combat_power:
+          type: integer
+          description: 전투력
+        min_stat_damage:
           type: number
-          description: 공격력/마력 합산
-        crit_rate:
+          description: 최소 스탯 데미지
+        max_stat_damage:
           type: number
-          description: 크리티컬 확률 (%)
+          description: 최대 스탯 데미지
+        str_val:
+          type: integer
+          description: STR
+        dex:
+          type: integer
+          description: DEX
+        int_val:
+          type: integer
+          description: INT
+        luk:
+          type: integer
+          description: LUK
+        hp:
+          type: integer
+          description: HP
+        mp:
+          type: integer
+          description: MP
+        damage:
+          type: number
+          description: 일반 데미지 (%)
         boss_damage:
           type: number
           description: 보스 데미지 (%)
+        final_damage:
+          type: number
+          description: 최종 데미지 (%)
         ignore_def:
           type: number
           description: 방어율 무시 (%)
-        union_level:
+        crit_rate:
+          type: number
+          description: 크리티컬 확률 (%)
+        crit_damage:
+          type: number
+          description: 크리티컬 데미지 (%)
+        attack_power:
           type: integer
-          description: 유니온 총 레벨
+          description: 공격력
+        magic_power:
+          type: integer
+          description: 마력
+        attack_speed:
+          type: integer
+          description: 공격 속도 단계
+        buff_duration:
+          type: integer
+          description: 버프 지속시간 증가 (%)
         arcane_force:
           type: integer
           description: 아케인포스 합계
         authentic_force:
           type: integer
           description: 어센틱포스 합계
-        damage:
-          type: number
-          description: 일반 데미지 (%)
-        attack_speed:
+
+    UnionStatus:
+      type: object
+      description: 유니온 및 아티팩트 정보 (UnionStatus 대응)
+      properties:
+        union_level:
           type: integer
-          description: 공격 속도 단계
+          description: 유니온 총 레벨
+        union_grade:
+          type: string
+          description: 유니온 등급
+        artifact_level:
+          type: integer
+          description: 아티팩트 레벨
+          nullable: true
+        artifact_exp:
+          type: integer
+          description: 아티팩트 경험치
+        union_raider_stats:
+          allOf:
+            - $ref: '#/components/schemas/StatPackage'
+          description: 유니온 공격대원 합산 스탯
+          nullable: true
 
     Character:
       type: object
-      description: 캐릭터의 상세 통합 정보
+      description: 통합 캐릭터 모델 (ProcessedCharacter 대응)
       properties:
-        ocid:
+        character_name:
           type: string
-          description: 캐릭터 고유 식별자 (넥슨 오픈 API 표준)
+          description: 캐릭터명
+        job_name:
+          type: string
+          description: 직업명
+        world_name:
+          type: string
+          description: 월드명
         level:
           type: integer
-        class:
+          description: 캐릭터 레벨
+        gender:
           type: string
-        combat_power:
-          type: number
-        stats:
-          $ref: '#/components/schemas/Stats'
+          nullable: true
+        final_stats:
+          allOf:
+            - $ref: '#/components/schemas/Stats'
+          description: 스탯창 기준 최종 전투 수치
+          nullable: true
+        equipment_list:
+          type: array
+          description: 장착 장비 목록
+          items:
+            $ref: '#/components/schemas/Equipment'
+        union_info:
+          allOf:
+            - $ref: '#/components/schemas/UnionStatus'
+          nullable: true
+        v_matrix:
+          type: object
+          description: V매트릭스 코어별 레벨 (코어명 → 레벨)
+          additionalProperties:
+            type: integer
+          nullable: true
+        hexa_core:
+          type: object
+          description: HEXA 코어별 레벨 (코어명 → 레벨)
+          additionalProperties:
+            type: integer
+          nullable: true
+        ability_info:
+          type: array
+          description: 어빌리티 옵션 목록
+          items:
+            type: string
+          nullable: true
+        hyper_stats:
+          type: object
+          description: 하이퍼스탯 투자 현황 (스탯명 → 레벨)
+          additionalProperties:
+            type: integer
+          nullable: true
+        active_buffs:
+          type: array
+          description: 현재 활성 버프 목록
+          items:
+            type: string
 
     # -----------------------------------------------
     # 장비 관련 스키마
     # -----------------------------------------------
 
-    ItemOption:
+    StatPackage:
       type: object
-      description: 아이템 내 능력치 옵션 상세 (기본, 추가, 강화, 잠재 등 합산 혹은 개별 수치)
+      description: 아이템/스킬 하나가 가진 스탯 묶음 (StatPackage 대응)
       properties:
-        str: { type: string, description: "STR" }
-        dex: { type: string, description: "DEX" }
-        int: { type: string, description: "INT" }
-        luk: { type: string, description: "LUK" }
-        attack_power: { type: string, description: "공격력" }
-        magic_power: { type: string, description: "마력" }
-        boss_damage: { type: string, description: "보스 데미지 (%)" }
-        ignore_def: { type: string, description: "방어율 무시 (%)" }
-        all_stat: { type: string, description: "올스탯 (%)" }
-        damage: { type: string, description: "데미지 (%)" }
-        equipment_level_decrease: { type: integer, description: "착용 레벨 감소" }
+        str_val:
+          type: integer
+          description: STR
+          default: 0
+        dex_val:
+          type: integer
+          description: DEX
+          default: 0
+        int_val:
+          type: integer
+          description: INT
+          default: 0
+        luk_val:
+          type: integer
+          description: LUK
+          default: 0
+        attack_power:
+          type: integer
+          description: 공격력
+          default: 0
+        magic_power:
+          type: integer
+          description: 마력
+          default: 0
+        hp:
+          type: integer
+          description: HP
+          default: 0
+        boss_damage_percent:
+          type: number
+          description: 보스 데미지 (%)
+          default: 0.0
+        ignore_def_percent:
+          type: number
+          description: 방어율 무시 (%)
+          default: 0.0
+        final_damage_percent:
+          type: number
+          description: 최종 데미지 (%)
+          default: 0.0
+        damage_percent:
+          type: number
+          description: 데미지 (%)
+          default: 0.0
+          nullable: true
+        crit_damage:
+          type: number
+          description: 크리티컬 데미지 (%)
+          default: 0.0
+          nullable: true
+        all_stat_percent:
+          type: number
+          description: 올스탯 (%)
+          default: 0.0
 
     Equipment:
       type: object
-      description: 장착 아이템 개별 상세 정보 (/maplestory/v1/character/item-equipment 응답 단일 항목)
+      description: 개별 장비 상세 정보 (EquipmentDetail 대응)
       properties:
-        item_equipment_part:
-          type: string
-          description: 장비 부위 (ex. 무기, 상의 등)
-        item_equipment_slot:
-          type: string
-          description: 장비 슬롯 위치
         item_name:
           type: string
-          description: 아이템 명칭
-        item_total_option:
-          allOf:
-            - $ref: '#/components/schemas/ItemOption'
-          description: 기본+추가+강화+잠재 합산 최종 옵션
-        item_base_option:
-          allOf:
-            - $ref: '#/components/schemas/ItemOption'
-          description: 아이템 기본 옵션
-        item_add_option:
-          allOf:
-            - $ref: '#/components/schemas/ItemOption'
-          description: 추가옵션 (작 옵션)
-        item_starforce_option:
-          allOf:
-            - $ref: '#/components/schemas/ItemOption'
-          description: 스타포스 강화로 추가된 옵션
+          description: 아이템명
+        part:
+          type: string
+          description: 장비 부위 (ex. 무기, 상의 등)
+        item_gender:
+          type: string
+          description: 착용 성별 제한
+          nullable: true
         starforce:
           type: integer
-          description: 현재 스타포스 강화 수치
-          example: 17
-        scroll_upgradeable_count:
-          type: string
-          description: 남은 업그레이드 가능 횟수
-        potential_option_grade:
+          description: 스타포스 강화 수치
+          nullable: true
+        potential_grade:
           type: string
           enum: [레전더리, 유니크, 에픽, 레어, 노멀]
           description: 잠재능력 등급
-        potential_option_1: { type: string, description: "잠재옵션 1번째 줄" }
-        potential_option_2: { type: string, description: "잠재옵션 2번째 줄" }
-        potential_option_3: { type: string, description: "잠재옵션 3번째 줄" }
-        additional_potential_option_grade:
+          nullable: true
+        additional_potential_grade:
           type: string
           description: 에디셔널 잠재능력 등급
-        additional_potential_option_1: { type: string, description: "에디셔널 잠재옵션 1번째 줄" }
-        additional_potential_option_2: { type: string, description: "에디셔널 잠재옵션 2번째 줄" }
-        additional_potential_option_3: { type: string, description: "에디셔널 잠재옵션 3번째 줄" }
-
+          nullable: true
+        total_stats:
+          allOf:
+            - $ref: '#/components/schemas/StatPackage'
+          description: 최종 합산 옵션 (기본+추옵+강화+잠재)
+          nullable: true
+        bonus_stats:
+          allOf:
+            - $ref: '#/components/schemas/StatPackage'
+          description: 추가옵션 (추옵)
+          nullable: true
+        scroll_stats:
+          allOf:
+            - $ref: '#/components/schemas/StatPackage'
+          description: 주문서/업그레이드 수치
+          nullable: true
+        set_name:
+          type: string
+          description: 세트 효과 명칭
+          nullable: true
     # -----------------------------------------------
     # 요청 스키마
     # -----------------------------------------------
 
     CombatContext:
       type: object
-      description: 시뮬레이션을 위한 전투 환경 데이터
+      description: 시뮬레이션을 위한 전투 환경 데이터 (ProcessedCharacter 필드 대응)
       properties:
-        v_matrix_levels:
+        v_matrix:
           type: object
-          description: 코어별 강화 레벨 정보
-        hexa_matrix_levels:
+          description: V매트릭스 코어별 레벨 (코어명 → 레벨)
+          additionalProperties:
+            type: integer
+        hexa_core:
           type: object
-          description: HEXA 코어 및 스탯 강화 단계
-        link_skills:
+          description: HEXA 코어별 레벨 (코어명 → 레벨)
+          additionalProperties:
+            type: integer
+        ability_info:
           type: array
+          description: 어빌리티 옵션 목록
           items:
             type: string
-        union_blocks:
-          type: object
-          description: 유니온 점유 효과(크뎀, 보공 등)
+        active_buffs:
+          type: array
+          description: 활성 버프 목록
+          items:
+            type: string
 
     SimulationRequest:
       type: object
@@ -787,14 +939,16 @@ components:
       allOf:
         - $ref: '#/components/schemas/ApiResponseBase'
         - type: object
-          description: 보스 격파 가능성 분석 응답 (딜 수치가 아닌 스펙 충족 여부 판단 중심)
+          description: 보스 격파 가능성 분석 응답 (GrowthEfficiencyReport.boss_clear_prediction 대응)
           properties:
             data:
               type: object
               properties:
-                clear_possible:
-                  type: boolean
-                  description: 현재 스펙 기준 클리어 가능 여부
+                boss_clear_prediction:
+                  type: object
+                  description: 보스별 클리어 가능 여부 (보스명 → true/false)
+                  additionalProperties:
+                    type: boolean
                 success_rate:
                   type: number
                   description: 예상 클리어 성공률 (0~1)
@@ -803,9 +957,22 @@ components:
                   description: 부족한 스탯 목록
                   items:
                     type: string
-                recommendation:
-                  type: string
-                  description: 도전 전 보완 권고사항
+                recommended_actions:
+                  type: array
+                  description: 도전 전 보완 추천 액션 (ActionPlan 대응)
+                  items:
+                    type: object
+                    properties:
+                      category:
+                        type: string
+                      target:
+                        type: string
+                      priority:
+                        type: integer
+                      expected_cp_gain:
+                        type: integer
+                      description:
+                        type: string
                 sources:
                   type: array
                   items:
@@ -815,92 +982,85 @@ components:
       allOf:
         - $ref: '#/components/schemas/ApiResponseBase'
         - type: object
+          description: 병목 분석 및 성장 리포트 (GrowthEfficiencyReport 대응)
           properties:
             data:
               type: object
               properties:
-                bottleneck:
+                character_id:
                   type: string
-                  description: 가장 효율이 낮은 장비 부위 명칭
-                improvement_priority:
+                  description: 캐릭터 식별자 (ocid)
+                current_combat_power:
+                  type: integer
+                  description: 현재 전투력
+                bottleneck_analysis:
+                  type: object
+                  description: 부위별 성장 여력 점수 (부위명 → 0~1, 낮을수록 성장 필요도 높음)
+                  additionalProperties:
+                    type: number
+                recommended_actions:
                   type: array
-                  description: 개선 우선순위 부위 목록 (효율 낮은 순)
+                  description: 성장 추천 액션 목록 (ActionPlan 대응)
                   items:
                     type: object
                     properties:
-                      item_slot:
+                      category:
                         type: string
-                        description: 장비 슬롯명
-                      reason:
+                        description: 액션 분류 (ex. 장비강화, 내실, 큐브)
+                      target:
                         type: string
-                        description: 해당 부위가 병목인 이유
-                      expected_gain:
-                        type: string
-                        description: 개선 시 예상 전투력 상승치
-                set_effect_summary:
-                  type: array
-                  description: 현재 세트 효과 달성 현황 및 다음 단계 달성 여부 분석
-                  items:
-                    type: object
-                    properties:
-                      set_name:
-                        type: string
-                        description: 세트 명칭
-                      current_count:
+                        description: 대상 아이템/슬롯 (ex. 앱솔랩스 숄더)
+                      priority:
                         type: integer
-                        description: 현재 달성한 세트 수
-                      next_threshold:
+                        description: 우선순위 (1이 가장 높음, 최대 5)
+                      expected_cp_gain:
                         type: integer
-                        description: 다음 효과 발동까지 필요한 세트 수
-                      next_effect:
+                        description: 예상 전투력 상승치
+                      description:
                         type: string
-                        description: 다음 단계 세트 효과 내용
-                      achievable:
-                        type: boolean
-                        description: 장비 교체만으로 다음 단계 달성 가능 여부
-
+                        description: 액션 상세 설명
+                boss_clear_prediction:
+                  type: object
+                  description: 보스별 클리어 가능 여부 (보스명 → true/false)
+                  additionalProperties:
+                    type: boolean
+                  nullable: true
+                data_reliability:
+                  type: string
+                  description: 데이터 신뢰도 설명
+                timestamp:
+                  type: string
+                  description: 분석 시각
     ApiResponseRecommendation:
       allOf:
         - $ref: '#/components/schemas/ApiResponseBase'
         - type: object
+          description: 장비 업그레이드 추천 결과 (ActionPlan 대응)
           properties:
             data:
               type: object
               properties:
                 upgrade_priority:
                   type: array
-                  description: 업그레이드 우선순위 목록 (우선순위 높은 순)
+                  description: 업그레이드 추천 액션 목록 (ActionPlan 대응, 우선순위 높은 순)
                   items:
                     type: object
                     properties:
-                      rank:
+                      category:
+                        type: string
+                        description: 액션 분류 (ex. STARFORCE, POTENTIAL_REROLL, ITEM_REPLACE, SCROLL)
+                      target:
+                        type: string
+                        description: 대상 아이템/슬롯 (ex. 앱솔랩스 숄더)
+                      priority:
                         type: integer
-                        description: 우선순위 순번
-                      item_slot:
-                        type: string
-                        description: 장비 슬롯 (ex. 무기, 상의 등)
-                      current_item_name:
-                        type: string
-                        description: 현재 장착 아이템명
-                      current_starforce:
+                        description: 우선순위 (1이 가장 높음, 최대 5)
+                      expected_cp_gain:
                         type: integer
-                        description: 현재 스타포스 강화 수치
-                      current_potential_grade:
+                        description: 예상 전투력 상승치
+                      description:
                         type: string
-                        description: 현재 잠재능력 등급
-                      recommended_action:
-                        type: string
-                        enum: [STARFORCE, POTENTIAL_REROLL, ITEM_REPLACE, SCROLL]
-                        description: 추천 강화 액션 종류
-                      expected_gain:
-                        type: string
-                        description: 해당 강화 시 예상 전투력 상승치
-                      estimated_cost:
-                        type: number
-                        description: 예상 소요 메소
-                      reason:
-                        type: string
-                        description: 해당 슬롯을 우선 추천하는 근거
+                        description: 추천 근거 및 상세 설명
 
     ApiResponseSearch:
       allOf:
@@ -942,20 +1102,35 @@ components:
       allOf:
         - $ref: '#/components/schemas/ApiResponseBase'
         - type: object
+          description: 성장 경로 예측 결과 (ActionPlan 목록 대응)
           properties:
             data:
               type: object
               properties:
-                expected_days: { type: integer }
+                expected_days:
+                  type: integer
+                  description: 목표 전투력 달성까지 예상 소요 일수
                 recommendations:
                   type: array
+                  description: 성장 추천 액션 목록 (ActionPlan 대응)
                   items:
                     type: object
                     properties:
-                      category: { type: string }
-                      priority: { type: integer }
-                      expected_gain: { type: string }
-
+                      category:
+                        type: string
+                        description: 액션 분류 (ex. 장비강화, 내실, 큐브)
+                      target:
+                        type: string
+                        description: 대상 아이템/슬롯
+                      priority:
+                        type: integer
+                        description: 우선순위 (1이 가장 높음, 최대 5)
+                      expected_cp_gain:
+                        type: integer
+                        description: 예상 전투력 상승치
+                      description:
+                        type: string
+                        description: 액션 상세 설명
     ApiResponseStagnation:
       allOf:
         - $ref: '#/components/schemas/ApiResponseBase'
