@@ -18,17 +18,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 - 콘텐츠
 - 문서 출처 관계
 
-## 2. 역할 분리
-
-| 영역 | 담당 데이터 |
-|---|---|
-| NEXON Open API | 유저별 실시간 캐릭터 상태, 장비, 스탯, 유니온, 어빌리티, 이미지 |
-| Neo4j GraphDB | 직업/보스/장비/이벤트/보상/콘텐츠/문서 출처 간 관계 |
-| PostgreSQL | 정형 데이터 저장, 조회 이력, 문서 메타데이터 |
-| PGVector | 문서 임베딩 검색 |
-| Final Answer Agent | API 결과, GraphDB 결과, RAG 결과 종합 |
-
-## 3. 노드 정의
+## 2. 노드 정의
 
 | 노드 | 설명 | 주요 속성 |
 |---|---|---|
@@ -43,7 +33,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `reliability` |
 | `StatType` | 공통 스탯 종류 | `stat_type_id`, `code`, `domain_field`, `description` |
 
-## 4. 관계 정의
+## 3. 관계 정의
 
 | 관계 | 시작 노드 | 끝 노드 | 의미 |
 |---|---|---|---|
@@ -58,7 +48,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `REQUIRES_STAT` | `StatRequirement` | `StatType` | 요구 조건이 어떤 domain.py 스탯 필드를 기준으로 하는지 표시 |
 | `MENTIONED_IN` | `StatType/Job/Boss/EquipmentCatalog/Event/Content/Reward` | `Source` | 문서 출처에서 엔티티가 언급됨 |
 
-## 5. domain.py와의 연결
+## 4. domain.py와의 연결
 
 GraphDB는 `common/domain.py` 객체를 직접 저장하는 것이 아니라, domain 모델이 분석할 때 필요한 기준 지식을 제공한다.
 
@@ -70,7 +60,7 @@ GraphDB는 `common/domain.py` 객체를 직접 저장하는 것이 아니라, do
 4. Calculator Agent가 `StatPackage`와 `CharacterStatDetail`을 기반으로 계산한다.
 5. Final Answer Agent가 GraphDB 근거와 API 실시간 상태를 종합한다.
 
-## 6. 예시 조회
+## 5. 예시 조회
 
 ```cypher
 MATCH (j:Job {name: "아델"})-[:USES_MAIN_STAT]->(s:StatType)
@@ -87,7 +77,7 @@ MATCH (e:Event)-[:PROVIDES_REWARD]->(r:Reward)
 RETURN e.name, r.name, r.reward_type;
 ```
 
-## 7. 1차 구축 한계
+## 6. 1차 구축 한계
 
 현재 seed 데이터는 1차 설계 및 Agent 연동용 기준 데이터이다. 보스 요구 스펙, 이벤트, 보상, 추천 장비 관계는 팀 검증 후 수치와 관계를 보완해야 한다.
 
