@@ -82,3 +82,6 @@ RETURN e.name, r.name, r.reward_type;
 현재 seed 데이터는 1차 설계 및 Agent 연동용 기준 데이터이다. 보스 요구 스펙, 이벤트, 보상, 추천 장비 관계는 팀 검증 후 수치와 관계를 보완해야 한다.
 
 공식 문서나 Web RAG가 수집한 문서는 `Source` 노드로 저장하고, 추후 엔티티 추출을 통해 `MENTIONED_IN` 관계를 확장한다.
+
+
+
