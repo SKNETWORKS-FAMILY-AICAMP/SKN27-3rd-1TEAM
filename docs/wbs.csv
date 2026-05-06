@@ -11,7 +11,7 @@
 데이터 수집 및 전처리,feature engineering,,한재웅,,5/6,5/7,1,
 구현,DB,PostgreSQL (+PGVector),김주영,,5/7,5/9,3,
 구현,DB,Neo4j,권환성,,5/7,5/9,3,
-구현,Docker,-,김민경,,5/9,5/9,,
+구현,Docker,-,권환성,,5/9,5/9,,
 구현,ML,-,한재웅,,5/7,5/9,3,
 구현,RAG,DB search RAG,김주영,,5/7,5/9,3,
 구현,RAG,Web search RAG,권환성,,5/7,5/9,3,
