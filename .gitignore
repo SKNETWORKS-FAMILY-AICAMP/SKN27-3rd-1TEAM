@@ -204,4 +204,6 @@ $RECYCLE.BIN/
 # Local database runtime files
 database/neo4j_data/
 database/neo4j_logs/
+database/postgres/
+database/postgres_data/
 CODEX.md

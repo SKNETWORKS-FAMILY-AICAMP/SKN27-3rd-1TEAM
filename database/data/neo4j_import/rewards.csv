@@ -5,3 +5,20 @@ reward_8e21ce0d22c138a70968,아케인셰이드 장비,equipment,gear,상위 장�
 reward_6981e7f7bd6c9bed3981,경험치 쿠폰,growth,exp,레벨업 속도를 높이는 보상
 reward_7e0289761558ba642eca,선택 심볼 교환권,growth,symbol,아케인/어센틱 심볼 성장 보상
 reward_4119a996e32d9273105b,코어 젬스톤,growth,v_matrix,V 매트릭스 성장 보상
+reward_ae18870e949608fc918f,Aqua Eye Accessory / Condensed Power Crystal,boss_accessory,starter,초반 보스장신구 세트와 스타포스 기반 성장에 사용
+reward_4c09afbad8ecf6ab1818,Necromancer equipment / Hilla reward items,equipment,starter,초반 장비 공백 보완과 토드 재료 후보
+reward_83dbeea523db666adae8,Crystal Ventus Badge / Royal Black Metal Shoulder,boss_accessory,useful,보스장신구 세트와 어깨/뱃지 슬롯 보완
+reward_78fd05e05f4d8e1983cb,Pink Holy Cup / Black Bean Mark,boss_accessory,high,포켓/눈장식 교체 후보와 보스장신구 세트 핵심
+reward_0aa2ac5b404e437dae3b,Papulatus Mark,boss_accessory,high,"눈장식 고가치 교체 후보, 드랍률/가격 변동성 검수 필요"
+reward_2fb9c1210a7ef8a11340,Fafnir weapon / CRA top-bottom-hat materials,equipment_set,core,카루타 3세트/무기 성장 추천의 기준 장비
+reward_5d773a0002bd1145ec1c,Absolab Coin / S-grade Energy Core,equipment_material,core,앱솔랩스 장비 제작/교환 경로 판단에 필요
+reward_ce9247be8611d43c78a9,Absolab Coin / Twisted Stigma Spirit Stone,equipment_material,core,앱솔랩스 장비 제작/교환 경로 판단에 필요
+reward_5d3415c18718a27c6e1e,Arcane River Droplet Stone / Arcane Umbra material,equipment_material,core,아케인셰이드 장비 전환 추천에 필요
+reward_c9f13e5a09ed06581269,Pitched Boss Set items / high tier rewards,endgame_reward,very_high,칠흑 장신구 및 해방 전후 성장 판단에 필요
+reward_8cc74ccd2bb8f6b6bbe3,Genesis Weapon liberation material,liberation,very_high,제네시스 무기 해방 진행도와 엔드게임 목표 추천에 필요
+reward_65a1685b9c1641c30b28,Intense Power Crystal,meso,variable,주간 보스 추천에서 메소 효율 및 클리어 우선순위 계산에 필요
+reward_183a5c8c7be5cc455371,Arcane Symbol,growth_material,core,심볼 레벨과 아케인포스 부족 여부 추천에 필요
+reward_cb4eab6251b3ba998628,Sacred Symbol,growth_material,core,세르니움 이후 사냥/보스 성장 추천에 필요
+reward_575cac07a55b0d40f909,Nodestone,skill_growth,core,5차 강화 상태와 직업별 코어 추천에 필요
+reward_b447ac3b10714aa8cee4,Sol Erda / Sol Erda Fragment,skill_growth,core,6차 강화 우선순위 추천에 필요
+reward_0102afebdb2881200312,EXP coupons / growth potions,leveling,useful,레벨업 경로 추천과 성장 정체 구간 안내에 필요

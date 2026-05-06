@@ -52,3 +52,33 @@ RETURN s.title AS source,
        labels(n)[0] AS entity_type,
        coalesce(n.name, n.code) AS entity_name
 LIMIT 50;
+
+// 추가 데이터셋에서 선별한 보스 추천 요구 스펙 조회
+MATCH (b:Boss)-[:HAS_REQUIREMENT]->(r:StatRequirement)
+WHERE r.confidence <> "draft"
+RETURN b.name AS boss,
+       b.difficulty AS difficulty,
+       r.level AS recommended_level,
+       r.main_stat AS recommended_main_stat,
+       r.boss_damage AS boss_damage,
+       r.ignore_def AS ignore_def
+ORDER BY b.name, b.difficulty
+LIMIT 20;
+
+// 공식 이벤트와 출처 조회
+MATCH (e:Event {event_type: "official_event"})-[:MENTIONED_IN]->(s:Source)
+RETURN e.name AS event,
+       s.url AS source_url,
+       s.trust_level AS trust_level
+ORDER BY e.name
+LIMIT 20;
+
+// 직업별 5차/6차 강화 우선순위 출처 조회
+MATCH (j:Job)-[:MENTIONED_IN]->(s:Source)
+WHERE s.category IN ["class_5th_core_priority", "class_6th_hexa_priority"]
+RETURN j.name AS job,
+       s.category AS category,
+       s.title AS source_title,
+       s.text_preview AS summary
+ORDER BY j.name, s.category
+LIMIT 20;

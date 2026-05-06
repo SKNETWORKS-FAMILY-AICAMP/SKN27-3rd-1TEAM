@@ -18,6 +18,8 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 - 콘텐츠
 - 문서 출처 관계
 
+추가 데이터셋을 적재할 때도 GraphDB 담당 범위인 직업, 보스, 아이템, 이벤트 간 관계 정의와 쿼리 지원에 필요한 데이터만 선별한다.
+
 ## 2. 노드 정의
 
 | 노드 | 설명 | 주요 속성 |
@@ -30,7 +32,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `Event` | 이벤트 정보 | `event_id`, `name`, `event_type`, `start_date`, `end_date`, `target_user`, `description` |
 | `Reward` | 보상 정보 | `reward_id`, `name`, `reward_type`, `value_type`, `description` |
 | `Content` | 일일/주간/성장 콘텐츠 | `content_id`, `name`, `content_type`, `reset_cycle`, `description` |
-| `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `reliability` |
+| `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `url`, `trust_level`, `collected_at`, `text_preview`, `reliability` |
 | `StatType` | 공통 스탯 종류 | `stat_type_id`, `code`, `domain_field`, `description` |
 
 ## 3. 관계 정의
@@ -48,7 +50,29 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `REQUIRES_STAT` | `StatRequirement` | `StatType` | 요구 조건이 어떤 domain.py 스탯 필드를 기준으로 하는지 표시 |
 | `MENTIONED_IN` | `StatType/Job/Boss/EquipmentCatalog/Event/Content/Reward` | `Source` | 문서 출처에서 엔티티가 언급됨 |
 
-## 4. domain.py와의 연결
+## 4. 추가 데이터 선별 기준
+
+`maple_chatbot_final_dataset.csv`를 추가 적재할 때는 다음 기준으로 중복과 역할 범위를 제한한다.
+
+| 기준 | 처리 방식 |
+|---|---|
+| 중복 제거 | `dedup_group_key`, `dedup_rank=1`, `dedup_action=keep*` 기준으로 1차 제거 |
+| 최종 사용 여부 | `is_final_keep=True`, `rag_ready=True` 데이터만 사용 |
+| 포함 데이터 | `official_event`, `official_notice`, `official_update`, `testworld_update`, `boss_recommendation_rule`, `equipment_growth_rule`, `reward_priority_rule`, `class_5th_core_priority`, `class_6th_hexa_priority` |
+| 제외 데이터 | `character_*`, `user_union*`, `ranking_*` 등 유저 실시간 상태 또는 샘플 API 데이터 |
+| 적재 방향 | 새 복잡한 도메인 노드를 늘리기보다 `Job`, `Boss`, `EquipmentCatalog`, `Event`, `Reward`, `Source`에 연결 |
+
+추가 데이터의 주요 활용 관계는 다음과 같다.
+
+```text
+(Boss)-[:HAS_REQUIREMENT]->(StatRequirement)
+(Boss)-[:DROPS_REWARD]->(Reward)
+(Job)-[:MENTIONED_IN]->(Source)
+(EquipmentCatalog)-[:MENTIONED_IN]->(Source)
+(Event)-[:MENTIONED_IN]->(Source)
+```
+
+## 5. domain.py와의 연결
 
 GraphDB는 `common/domain.py` 객체를 직접 저장하는 것이 아니라, domain 모델이 분석할 때 필요한 기준 지식을 제공한다.
 
@@ -60,7 +84,7 @@ GraphDB는 `common/domain.py` 객체를 직접 저장하는 것이 아니라, do
 4. Calculator Agent가 `StatPackage`와 `CharacterStatDetail`을 기반으로 계산한다.
 5. Final Answer Agent가 GraphDB 근거와 API 실시간 상태를 종합한다.
 
-## 5. 예시 조회
+## 6. 예시 조회
 
 ```cypher
 MATCH (j:Job {name: "아델"})-[:USES_MAIN_STAT]->(s:StatType)
@@ -77,7 +101,21 @@ MATCH (e:Event)-[:PROVIDES_REWARD]->(r:Reward)
 RETURN e.name, r.name, r.reward_type;
 ```
 
-## 6. 1차 구축 한계
+```cypher
+MATCH (b:Boss)-[:HAS_REQUIREMENT]->(r:StatRequirement)
+MATCH (b)-[:MENTIONED_IN]->(s:Source)
+WHERE r.confidence <> "draft"
+RETURN b.name, b.difficulty, r.level, r.main_stat, s.title
+LIMIT 10;
+```
+
+```cypher
+MATCH (e:Event {event_type: "official_event"})-[:MENTIONED_IN]->(s:Source)
+RETURN e.name, s.url, s.trust_level
+ORDER BY e.name;
+```
+
+## 7. 1차 구축 한계
 
 현재 seed 데이터는 1차 설계 및 Agent 연동용 기준 데이터이다. 보스 요구 스펙, 이벤트, 보상, 추천 장비 관계는 팀 검증 후 수치와 관계를 보완해야 한다.
 
