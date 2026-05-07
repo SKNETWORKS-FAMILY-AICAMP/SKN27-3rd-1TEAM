@@ -9,6 +9,10 @@ https://editor.swagger.io/
 common/domain.py
 모든 로직은 이 domain 모델을 기준으로 작성해주시면 됩니다
 
+common/state.py
+각 에이전트 및 노드들은 state.py에 정의된 필드로 데이터를 공유합니다
+파일의 하단에 에이전트 별 꼭 채워야 하는 필드를 명시해 두었으니 참고해주세요
+
 # 폴더 구조
 ```
 SKN27-3rd-1TEAM/

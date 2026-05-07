@@ -1,4 +1,9 @@
-from typing import Any, Literal, TypedDict
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Literal, TypeAlias, TypedDict
+
+if TYPE_CHECKING:
+    from langchain_core.messages import BaseMessage
 
 from common.domain import (
     ActionPlan,
@@ -11,78 +16,153 @@ from common.domain import (
 
 
 NextAgent = Literal[
-    "character_collector",
-    "equipment_analyzer",
-    "stat_analyzer",
-    "growth_planner",
-    "answer_generator",
+    "calculator",
+    "analystic",
+    "research",
+    "final_answer",
+    "supervisor",
     "FINISH",
 ]
 
+JsonPrimitive: TypeAlias = str | int | float | bool | None
+JsonValue: TypeAlias = JsonPrimitive | list["JsonValue"] | dict[str, "JsonValue"]
+
+
+class RetrievedDocument(TypedDict, total=False):
+    page_content: str
+    metadata: dict[str, JsonValue]
+    score: float
+    source: str
+
 
 class AgentState(TypedDict, total=False):
-    # 공통 입력
-    # 사용자가 입력한 질문과 LangGraph 메시지 히스토리를 저장한다.
+    # Shared input
     user_query: str
-    messages: list[Any]
+    messages: list[BaseMessage]
 
-    # 사용자 요청 분석
-    # supervisor가 어떤 작업인지 판단하고 필요한 정보 수집 계획을 세울 때 사용한다.
+    # Request analysis
     intent: str
     task_type: str
     plan: list[str]
 
-    # supervisor 라우팅
-    # supervisor가 다음에 호출할 worker agent를 고른 결과다.
+    # Supervisor routing
     next_agent: NextAgent
     completed_agents: list[str]
     retry_count: int
 
-    # 캐릭터 식별 정보
-    # Nexon API 조회나 캐릭터 분석의 기준이 되는 값이다.
+    # Character identity
     character_name: str
     world_name: str
     ocid: str
 
-    # 외부 조회 원본 결과
-    # API, DB, tool 호출 결과를 원본에 가깝게 보관한다.
-    tool_results: dict[str, Any]
-    raw_api_results: dict[str, Any]
+    # Raw external results
+    tool_results: dict[str, JsonValue]
+    raw_api_results: dict[str, JsonValue]
 
-    # 캐릭터 정규화 결과
-    # 여러 API 응답을 분석하기 쉬운 도메인 모델로 정리한 값이다.
+    # Normalized character data
     character_profile: ProcessedCharacter
     character_stats: CharacterStatDetail
     equipment_items: list[EquipmentDetail]
     union_status: UnionStatus
 
-    # 검색/RAG 컨텍스트
-    # 가이드 문서나 정책 문서 검색 결과와 답변 생성용 요약 context를 담는다.
-    retrieved_docs: list[dict[str, Any]]
+    # Search/RAG context
+    retrieved_docs: list[RetrievedDocument]
     context: str
 
-    # 스탯/장비 분석 결과
-    # 현재 캐릭터의 강점, 약점, 병목 구간을 분석한 결과다.
-    stat_summary: dict[str, Any]
-    equipment_summary: dict[str, Any]
+    # Stat/equipment analysis
+    stat_summary: dict[str, JsonValue]
+    equipment_summary: dict[str, JsonValue]
     bottleneck_analysis: dict[str, float]
 
-    # 성장 추천 결과
-    # 성장 효율 리포트와 사용자가 바로 실행할 수 있는 추천 액션 목록이다.
+    # Growth recommendation
     growth_report: GrowthEfficiencyReport
     recommended_actions: list[ActionPlan]
 
-    # 응답 생성
-    # 초안과 최종 사용자 응답을 분리해서 검증/수정 단계를 거칠 수 있게 한다.
+    # Answer generation
     draft_answer: str
     final_answer: str
 
-    # 검증/예외
-    # 답변 품질 판단, 재시도 여부, 에러 정보를 저장한다.
+    # Validation/errors
     validation_passed: bool
     confidence_score: float
     errors: list[str]
 
-    # 종료 제어
-    # supervisor가 그래프를 종료해도 되는지 판단할 때 사용한다.
+    # Graph termination
     is_complete: bool
+
+AgentName = Literal[
+    "supervisor",
+    "calculator",
+    "analystic",
+    "research",
+    "final_answer",
+]
+
+AgentStateField = Literal[
+    "user_query",
+    "messages",
+    "intent",
+    "task_type",
+    "plan",
+    "next_agent",
+    "completed_agents",
+    "retry_count",
+    "character_name",
+    "world_name",
+    "ocid",
+    "tool_results",
+    "raw_api_results",
+    "character_profile",
+    "character_stats",
+    "equipment_items",
+    "union_status",
+    "retrieved_docs",
+    "context",
+    "stat_summary",
+    "equipment_summary",
+    "bottleneck_analysis",
+    "growth_report",
+    "recommended_actions",
+    "draft_answer",
+    "final_answer",
+    "validation_passed",
+    "confidence_score",
+    "errors",
+    "is_complete",
+]
+
+
+class AgentFieldContract(TypedDict):
+    required_inputs: tuple[AgentStateField, ...]
+    required_outputs: tuple[AgentStateField, ...]
+
+
+# Field contract for each agent.
+# Update this table whenever an agent or AgentState key changes.
+AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
+    "supervisor": {
+        "required_inputs": ("user_query", "messages"),
+        "required_outputs": ("intent", "task_type", "plan", "next_agent"),
+    },
+    "calculator": {
+        "required_inputs": ("character_stats", "equipment_items", "union_status"),
+        "required_outputs": ("stat_summary", "equipment_summary", "bottleneck_analysis"),
+    },
+    "analystic": {
+        "required_inputs": ("character_profile", "stat_summary", "equipment_summary"),
+        "required_outputs": ("growth_report", "recommended_actions"),
+    },
+    "research": {
+        "required_inputs": ("user_query", "character_name", "world_name"),
+        "required_outputs": ("retrieved_docs", "context"),
+    },
+    "final_answer": {
+        "required_inputs": ("user_query", "recommended_actions", "context"),
+        "required_outputs": (
+            "draft_answer",
+            "final_answer",
+            "validation_passed",
+            "confidence_score",
+        ),
+    },
+}
