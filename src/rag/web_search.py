@@ -1,5 +1,5 @@
 import argparse
-import json
+import json as json_lib
 import os
 import re
 from html import unescape
@@ -10,7 +10,9 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 
-DEFAULT_SEARCH_URL = "https://duckduckgo.com/html/"
+DEFAULT_SEARCH_PROVIDER = "tavily"
+DEFAULT_TAVILY_SEARCH_URL = "https://api.tavily.com/search"
+DEFAULT_DUCKDUCKGO_SEARCH_URL = "https://duckduckgo.com/html/"
 DEFAULT_USER_AGENT = "SKN27-MapleStory-WebRAG/0.1"
 DEFAULT_TIMEOUT_SECONDS = 10
 DEFAULT_MAX_RESULTS = 5
@@ -21,6 +23,10 @@ DEFAULT_OFFICIAL_DOMAINS = (
     "maplestory.nexon.com",
     "openapi.nexon.com",
     "notice.nexon.com",
+)
+DEFAULT_COMMUNITY_DOMAINS = (
+    "maple.inven.co.kr",
+    "www.inven.co.kr",
 )
 CONTENT_SELECTORS_TO_DROP = (
     "script",
@@ -52,6 +58,19 @@ class UrllibSession:
         query = urlencode(params or {})
         request_url = f"{url}?{query}" if query else url
         request = Request(request_url, headers=self.headers)
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                charset = response.headers.get_content_charset() or "utf-8"
+                return SimpleResponse(response.read().decode(charset, errors="replace"), response.status)
+        except HTTPError as exc:
+            return SimpleResponse(exc.read().decode("utf-8", errors="replace"), exc.code)
+        except URLError as exc:
+            raise RuntimeError(f"HTTP request failed: {exc}") from exc
+
+    def post(self, url: str, json: dict[str, Any] | None = None, timeout: int | None = None) -> SimpleResponse:
+        request_body = json_lib.dumps(json or {}).encode("utf-8")
+        headers = {**self.headers, "Content-Type": "application/json"}
+        request = Request(url, data=request_body, headers=headers, method="POST")
         try:
             with urlopen(request, timeout=timeout) as response:
                 charset = response.headers.get_content_charset() or "utf-8"
@@ -145,10 +164,24 @@ def get_env_int(name: str, default: int) -> int:
         return default
 
 
+def get_env_bool(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if not value:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
 def get_official_domains() -> tuple[str, ...]:
     raw = os.environ.get("WEB_RAG_OFFICIAL_DOMAINS")
     if not raw:
         return DEFAULT_OFFICIAL_DOMAINS
+    return tuple(domain.strip().lower() for domain in raw.split(",") if domain.strip())
+
+
+def get_community_domains() -> tuple[str, ...]:
+    raw = os.environ.get("WEB_RAG_COMMUNITY_DOMAINS")
+    if not raw:
+        return DEFAULT_COMMUNITY_DOMAINS
     return tuple(domain.strip().lower() for domain in raw.split(",") if domain.strip())
 
 
@@ -171,6 +204,7 @@ def build_search_query(
     character_context: Any | None = None,
     official_only: bool = True,
     official_domains: tuple[str, ...] | None = None,
+    community_domains: tuple[str, ...] | None = None,
 ) -> str:
     domain_context = as_domain_context(character_context)
     query_parts = [question.strip(), "메이플스토리"]
@@ -182,12 +216,27 @@ def build_search_query(
     if level:
         query_parts.append(f"{level}레벨")
 
-    if official_only:
-        domains = official_domains or get_official_domains()
-        site_filter = " OR ".join(f"site:{domain}" for domain in domains)
-        query_parts.append(f"({site_filter})")
+    domains = official_domains or get_official_domains()
+    if not official_only:
+        domains = domains + (community_domains or get_community_domains())
+
+    site_filter = " OR ".join(f"site:{domain}" for domain in domains)
+    query_parts.append(f"({site_filter})")
 
     return " ".join(part for part in query_parts if part)
+
+
+def normalize_provider(provider: str | None) -> str:
+    resolved = (provider or DEFAULT_SEARCH_PROVIDER).strip().lower()
+    if resolved not in {"tavily", "duckduckgo"}:
+        raise ValueError("WEB_RAG_SEARCH_PROVIDER must be 'tavily' or 'duckduckgo'")
+    return resolved
+
+
+def default_search_url(provider: str) -> str:
+    if provider == "tavily":
+        return DEFAULT_TAVILY_SEARCH_URL
+    return DEFAULT_DUCKDUCKGO_SEARCH_URL
 
 
 def normalize_url(url: str) -> str:
@@ -210,8 +259,8 @@ def domain_matches(url: str, allowed_domains: tuple[str, ...]) -> bool:
 
 def source_reliability(url: str, official_domains: tuple[str, ...]) -> str:
     if domain_matches(url, official_domains):
-        return "high"
-    return "medium"
+        return "HIGH"
+    return "MEDIUM"
 
 
 def tokenize(text: str) -> set[str]:
@@ -288,17 +337,29 @@ class WebSearchRAG:
 
     def __init__(
         self,
+        search_provider: str | None = None,
         search_url: str | None = None,
         user_agent: str | None = None,
         timeout_seconds: int | None = None,
         official_domains: tuple[str, ...] | None = None,
+        community_domains: tuple[str, ...] | None = None,
     ) -> None:
-        self.search_url = search_url or os.environ.get("WEB_RAG_SEARCH_URL", DEFAULT_SEARCH_URL)
+        self.search_provider = normalize_provider(search_provider or os.environ.get("WEB_RAG_SEARCH_PROVIDER"))
+        self.search_url = search_url or os.environ.get("WEB_RAG_SEARCH_URL", default_search_url(self.search_provider))
         self.timeout_seconds = timeout_seconds or get_env_int("WEB_RAG_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
         self.official_domains = official_domains or get_official_domains()
+        self.community_domains = community_domains or get_community_domains()
+        self.tavily_api_key = os.environ.get("TAVILY_API_KEY", "").strip()
+        self.tavily_search_depth = os.environ.get("TAVILY_SEARCH_DEPTH", "basic").strip().lower()
+        self.tavily_include_raw_content = get_env_bool("TAVILY_INCLUDE_RAW_CONTENT", False)
         resolved_user_agent = user_agent or os.environ.get("WEB_RAG_USER_AGENT", DEFAULT_USER_AGENT)
         self.beautiful_soup = load_optional_beautiful_soup()
         self.session, self.request_exception = create_http_session(resolved_user_agent)
+
+    def get_allowed_domains(self, official_only: bool) -> tuple[str, ...]:
+        if official_only:
+            return self.official_domains
+        return self.official_domains + self.community_domains
 
     def search(
         self,
@@ -308,18 +369,97 @@ class WebSearchRAG:
         max_results: int | None = None,
     ) -> list[dict[str, Any]]:
         max_results = max_results or get_env_int("WEB_RAG_MAX_RESULTS", DEFAULT_MAX_RESULTS)
-        query = build_search_query(question, character_context, official_only, self.official_domains)
+        if self.search_provider == "tavily":
+            return self.search_tavily(question, character_context, official_only, max_results)
+        return self.search_duckduckgo(question, character_context, official_only, max_results)
+
+    def search_tavily(
+        self,
+        question: str,
+        character_context: Any | None,
+        official_only: bool,
+        max_results: int,
+    ) -> list[dict[str, Any]]:
+        if not self.tavily_api_key:
+            raise RuntimeError("TAVILY_API_KEY is required when WEB_RAG_SEARCH_PROVIDER=tavily")
+
+        query = build_search_query(
+            question,
+            character_context,
+            official_only,
+            self.official_domains,
+            self.community_domains,
+        )
+        allowed_domains = self.get_allowed_domains(official_only)
+        payload = {
+            "api_key": self.tavily_api_key,
+            "query": query,
+            "search_depth": self.tavily_search_depth,
+            "max_results": max_results,
+            "include_answer": False,
+            "include_raw_content": self.tavily_include_raw_content,
+            "include_domains": list(allowed_domains),
+        }
+        response = self.session.post(self.search_url, json=payload, timeout=self.timeout_seconds)
+        response.raise_for_status()
+
+        try:
+            body = json_lib.loads(response.text)
+        except json_lib.JSONDecodeError as exc:
+            raise RuntimeError("Tavily search response was not valid JSON") from exc
+
+        results = []
+        seen_urls = set()
+        for row in body.get("results", []):
+            url = normalize_url(str(row.get("url", "")))
+            title = clean_text(str(row.get("title", "")))
+            content = clean_text(str(row.get("content") or ""))
+            raw_content = clean_text(str(row.get("raw_content") or ""))
+            if not url or not title or not is_http_url(url) or url in seen_urls:
+                continue
+            if not domain_matches(url, allowed_domains):
+                continue
+            seen_urls.add(url)
+            results.append(
+                {
+                    "title": title,
+                    "url": url,
+                    "query": query,
+                    "content": raw_content or content,
+                    "tavily_score": row.get("score"),
+                    "reliability": source_reliability(url, self.official_domains),
+                }
+            )
+            if len(results) >= max_results:
+                break
+        return results
+
+    def search_duckduckgo(
+        self,
+        question: str,
+        character_context: Any | None,
+        official_only: bool,
+        max_results: int,
+    ) -> list[dict[str, Any]]:
+        query = build_search_query(
+            question,
+            character_context,
+            official_only,
+            self.official_domains,
+            self.community_domains,
+        )
         response = self.session.get(self.search_url, params={"q": query}, timeout=self.timeout_seconds)
         response.raise_for_status()
 
         results = []
         seen_urls = set()
+        allowed_domains = self.get_allowed_domains(official_only)
         for parsed_result in parse_search_results(response.text, self.beautiful_soup):
             url = normalize_url(parsed_result.get("url", ""))
             title = parsed_result.get("title", "")
             if not url or not title or not is_http_url(url) or url in seen_urls:
                 continue
-            if official_only and not domain_matches(url, self.official_domains):
+            if not domain_matches(url, allowed_domains):
                 continue
             seen_urls.add(url)
             results.append(
@@ -335,6 +475,15 @@ class WebSearchRAG:
         return results
 
     def fetch_document(self, result: dict[str, Any]) -> dict[str, Any]:
+        if result.get("content"):
+            return {
+                "title": result.get("title", ""),
+                "url": result["url"],
+                "text": result["content"],
+                "query": result.get("query", ""),
+                "reliability": result.get("reliability", source_reliability(result["url"], self.official_domains)),
+            }
+
         response = self.session.get(result["url"], timeout=self.timeout_seconds)
         response.raise_for_status()
 
@@ -378,10 +527,17 @@ class WebSearchRAG:
                     }
                 )
 
-        contexts.sort(key=lambda row: (row["score"], row["reliability"] == "high"), reverse=True)
+        contexts.sort(key=lambda row: (row["score"], row["reliability"] == "HIGH"), reverse=True)
         return {
             "question": question,
-            "search_query": build_search_query(question, character_context, official_only, self.official_domains),
+            "search_provider": self.search_provider,
+            "search_query": build_search_query(
+                question,
+                character_context,
+                official_only,
+                self.official_domains,
+                self.community_domains,
+            ),
             "documents": documents,
             "contexts": contexts[:max_contexts],
         }
@@ -422,7 +578,7 @@ def main() -> None:
     if args.prompt_format:
         print(format_contexts_for_prompt(result))
         return
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json_lib.dumps(result, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

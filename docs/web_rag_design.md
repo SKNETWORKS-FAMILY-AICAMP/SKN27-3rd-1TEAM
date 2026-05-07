@@ -23,9 +23,9 @@ Web Search RAG는 메이플스토리 관련 질문에 대해 최신성이 필요
   ↓
 검색 쿼리 생성
   ↓
-웹 검색 요청
+Tavily Search API 요청
   ↓
-공식 도메인 필터링
+공식/커뮤니티 허용 도메인 필터링
   ↓
 문서 HTML 수집
   ↓
@@ -84,7 +84,7 @@ character_context = {
     {
       "title": "문서 제목",
       "url": "https://maplestory.nexon.com/...",
-      "reliability": "high"
+      "reliability": "HIGH"
     }
   ],
   "contexts": [
@@ -94,7 +94,7 @@ character_context = {
       "chunk_index": 0,
       "content": "검색된 문서 본문 청크",
       "score": 0.5,
-      "reliability": "high"
+      "reliability": "HIGH"
     }
   ]
 }
@@ -105,7 +105,9 @@ character_context = {
 | 구성 요소 | 설명 |
 |---|---|
 | `build_search_query` | 사용자 질문과 캐릭터 컨텍스트를 조합하여 검색 쿼리 생성 |
-| `WebSearchRAG.search` | 검색 엔진 요청 및 검색 결과 URL 추출 |
+| `WebSearchRAG.search` | 설정된 검색 provider를 사용하여 허용 도메인의 검색 결과 URL 추출 |
+| `WebSearchRAG.search_tavily` | Tavily Search API 요청 및 JSON 응답 파싱 |
+| `WebSearchRAG.search_duckduckgo` | 로컬 POC용 DuckDuckGo HTML 검색 fallback |
 | `WebSearchRAG.fetch_document` | 검색 결과 URL의 HTML 수집 및 본문 추출 |
 | `chunk_text` | 긴 본문을 일정 길이의 청크로 분할 |
 | `score_text` | 질문 토큰과 청크 토큰의 겹침 비율로 1차 관련도 계산 |
@@ -124,20 +126,35 @@ openapi.nexon.com
 notice.nexon.com
 ```
 
-공식 도메인에서 가져온 문서는 `reliability = "high"`로 표시한다. 공식 도메인이 아닌 문서는 커뮤니티/보조 문서로 취급하며 `reliability = "medium"`으로 표시한다.
+공식 도메인에서 가져온 문서는 `reliability = "HIGH"`로 표시한다.
+메이플 인벤과 같은 커뮤니티 문서는 공식 출처가 아니므로 공식 도메인에 포함하지 않고, 별도의 커뮤니티 도메인으로 분리한다.
+커뮤니티 문서는 보조 자료로만 사용하며 `reliability = "MEDIUM"`으로 표시한다.
 
 커뮤니티 문서까지 포함하려면 `official_only=False` 또는 CLI 옵션 `--include-community`를 사용한다.
+이 경우에도 전체 웹을 모두 허용하지 않고, 공식 도메인과 커뮤니티 허용 도메인만 검색한다.
+
+기본 커뮤니티 도메인은 다음과 같다.
+
+```text
+maple.inven.co.kr
+www.inven.co.kr
+```
 
 ## 8. 환경변수
 
 | 환경변수 | 기본값 | 설명 |
 |---|---|---|
-| `WEB_RAG_SEARCH_URL` | `https://duckduckgo.com/html/` | 검색 요청 URL |
+| `WEB_RAG_SEARCH_PROVIDER` | `tavily` | 검색 provider. `tavily` 또는 `duckduckgo` |
+| `WEB_RAG_SEARCH_URL` | `https://api.tavily.com/search` | 검색 요청 URL |
 | `WEB_RAG_USER_AGENT` | `SKN27-MapleStory-WebRAG/0.1` | 요청 User-Agent |
 | `WEB_RAG_TIMEOUT_SECONDS` | `10` | 요청 타임아웃 |
 | `WEB_RAG_MAX_RESULTS` | `5` | 검색 결과 최대 개수 |
 | `WEB_RAG_MAX_CONTEXTS` | `5` | 반환 context 최대 개수 |
 | `WEB_RAG_OFFICIAL_DOMAINS` | 기본 공식 도메인 목록 | 쉼표로 구분한 공식 도메인 목록 |
+| `WEB_RAG_COMMUNITY_DOMAINS` | 기본 커뮤니티 도메인 목록 | 쉼표로 구분한 커뮤니티/보조 도메인 목록 |
+| `TAVILY_API_KEY` | 없음 | Tavily Search API 키 |
+| `TAVILY_SEARCH_DEPTH` | `basic` | Tavily 검색 깊이. 필요 시 `advanced` |
+| `TAVILY_INCLUDE_RAW_CONTENT` | `false` | Tavily raw content 포함 여부 |
 
 ## 9. 실행 예시
 
@@ -173,7 +190,9 @@ Final Answer Agent는 `contexts`의 `title`, `url`, `content`, `reliability`를 
 
 현재 구현은 1차 POC 수준이므로 다음 한계가 있다.
 
-- 검색 엔진 HTML 구조 변경 시 검색 결과 파싱이 실패할 수 있다.
+- Tavily API 키가 필요하다.
+- Tavily 응답 품질은 검색 API 결과와 허용 도메인 설정에 영향을 받는다.
+- DuckDuckGo fallback 사용 시 검색 엔진 HTML 구조 변경에 영향을 받을 수 있다.
 - 관련도 점수는 임베딩 기반이 아니라 단순 토큰 겹침 기반이다.
 - 공식 문서의 동적 렌더링 영역은 완전히 추출되지 않을 수 있다.
 - 중복 문서 제거와 날짜 기반 최신성 판단은 최소 수준이다.
