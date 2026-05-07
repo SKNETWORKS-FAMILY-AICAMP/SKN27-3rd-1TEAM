@@ -84,7 +84,9 @@ character_context = {
     {
       "title": "문서 제목",
       "url": "https://maplestory.nexon.com/...",
-      "reliability": "HIGH"
+      "reliability": "HIGH",
+      "freshness": "HIGH",
+      "published_at": "2026-04-16"
     }
   ],
   "contexts": [
@@ -94,7 +96,9 @@ character_context = {
       "chunk_index": 0,
       "content": "검색된 문서 본문 청크",
       "score": 0.5,
-      "reliability": "HIGH"
+      "reliability": "HIGH",
+      "freshness": "HIGH",
+      "published_at": "2026-04-16"
     }
   ]
 }
@@ -127,11 +131,27 @@ notice.nexon.com
 ```
 
 공식 도메인에서 가져온 문서는 `reliability = "HIGH"`로 표시한다.
+`reliability`는 출처의 공식성이고, `freshness`는 최신성이다. 오래된 공식 문서는 여전히 `reliability = "HIGH"`일 수 있지만 `freshness = "LOW"`로 표시한다.
+단, `maplestory.nexon.com` 안에서도 `/Community` 경로는 유저 게시글 영역이므로 공식-only 검색에서는 제외하고 `HIGH`로 평가하지 않는다.
+스크린샷의 뉴스 메뉴에 해당하는 공지사항, 업데이트, 이벤트, 캐시샵 공지, 메이플 알림판, with maple 등 `/News` 하위 공식 콘텐츠는 공식 근거로 사용한다.
+그 외 `/Promotion/Event`, `/Guide` 같은 공식 콘텐츠 경로도 공식 근거로 사용한다.
+코어 개편처럼 검색어가 특정 공식 프로모션 페이지와 강하게 연결되는 경우에는 우선 URL 규칙으로 해당 공식 페이지를 검색 결과 앞쪽에 보강한다.
 메이플 인벤과 같은 커뮤니티 문서는 공식 출처가 아니므로 공식 도메인에 포함하지 않고, 별도의 커뮤니티 도메인으로 분리한다.
 커뮤니티 문서는 보조 자료로만 사용하며 `reliability = "MEDIUM"`으로 표시한다.
 
 커뮤니티 문서까지 포함하려면 `official_only=False` 또는 CLI 옵션 `--include-community`를 사용한다.
 이 경우에도 전체 웹을 모두 허용하지 않고, 공식 도메인과 커뮤니티 허용 도메인만 검색한다.
+Tavily provider에서는 검색어에 `site:` 연산자를 직접 넣지 않고, Tavily의 `include_domains` 요청 필드로 허용 도메인을 전달한다.
+DuckDuckGo fallback에서는 HTML 검색 특성상 검색어에 `site:` 필터를 포함한다.
+
+최신성 기준은 다음과 같다.
+
+| freshness | 기준 |
+|---|---|
+| `HIGH` | 발행일 기준 90일 이내 또는 미래/진행 예정 문서 |
+| `MEDIUM` | 발행일 기준 1년 이내 |
+| `LOW` | 발행일 기준 1년 초과 |
+| `UNKNOWN` | 발행일을 추출하지 못한 경우 |
 
 기본 커뮤니티 도메인은 다음과 같다.
 

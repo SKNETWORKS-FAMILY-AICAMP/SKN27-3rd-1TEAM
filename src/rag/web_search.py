@@ -2,12 +2,22 @@ import argparse
 import json as json_lib
 import os
 import re
+from datetime import date, datetime
 from html import unescape
 from html.parser import HTMLParser
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import Request, urlopen
+
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+if load_dotenv:
+    load_dotenv()
 
 
 DEFAULT_SEARCH_PROVIDER = "tavily"
@@ -19,6 +29,8 @@ DEFAULT_MAX_RESULTS = 5
 DEFAULT_MAX_CONTEXTS = 5
 DEFAULT_CHUNK_SIZE = 1200
 DEFAULT_CHUNK_OVERLAP = 150
+FRESHNESS_HIGH_DAYS = 90
+FRESHNESS_MEDIUM_DAYS = 365
 DEFAULT_OFFICIAL_DOMAINS = (
     "maplestory.nexon.com",
     "openapi.nexon.com",
@@ -27,6 +39,14 @@ DEFAULT_OFFICIAL_DOMAINS = (
 DEFAULT_COMMUNITY_DOMAINS = (
     "maple.inven.co.kr",
     "www.inven.co.kr",
+)
+NEXON_OFFICIAL_PATH_PREFIXES = (
+    "/news",
+    "/promotion/event",
+    "/guide",
+)
+NEXON_COMMUNITY_PATH_PREFIXES = (
+    "/community",
 )
 CONTENT_SELECTORS_TO_DROP = (
     "script",
@@ -37,6 +57,13 @@ CONTENT_SELECTORS_TO_DROP = (
     "nav",
     "aside",
     "form",
+)
+DEFAULT_PRIORITY_URL_RULES = (
+    (
+        ("코어", "개편"),
+        "https://maplestory.nexon.com/promotion/event/2026/20260416/event01",
+        "메이플스토리 코어 개편 프로모션",
+    ),
 )
 
 
@@ -205,6 +232,7 @@ def build_search_query(
     official_only: bool = True,
     official_domains: tuple[str, ...] | None = None,
     community_domains: tuple[str, ...] | None = None,
+    include_site_filter: bool = True,
 ) -> str:
     domain_context = as_domain_context(character_context)
     query_parts = [question.strip(), "메이플스토리"]
@@ -216,12 +244,13 @@ def build_search_query(
     if level:
         query_parts.append(f"{level}레벨")
 
-    domains = official_domains or get_official_domains()
-    if not official_only:
-        domains = domains + (community_domains or get_community_domains())
+    if include_site_filter:
+        domains = official_domains or get_official_domains()
+        if not official_only:
+            domains = domains + (community_domains or get_community_domains())
 
-    site_filter = " OR ".join(f"site:{domain}" for domain in domains)
-    query_parts.append(f"({site_filter})")
+        site_filter = " OR ".join(f"site:{domain}" for domain in domains)
+        query_parts.append(f"({site_filter})")
 
     return " ".join(part for part in query_parts if part)
 
@@ -244,8 +273,14 @@ def normalize_url(url: str) -> str:
     if parsed.netloc.endswith("duckduckgo.com") and parsed.path.startswith("/l/"):
         target = parse_qs(parsed.query).get("uddg", [""])[0]
         if target:
-            return target
-    return url
+            parsed = urlparse(target)
+
+    scheme = parsed.scheme.lower()
+    hostname = (parsed.hostname or "").lower()
+    path = parsed.path.rstrip("/") or parsed.path
+    if hostname == "maplestory.nexon.com":
+        path = path.lower()
+    return parsed._replace(scheme=scheme, netloc=hostname, path=path, query="", fragment="").geturl()
 
 
 def is_http_url(url: str) -> bool:
@@ -257,14 +292,153 @@ def domain_matches(url: str, allowed_domains: tuple[str, ...]) -> bool:
     return any(hostname == domain or hostname.endswith(f".{domain}") for domain in allowed_domains)
 
 
+def path_starts_with(url: str, prefixes: tuple[str, ...]) -> bool:
+    path = urlparse(url).path.lower()
+    return any(path == prefix or path.startswith(f"{prefix}/") for prefix in prefixes)
+
+
+def is_nexon_community_url(url: str) -> bool:
+    parsed = urlparse(url)
+    return (parsed.hostname or "").lower() == "maplestory.nexon.com" and path_starts_with(
+        url,
+        NEXON_COMMUNITY_PATH_PREFIXES,
+    )
+
+
+def is_nexon_official_content_url(url: str) -> bool:
+    parsed = urlparse(url)
+    hostname = (parsed.hostname or "").lower()
+    if hostname != "maplestory.nexon.com":
+        return domain_matches(url, DEFAULT_OFFICIAL_DOMAINS)
+    return path_starts_with(url, NEXON_OFFICIAL_PATH_PREFIXES)
+
+
+def is_allowed_result_url(url: str, allowed_domains: tuple[str, ...], official_only: bool) -> bool:
+    if not domain_matches(url, allowed_domains):
+        return False
+    if official_only and is_nexon_community_url(url):
+        return False
+    return True
+
+
 def source_reliability(url: str, official_domains: tuple[str, ...]) -> str:
-    if domain_matches(url, official_domains):
+    if domain_matches(url, official_domains) and is_nexon_official_content_url(url):
         return "HIGH"
     return "MEDIUM"
 
 
+def parse_date_value(value: Any) -> date | None:
+    if not value:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+
+    normalized = text.replace(".", "-").replace("/", "-")
+    patterns = (
+        r"(?P<year>20\d{2})-(?P<month>\d{1,2})-(?P<day>\d{1,2})",
+        r"(?P<year>20\d{2})\s*년\s*(?P<month>\d{1,2})\s*월\s*(?P<day>\d{1,2})\s*일",
+        r"(?P<year>20\d{2})(?P<month>\d{2})(?P<day>\d{2})",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, normalized)
+        if not match:
+            continue
+        try:
+            return date(
+                int(match.group("year")),
+                int(match.group("month")),
+                int(match.group("day")),
+            )
+        except ValueError:
+            continue
+
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None
+
+
+def extract_published_at(*values: Any) -> str | None:
+    for value in values:
+        parsed = parse_date_value(value)
+        if parsed:
+            return parsed.isoformat()
+    return None
+
+
+def source_freshness(published_at: str | None, today: date | None = None) -> str:
+    parsed = parse_date_value(published_at)
+    if not parsed:
+        return "UNKNOWN"
+    current_date = today or date.today()
+    age_days = (current_date - parsed).days
+    if age_days < 0:
+        return "HIGH"
+    if age_days <= FRESHNESS_HIGH_DAYS:
+        return "HIGH"
+    if age_days <= FRESHNESS_MEDIUM_DAYS:
+        return "MEDIUM"
+    return "LOW"
+
+
 def tokenize(text: str) -> set[str]:
     return {token.lower() for token in re.findall(r"[A-Za-z0-9가-힣]+", text) if len(token) > 1}
+
+
+def compact_text(text: str) -> str:
+    return re.sub(r"\s+", "", text).lower()
+
+
+def get_priority_results(question: str) -> list[dict[str, Any]]:
+    compact_question = compact_text(question)
+    results = []
+    for keywords, url, title in DEFAULT_PRIORITY_URL_RULES:
+        if all(compact_text(keyword) in compact_question for keyword in keywords):
+            normalized_url = normalize_url(url)
+            published_at = extract_published_at(normalized_url)
+            results.append(
+                {
+                    "title": title,
+                    "url": normalized_url,
+                    "query": question,
+                    "reliability": source_reliability(normalized_url, DEFAULT_OFFICIAL_DOMAINS),
+                    "published_at": published_at,
+                    "freshness": source_freshness(published_at),
+                }
+            )
+    return results
+
+
+def merge_search_results(
+    priority_results: list[dict[str, Any]],
+    search_results: list[dict[str, Any]],
+    max_results: int,
+) -> list[dict[str, Any]]:
+    merged = []
+    seen_urls = set()
+    index_by_url = {}
+    for result in priority_results + search_results:
+        url = normalize_url(result.get("url", ""))
+        if not url:
+            continue
+        if url in seen_urls:
+            existing = merged[index_by_url[url]]
+            if result.get("content") and not existing.get("content"):
+                existing["content"] = result["content"]
+            if result.get("tavily_score") and not existing.get("tavily_score"):
+                existing["tavily_score"] = result["tavily_score"]
+            if result.get("published_at") and not existing.get("published_at"):
+                existing["published_at"] = result["published_at"]
+                existing["freshness"] = result.get("freshness", source_freshness(result["published_at"]))
+            continue
+        seen_urls.add(url)
+        result = {**result, "url": url}
+        index_by_url[url] = len(merged)
+        merged.append(result)
+        if len(merged) >= max_results:
+            break
+    return merged
 
 
 def clean_text(text: str) -> str:
@@ -355,6 +529,8 @@ class WebSearchRAG:
         resolved_user_agent = user_agent or os.environ.get("WEB_RAG_USER_AGENT", DEFAULT_USER_AGENT)
         self.beautiful_soup = load_optional_beautiful_soup()
         self.session, self.request_exception = create_http_session(resolved_user_agent)
+        if self.search_provider == "tavily" and self.tavily_api_key and hasattr(self.session, "headers"):
+            self.session.headers.update({"Authorization": f"Bearer {self.tavily_api_key}"})
 
     def get_allowed_domains(self, official_only: bool) -> tuple[str, ...]:
         if official_only:
@@ -369,9 +545,16 @@ class WebSearchRAG:
         max_results: int | None = None,
     ) -> list[dict[str, Any]]:
         max_results = max_results or get_env_int("WEB_RAG_MAX_RESULTS", DEFAULT_MAX_RESULTS)
+        priority_results = [
+            result
+            for result in get_priority_results(question)
+            if is_allowed_result_url(result["url"], self.get_allowed_domains(official_only), official_only)
+        ]
         if self.search_provider == "tavily":
-            return self.search_tavily(question, character_context, official_only, max_results)
-        return self.search_duckduckgo(question, character_context, official_only, max_results)
+            search_results = self.search_tavily(question, character_context, official_only, max_results)
+        else:
+            search_results = self.search_duckduckgo(question, character_context, official_only, max_results)
+        return merge_search_results(priority_results, search_results, max_results)
 
     def search_tavily(
         self,
@@ -389,10 +572,10 @@ class WebSearchRAG:
             official_only,
             self.official_domains,
             self.community_domains,
+            include_site_filter=False,
         )
         allowed_domains = self.get_allowed_domains(official_only)
         payload = {
-            "api_key": self.tavily_api_key,
             "query": query,
             "search_depth": self.tavily_search_depth,
             "max_results": max_results,
@@ -415,9 +598,17 @@ class WebSearchRAG:
             title = clean_text(str(row.get("title", "")))
             content = clean_text(str(row.get("content") or ""))
             raw_content = clean_text(str(row.get("raw_content") or ""))
+            published_at = extract_published_at(
+                row.get("published_date"),
+                row.get("published_at"),
+                row.get("date"),
+                row.get("url"),
+                content,
+                raw_content,
+            )
             if not url or not title or not is_http_url(url) or url in seen_urls:
                 continue
-            if not domain_matches(url, allowed_domains):
+            if not is_allowed_result_url(url, allowed_domains, official_only):
                 continue
             seen_urls.add(url)
             results.append(
@@ -428,6 +619,8 @@ class WebSearchRAG:
                     "content": raw_content or content,
                     "tavily_score": row.get("score"),
                     "reliability": source_reliability(url, self.official_domains),
+                    "published_at": published_at,
+                    "freshness": source_freshness(published_at),
                 }
             )
             if len(results) >= max_results:
@@ -459,8 +652,9 @@ class WebSearchRAG:
             title = parsed_result.get("title", "")
             if not url or not title or not is_http_url(url) or url in seen_urls:
                 continue
-            if not domain_matches(url, allowed_domains):
+            if not is_allowed_result_url(url, allowed_domains, official_only):
                 continue
+            published_at = extract_published_at(url, title)
             seen_urls.add(url)
             results.append(
                 {
@@ -468,6 +662,8 @@ class WebSearchRAG:
                     "url": url,
                     "query": query,
                     "reliability": source_reliability(url, self.official_domains),
+                    "published_at": published_at,
+                    "freshness": source_freshness(published_at),
                 }
             )
             if len(results) >= max_results:
@@ -482,18 +678,23 @@ class WebSearchRAG:
                 "text": result["content"],
                 "query": result.get("query", ""),
                 "reliability": result.get("reliability", source_reliability(result["url"], self.official_domains)),
+                "published_at": result.get("published_at"),
+                "freshness": result.get("freshness", source_freshness(result.get("published_at"))),
             }
 
         response = self.session.get(result["url"], timeout=self.timeout_seconds)
         response.raise_for_status()
 
         parsed_document = parse_document(response.text, result.get("title", ""), self.beautiful_soup)
+        published_at = extract_published_at(result.get("published_at"), result["url"], parsed_document["text"])
         return {
             "title": parsed_document["title"] or result.get("title", ""),
             "url": result["url"],
             "text": parsed_document["text"],
             "query": result.get("query", ""),
             "reliability": result.get("reliability", source_reliability(result["url"], self.official_domains)),
+            "published_at": published_at,
+            "freshness": result.get("freshness", source_freshness(published_at)),
         }
 
     def retrieve(
@@ -514,7 +715,7 @@ class WebSearchRAG:
                 document = self.fetch_document(result)
             except self.request_exception:
                 continue
-            documents.append({key: document[key] for key in ("title", "url", "reliability")})
+            documents.append({key: document.get(key) for key in ("title", "url", "reliability", "freshness", "published_at")})
             for index, chunk in enumerate(chunk_text(document["text"])):
                 contexts.append(
                     {
@@ -524,10 +725,20 @@ class WebSearchRAG:
                         "content": chunk,
                         "score": score_text(question, chunk),
                         "reliability": document["reliability"],
+                        "freshness": document.get("freshness", "UNKNOWN"),
+                        "published_at": document.get("published_at"),
                     }
                 )
 
-        contexts.sort(key=lambda row: (row["score"], row["reliability"] == "HIGH"), reverse=True)
+        freshness_rank = {"HIGH": 3, "MEDIUM": 2, "UNKNOWN": 1, "LOW": 0}
+        contexts.sort(
+            key=lambda row: (
+                row["score"],
+                row["reliability"] == "HIGH",
+                freshness_rank.get(row.get("freshness", "UNKNOWN"), 1),
+            ),
+            reverse=True,
+        )
         return {
             "question": question,
             "search_provider": self.search_provider,
@@ -537,6 +748,7 @@ class WebSearchRAG:
                 official_only,
                 self.official_domains,
                 self.community_domains,
+                include_site_filter=self.search_provider != "tavily",
             ),
             "documents": documents,
             "contexts": contexts[:max_contexts],
@@ -552,6 +764,8 @@ def format_contexts_for_prompt(retrieval_result: dict[str, Any]) -> str:
                     f"[{index}] {context['title']}",
                     f"URL: {context['url']}",
                     f"Reliability: {context['reliability']}",
+                    f"Freshness: {context.get('freshness', 'UNKNOWN')}",
+                    f"Published At: {context.get('published_at') or 'UNKNOWN'}",
                     f"Content: {context['content']}",
                 ]
             )
