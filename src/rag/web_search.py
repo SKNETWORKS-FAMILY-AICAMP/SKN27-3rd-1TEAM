@@ -10,6 +10,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import Request, urlopen
 
+from common.state import RetrievedDocument
+
 
 try:
     from dotenv import load_dotenv
@@ -771,6 +773,49 @@ def format_contexts_for_prompt(retrieval_result: dict[str, Any]) -> str:
             )
         )
     return "\n\n".join(lines)
+
+
+def to_retrieved_documents(retrieval_result: dict[str, Any]) -> list[RetrievedDocument]:
+    documents: list[RetrievedDocument] = []
+    for context in retrieval_result.get("contexts", []):
+        documents.append(
+            {
+                "page_content": context.get("content", ""),
+                "metadata": {
+                    "title": context.get("title", ""),
+                    "url": context.get("url", ""),
+                    "chunk_index": context.get("chunk_index", 0),
+                    "reliability": context.get("reliability", "MEDIUM"),
+                    "freshness": context.get("freshness", "UNKNOWN"),
+                    "published_at": context.get("published_at"),
+                },
+                "score": float(context.get("score") or 0.0),
+                "source": context.get("url", ""),
+            }
+        )
+    return documents
+
+
+def retrieve_for_agent_state(
+    question: str,
+    character_context: Any | None = None,
+    official_only: bool = True,
+    max_results: int | None = None,
+    max_contexts: int | None = None,
+) -> dict[str, Any]:
+    rag = WebSearchRAG()
+    retrieval_result = rag.retrieve(
+        question=question,
+        character_context=character_context,
+        official_only=official_only,
+        max_results=max_results,
+        max_contexts=max_contexts,
+    )
+    return {
+        "retrieved_docs": to_retrieved_documents(retrieval_result),
+        "context": format_contexts_for_prompt(retrieval_result),
+        "tool_results": {"web_search_rag": retrieval_result},
+    }
 
 
 def main() -> None:

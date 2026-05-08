@@ -2,14 +2,20 @@
 
 ## 프로젝트 개요 및 기술 스택
 - **프로젝트:** 메이플스토리 데이터 기반 RAG 멀티 에이전트 챗봇
-- **기술 스택:** Python 3.12, Streamlit, Neo4j (GraphDB), PostgreSQL (PGVector), LLM (gemma4:e4b 등)
+- **기술 스택:** Python 3.12, Streamlit, Neo4j (GraphDB), PostgreSQL (PGVector), LLM (`common/get_model.py` 기준)
 
 ## 역할
 - 본 프로젝트의 코딩 및 아키텍처 관리를 돕는 전용 에이전트로 동작한다.
 - 구현, 디버깅, 테스트, 코드 리뷰 지원을 우선한다.
 
 ## 데이터 및 설계 절대 원칙 (Single Source of Truth)
+- **공통 규칙:** `common/` 폴더 안의 모든 파일은 프로젝트 공통 규칙으로 간주하며, 구현 전에 반드시 관련 파일을 확인한다.
 - **도메인 모델:** 모든 데이터 구조와 타입은 반드시 `common/domain.py`를 기준으로 작성하며, 임의로 데이터 클래스를 창조하지 않는다.
+- **에이전트 상태:** 에이전트 간 데이터 전달은 반드시 `common/state.py`의 `AgentState`, `RetrievedDocument`, `AGENT_FIELD_CONTRACTS`를 기준으로 맞춘다.
+- **검증 규칙:** 상태 입력/출력 검증은 `common/validator.py`의 규칙을 우선 사용한다.
+- **공통 프롬프트:** 답변 생성 및 에이전트 프롬프트는 `common/prompt.py`의 원칙을 우선 반영한다.
+- **모델 호출:** LLM/임베딩 모델 호출 방식은 `common/get_model.py`의 공통 헬퍼를 우선 확인한다.
+- **로깅:** 로그가 필요한 모듈은 `common/logging_config.py`의 공통 로깅 설정을 우선 따른다.
 - **API 규격:** 넥슨 오픈 API 및 내부 API 로직을 작성할 때는 반드시 `docs/openapi.yaml`에 정의된 요청/응답 스키마를 엄격히 따른다.
 - **GraphDB 쿼리:** Neo4j Cypher 쿼리를 작성하거나 수정할 때는 반드시 `docs/graph_schema.md`의 노드 및 엣지 구조를 사전 확인한다.
 
@@ -27,7 +33,7 @@
 
 ## 하드코딩 금지 및 보안 규칙
 - 값, 경로, 반복 문자열, 매직 넘버를 소스 코드 내에 하드코딩하지 않는다. 상수, 설정, 헬퍼 함수, 데이터 구조를 적극 사용한다.
-- **환경변수 사용:** API 키, DB 접속 정보 등 모든 민감 정보는 `os.environ.get()`을 사용하거나 공통 설정 파일(`common/config.py`)을 거쳐 호출한다.
+- **환경변수 사용:** API 키, DB 접속 정보 등 모든 민감 정보는 `os.environ.get()` 또는 기존 공통 헬퍼를 통해 호출한다.
 - **.env 원칙:** 환경변수의 키값과 더미(Dummy) 데이터는 `.env.example` 파일에만 작성한다. 실제 민감한 값이 들어가는 `.env` 또는 `secrets.toml` 파일은 에이전트가 직접 읽거나 수정하려고 시도해서는 안 된다. (비밀번호 관리는 전적으로 인간의 영역이다.)
 
 ## 구현 규칙
@@ -37,7 +43,8 @@
 - 필요한 경우가 아니면 관련 없는 파일이나 동작은 수정하지 않는다.
 
 ## 검증 (Feedback Loop)
-- 코드 변경 후 가능한 경우 `scripts/validate.sh` (또는 `.ps1`) 및 `scripts/test.sh` (또는 `.ps1`)를 우선 실행한다.
+- 코드 변경 후 가능한 경우 프로젝트에 존재하는 검증 스크립트를 우선 실행한다.
+- 검증 스크립트가 없는 경우 `python -m compileall` 및 `common/validator.py` 기반 상태 계약 검증처럼 현재 구조에서 실행 가능한 검증을 수행한다.
 - 스크립트로 검증 가능한 항목은 반드시 스크립트로 검증한다.
 - 자동화 검증이 가능한 경우 수동 확인에만 의존하지 않는다.
 - 실행하지 못한 검증 항목이나 린트(Lint) 에러가 발생한 경우 무시하지 말고 반드시 보고하고 스스로 수정한다.
@@ -46,7 +53,7 @@
 새로운 파일을 생성할 때는 아래 구조의 역할에 맞게 배치한다.
 
 - `app/`: Streamlit 챗봇 UI 및 화면 렌더링 로직
-- `common/`: 시스템 전반에서 쓰이는 도메인 모델(`domain.py`), 설정(`config.py`), 상수 모음
+- `common/`: 시스템 전반에서 쓰이는 도메인 모델(`domain.py`), 공유 상태(`state.py`), 검증(`validator.py`), 프롬프트(`prompt.py`), 모델 헬퍼(`get_model.py`), 로깅 설정(`logging_config.py`)
 - `database/`: Neo4j, Postgres 연동 및 초기 데이터 적재 로직 (데이터베이스 환경)
 - `docs/`: API 명세서, WBS, ERD, Graph 스키마 등 기획/설계 문서
 - `scripts/`: 에이전트가 사용할 자동화 검증 및 테스트 쉘 스크립트
