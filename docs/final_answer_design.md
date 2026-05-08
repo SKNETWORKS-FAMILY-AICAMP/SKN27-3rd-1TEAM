@@ -186,37 +186,7 @@ flowchart TD
 | `evaluation` | 답변 품질을 평가하고 `is_pass == False`이면 Final Answer Agent로 되돌려 보완하게 한다 |
 | `답변` | 평가를 통과한 결과만 `ApiResponseChat` 호환 응답으로 반환한다 |
 
-### 7.2 전체 MultiAgent 상세 흐름
-
-```mermaid
-flowchart TD
-    A["ChatRequest<br/>message, ocid"] --> B["Supervisor Agent<br/>intent, task_type, plan, next_agent"]
-
-    B --> C{"질문 유형 판단"}
-
-    C -->|"문서/공지/패치/이벤트"| D["Research Agent<br/>retrieved_docs, context"]
-    D --> E["DB Search RAG<br/>PGVector 문서 검색"]
-    D --> F["Web Search RAG<br/>실시간 공식 공지/패치노트 검색"]
-
-    C -->|"직업/보스/아이템/이벤트 관계"| G["GraphDB Retriever<br/>Neo4j 관계 조회"]
-
-    C -->|"캐릭터 상태/보스 가능성"| H["analystic Agent<br/>growth_report, recommended_actions"]
-    H --> I["Calculator Agent<br/>stat_summary, equipment_summary, bottleneck_analysis"]
-
-    C -->|"품질 검증 필요"| J["Evaluation Agent<br/>평가 결과"]
-
-    E --> K["AgentState 병합"]
-    F --> K
-    G --> K
-    H --> K
-    I --> K
-    J --> K
-
-    K --> L["Final Answer Agent<br/>draft_answer, final_answer, validation_passed, confidence_score"]
-    L --> M["ApiResponseChat<br/>response + sources + steps"]
-```
-
-### 7.3 Final Answer 내부 처리 흐름
+### 7.2 Final Answer 내부 처리 흐름
 
 ```mermaid
 flowchart TD
@@ -239,7 +209,7 @@ flowchart TD
     N --> O["validate_agent_outputs('final_answer')"]
 ```
 
-### 7.4 AgentState 데이터 흐름
+### 7.3 AgentState 데이터 흐름
 
 ```mermaid
 flowchart LR
