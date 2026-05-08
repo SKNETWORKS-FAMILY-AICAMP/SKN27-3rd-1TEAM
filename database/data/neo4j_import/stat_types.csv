@@ -1,0 +1,15 @@
+﻿stat_type_id,code,domain_field,description
+stat_STR,STR,str_val,CharacterStatDetail.str_val / StatPackage.str_val
+stat_DEX,DEX,dex,CharacterStatDetail.dex / StatPackage.dex_val
+stat_INT,INT,int_val,CharacterStatDetail.int_val / StatPackage.int_val
+stat_LUK,LUK,luk,CharacterStatDetail.luk / StatPackage.luk_val
+stat_ATTACK_POWER,ATTACK_POWER,attack_power,CharacterStatDetail.attack_power / StatPackage.attack_power
+stat_MAGIC_POWER,MAGIC_POWER,magic_power,CharacterStatDetail.magic_power / StatPackage.magic_power
+stat_BOSS_DAMAGE,BOSS_DAMAGE,boss_damage,CharacterStatDetail.boss_damage / StatPackage.boss_damage_percent
+stat_IGNORE_DEF,IGNORE_DEF,ignore_def,CharacterStatDetail.ignore_def / StatPackage.ignore_def_percent
+stat_DAMAGE,DAMAGE,damage,CharacterStatDetail.damage / StatPackage.damage_percent
+stat_CRIT_RATE,CRIT_RATE,crit_rate,CharacterStatDetail.crit_rate
+stat_CRIT_DAMAGE,CRIT_DAMAGE,crit_damage,CharacterStatDetail.crit_damage / StatPackage.crit_damage
+stat_ARCANE_FORCE,ARCANE_FORCE,arcane_force,CharacterStatDetail.arcane_force
+stat_AUTHENTIC_FORCE,AUTHENTIC_FORCE,authentic_force,CharacterStatDetail.authentic_force
+stat_COMBAT_POWER,COMBAT_POWER,combat_power,CharacterStatDetail.combat_power
