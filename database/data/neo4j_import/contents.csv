@@ -1,0 +1,7 @@
+﻿content_id,name,content_type,reset_cycle,description
+content_b6c9f924b5fb8470925b,일일 퀘스트,daily,daily,성장 재화와 경험치를 반복 획득하는 콘텐츠
+content_fbe5f54062e7294e18fa,주간 보스,boss,weekly,장비와 재화를 획득하는 핵심 보스 콘텐츠
+content_b4dee6597bd3711e3798,몬스터파크,daily,daily,경험치 중심의 성장 콘텐츠
+content_7ed3ca67a07cd54614ce,유니온,account_growth,always,계정 단위 성장 콘텐츠
+content_1e5dffb6eb7f83fc4ed6,아케인 리버 일일 콘텐츠,daily,daily,아케인 심볼 성장 콘텐츠
+content_08dea5bc7124eed6fc75,어센틱 심볼 일일 콘텐츠,daily,daily,어센틱 심볼 성장 콘텐츠
