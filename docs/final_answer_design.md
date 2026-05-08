@@ -149,7 +149,46 @@ LOW
 
 ## 7. 처리 흐름
 
-### 7.1 전체 MultiAgent 흐름
+### 7.1 기준 에이전트 흐름도
+
+Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 validation 단계를 거쳐 필요한 작업 에이전트로 라우팅한다. Research, analystic, calculator는 각각 근거 검색, 상태 분석, 수치 계산을 수행하고, Final Answer Agent는 이 결과를 종합한다. Evaluation 단계에서 `is_pass == False`이면 Final Answer Agent가 다시 답변을 보완한다.
+
+```mermaid
+flowchart TD
+    A["질문"] --> B["supervisor Agent"]
+    B --> C["validation"]
+
+    C --> D["research"]
+    C --> E["analystic"]
+    C --> F["calculator"]
+    C --> G["final_answer"]
+
+    D --- D1["RAG<br/>(vector, graph, postgre)"]
+    E --- E1["ML"]
+
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H{"evaluation"}
+    H -->|"is_pass == False"| G
+    H -->|"is_pass == True"| I["답변"]
+```
+
+운영 규칙은 다음과 같다.
+
+| 단계 | 규칙 |
+|---|---|
+| `supervisor` | 사용자 질문을 분석하고 실행할 에이전트와 작업 순서를 정한다 |
+| `validation` | `common/validator.py` 기준으로 state 필수 입력과 누락 필드를 확인한다 |
+| `research` | RAG 검색을 담당하며 vector, graph, postgre 기반 검색 결과를 `retrieved_docs`, `context`로 정리한다 |
+| `analystic` | 코드 기준 이름은 `analystic`이며, 캐릭터 상태 분석과 ML 기반 진단 결과를 생성한다 |
+| `calculator` | 장비/스탯/성장 수치 계산을 수행하고 계산 결과를 state에 기록한다 |
+| `final_answer` | 각 에이전트 결과를 종합해 `draft_answer`, `final_answer`, `confidence_score`를 생성한다 |
+| `evaluation` | 답변 품질을 평가하고 `is_pass == False`이면 Final Answer Agent로 되돌려 보완하게 한다 |
+| `답변` | 평가를 통과한 결과만 `ApiResponseChat` 호환 응답으로 반환한다 |
+
+### 7.2 전체 MultiAgent 상세 흐름
 
 ```mermaid
 flowchart TD
@@ -179,7 +218,7 @@ flowchart TD
     L --> M["ApiResponseChat<br/>response + sources + steps"]
 ```
 
-### 7.2 Final Answer 내부 처리 흐름
+### 7.3 Final Answer 내부 처리 흐름
 
 ```mermaid
 flowchart TD
@@ -202,7 +241,7 @@ flowchart TD
     N --> O["validate_agent_outputs('final_answer')"]
 ```
 
-### 7.3 AgentState 데이터 흐름
+### 7.4 AgentState 데이터 흐름
 
 ```mermaid
 flowchart LR
