@@ -92,9 +92,10 @@ GraphDB는 공통 에이전트 흐름에서 `research` 단계의 RAG 근거 중 
 질문
 → supervisor Agent
 → validation
-→ research / analystic / calculator / final_answer
-→ 각 에이전트 결과는 supervisor Agent로 반환
-→ supervisor Agent가 다음 에이전트 또는 다음 단계 결정
+→ research / analystic / calculator
+→ 각 작업 에이전트 결과는 supervisor Agent로 반환
+→ supervisor Agent가 다음 에이전트 또는 final_answer 진행 결정
+→ final_answer
 → evaluation
 → is_pass == False이면 final_answer로 재생성
 → is_pass == True이면 답변 반환
