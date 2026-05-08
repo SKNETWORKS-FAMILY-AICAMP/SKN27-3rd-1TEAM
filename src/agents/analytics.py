@@ -902,7 +902,7 @@ def create_analytics_agent(
 
     return  {
         "question": question,
-        "category": analysis
+        "analysis": analysis
     }
 
 
