@@ -84,7 +84,25 @@ GraphDB는 `common/domain.py` 객체를 직접 저장하는 것이 아니라, do
 4. Calculator Agent가 `StatPackage`와 `CharacterStatDetail`을 기반으로 계산한다.
 5. Final Answer Agent가 GraphDB 근거와 API 실시간 상태를 종합한다.
 
-## 6. 예시 조회
+## 6. 공통 에이전트 흐름 내 GraphDB 위치
+
+GraphDB는 공통 에이전트 흐름에서 `research` 단계의 RAG 근거 중 `graph` 영역을 담당한다.
+
+```text
+질문
+→ supervisor Agent
+→ validation
+→ research / analystic / calculator / final_answer
+→ 각 에이전트 결과는 supervisor Agent로 반환
+→ supervisor Agent가 다음 에이전트 또는 다음 단계 결정
+→ evaluation
+→ is_pass == False이면 final_answer로 재생성
+→ is_pass == True이면 답변 반환
+```
+
+GraphDB 조회 결과는 `research` 또는 GraphDB Retriever를 통해 `retrieved_docs`, `context`, `tool_results`에 정리된 뒤 supervisor로 반환된다. Supervisor Agent는 state를 확인하고 다음 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다.
+
+## 7. 예시 조회
 
 ```cypher
 MATCH (j:Job {name: "아델"})-[:USES_MAIN_STAT]->(s:StatType)
@@ -115,7 +133,7 @@ RETURN e.name, s.url, s.trust_level
 ORDER BY e.name;
 ```
 
-## 7. 1차 구축 한계
+## 8. 1차 구축 한계
 
 현재 seed 데이터는 1차 설계 및 Agent 연동용 기준 데이터이다. 보스 요구 스펙, 이벤트, 보상, 추천 장비 관계는 팀 검증 후 수치와 관계를 보완해야 한다.
 
