@@ -4,7 +4,7 @@
 
 본 GraphDB는 유저의 실시간 캐릭터 상태를 저장하는 DB가 아니라, 메이플스토리의 게임 지식 관계를 저장하는 GraphDB이다.
 
-실시간으로 바뀌는 캐릭터 레벨, 장비, 스탯, 유니온, 어빌리티 정보는 NEXON Open API를 통해 조회하고, `common/domain.py`의 `ProcessedCharacter`, `CharacterStatDetail`, `EquipmentDetail`, `StatPackage`, `UnionStatus` 모델로 변환하여 Analystic/Calculator Agent에서 사용한다.
+실시간으로 바뀌는 캐릭터 레벨, 장비, 스탯, 유니온, 어빌리티 정보는 NEXON Open API를 통해 조회하고, `common/domain.py`의 `ProcessedCharacter`, `CharacterStatDetail`, `EquipmentDetail`, `StatPackage`, `UnionStatus` 모델로 변환하여 `common/state.py` 기준 `analystic`/Calculator Agent에서 사용한다.
 
 GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거를 제공하기 위해 다음 고정성/관계성 데이터를 저장한다.
 
@@ -32,7 +32,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `Event` | 이벤트 정보 | `event_id`, `name`, `event_type`, `start_date`, `end_date`, `target_user`, `description` |
 | `Reward` | 보상 정보 | `reward_id`, `name`, `reward_type`, `value_type`, `description` |
 | `Content` | 일일/주간/성장 콘텐츠 | `content_id`, `name`, `content_type`, `reset_cycle`, `description` |
-| `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `url`, `trust_level`, `collected_at`, `text_preview`, `reliability` |
+| `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `url`, `trust_level`, `collected_at`, `text_preview`, `reliability` (`HIGH`, `MEDIUM`, `LOW`) |
 | `StatType` | 공통 스탯 종류 | `stat_type_id`, `code`, `domain_field`, `description` |
 
 ## 3. 관계 정의
@@ -78,7 +78,7 @@ GraphDB는 `common/domain.py` 객체를 직접 저장하는 것이 아니라, do
 
 예시:
 
-1. Analystic Agent가 NEXON API로 `ProcessedCharacter`를 생성한다.
+1. `analystic` Agent가 NEXON API로 `ProcessedCharacter`를 생성한다.
 2. 캐릭터의 `job_name`, `level`, `final_stats`, `equipment_list`를 확인한다.
 3. GraphDB에서 해당 직업의 주스탯, 추천 장비, 도전 가능한 보스 요구조건, 성장 콘텐츠를 조회한다.
 4. Calculator Agent가 `StatPackage`와 `CharacterStatDetail`을 기반으로 계산한다.

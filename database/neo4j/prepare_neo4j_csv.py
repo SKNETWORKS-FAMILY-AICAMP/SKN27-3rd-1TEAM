@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import os
 import sys
 from pathlib import Path
 
@@ -9,12 +10,20 @@ csv.field_size_limit(min(sys.maxsize, 2**31 - 1))
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = PROJECT_ROOT / "database" / "data" / "neo4j_import"
 CONTENT_SPLIT_DIR = PROJECT_ROOT / "database" / "data" / "content_split_csv"
-DOWNLOAD_CONTENT_SPLIT_DIR = Path(
-    r"C:\Users\Playdata\Downloads\raw_files_csv_2026-05-04\data\processed\content_split_csv"
-)
-HANDOFF_DATASET_PATH = Path(
-    r"C:\Users\Playdata\Downloads\mapleqa_full_handoff_with_raw_2026-05-06\handoff_simplified\maple_chatbot_final_dataset.csv"
-)
+
+
+def resolve_project_path(raw_path, default_path=None):
+    path_text = str(raw_path or "").strip()
+    if not path_text and default_path is None:
+        return None
+    path = Path(path_text) if path_text else Path(default_path)
+    if path.is_absolute():
+        return path
+    return PROJECT_ROOT / path
+
+
+DOWNLOAD_CONTENT_SPLIT_DIR = resolve_project_path(os.environ.get("NEO4J_SOURCE_CONTENT_SPLIT_DIR"))
+HANDOFF_DATASET_PATH = resolve_project_path(os.environ.get("NEO4J_HANDOFF_DATASET_PATH"))
 
 HANDOFF_SOURCE_CATEGORIES = {
     "official_event",
@@ -138,10 +147,10 @@ CONTENTS = [
 ]
 
 TRUST_TO_RELIABILITY = {
-    "S": "high",
-    "A": "high",
-    "B": "medium",
-    "C": "low",
+    "S": "HIGH",
+    "A": "HIGH",
+    "B": "MEDIUM",
+    "C": "LOW",
 }
 
 
@@ -179,8 +188,8 @@ def trust_to_reliability(value):
     if text in TRUST_TO_RELIABILITY:
         return TRUST_TO_RELIABILITY[text]
     if "official" in text.lower() or "review" in text.lower():
-        return "medium"
-    return "medium"
+        return "MEDIUM"
+    return "MEDIUM"
 
 
 def text_preview(value, limit=1000):
@@ -191,6 +200,8 @@ def text_preview(value, limit=1000):
 
 
 def read_handoff_dataset(path=HANDOFF_DATASET_PATH):
+    if path is None:
+        return []
     if not path.exists():
         return []
     rows = []
@@ -394,7 +405,7 @@ def build_sources(existing_sources):
                 "trust_level": "medium",
                 "collected_at": "",
                 "text_preview": "",
-                "reliability": "high" if row.get("category") == "nexon_api" else "medium",
+                "reliability": "HIGH" if row.get("category") == "nexon_api" else "MEDIUM",
             }
         )
     project_sources = [
@@ -408,7 +419,7 @@ def build_sources(existing_sources):
             "trust_level": "high",
             "collected_at": "",
             "text_preview": "",
-            "reliability": "high",
+            "reliability": "HIGH",
         },
         {
             "source_id": "source_domain",
@@ -420,7 +431,7 @@ def build_sources(existing_sources):
             "trust_level": "high",
             "collected_at": "",
             "text_preview": "",
-            "reliability": "high",
+            "reliability": "HIGH",
         },
     ]
     for source in project_sources:
@@ -686,6 +697,8 @@ def build_source_mentions(sources, entity_rows):
 def main():
     existing_equipment = read_existing_csv("equipment_details_catalog.csv")
     for source_dir in [CONTENT_SPLIT_DIR, DOWNLOAD_CONTENT_SPLIT_DIR]:
+        if source_dir is None:
+            continue
         existing_equipment.extend(read_optional_csv(source_dir / "json_list__character_item_equipment__item_equipment.csv"))
         existing_equipment.extend(read_optional_csv(source_dir / "json_list__character_item_equipment__dragon_equipment.csv"))
         existing_equipment.extend(read_optional_csv(source_dir / "json_list__character_item_equipment__mechanic_equipment.csv"))

@@ -202,7 +202,7 @@ def load_nodes(session):
                 n.trust_level = row.trust_level,
                 n.collected_at = row.collected_at,
                 n.text_preview = row.text_preview,
-                n.reliability = row.reliability
+                n.reliability = toUpper(row.reliability)
             """,
         ),
     ]
