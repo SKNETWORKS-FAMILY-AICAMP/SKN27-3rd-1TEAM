@@ -48,11 +48,11 @@
 ```text
 질문
 → supervisor Agent
-→ validation
-→ research / analystic / calculator
-→ 각 작업 에이전트 결과는 supervisor Agent로 반환
+→ 입력 state 계약 검증 후 research / analystic / calculator 실행
+→ research는 RAG(vector, graph, postgre) 조회 수행
+→ research / analystic / calculator는 출력 state 계약 검증 후 supervisor Agent로 반환
 → supervisor Agent가 다음 에이전트 또는 final_answer 진행 결정
-→ final_answer
+→ 입력 state 계약 검증 후 final_answer
 → evaluation
 → is_pass == False이면 final_answer로 재생성
 → is_pass == True이면 답변 반환
@@ -60,7 +60,7 @@
 
 - `supervisor`: 사용자 질문을 분석하고 실행할 에이전트와 작업 순서를 정한다.
 - `supervisor 재진입`: `research`, `analystic`, `calculator`의 결과는 supervisor로 반환되며, supervisor가 state를 확인한 뒤 다음 단계 또는 `final_answer` 진행 여부를 결정한다.
-- `validation`: `common/validator.py` 기준으로 state 필수 입력과 누락 필드를 확인한다.
+- `state 계약 검증`: 독립 에이전트가 아니라 `common/validator.py` 기준으로 각 에이전트 호출 전 필수 입력 state와 반환 전 필수 출력 state를 확인하는 과정이다.
 - `research`: RAG 검색을 담당하며 vector, graph, postgre 기반 검색 결과를 `retrieved_docs`, `context`로 정리한다.
 - `analystic`: 코드 기준 이름은 `common/state.py`의 `analystic`이며, 캐릭터 상태 분석과 진단 결과를 생성한다.
 - `calculator`: 장비, 스탯, 성장 수치 계산을 수행하고 계산 결과를 state에 기록한다.

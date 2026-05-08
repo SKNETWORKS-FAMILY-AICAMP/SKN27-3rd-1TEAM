@@ -151,22 +151,21 @@ LOW
 
 ### 7.1 기준 에이전트 흐름도
 
-Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 validation 단계를 거쳐 필요한 작업 에이전트로 라우팅한다. Research, analystic, calculator의 결과는 다시 Supervisor Agent로 반환된다. Supervisor Agent는 state를 확인한 뒤 다음 작업 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다. Final Answer Agent의 결과는 supervisor로 돌아가지 않고 Evaluation Agent로 전달된다. Evaluation 단계에서 `is_pass == False`이면 Final Answer Agent가 다시 답변을 보완하고, `is_pass == True`이면 답변을 반환한다.
+Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 각 작업 에이전트가 입력받아야 하는 state가 채워졌는지 확인하고 라우팅한다. Research는 RAG(vector, graph, postgre) 조회를 수행한다. Research, analystic, calculator는 결과를 Supervisor Agent로 반환하기 전에 자신이 채워야 하는 출력 state를 검증한다. Supervisor Agent는 반환된 state를 확인한 뒤 다음 작업 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다. Final Answer Agent의 결과는 supervisor로 돌아가지 않고 Evaluation Agent로 전달된다. Evaluation 단계에서 `is_pass == False`이면 Final Answer Agent가 다시 답변을 보완하고, `is_pass == True`이면 답변을 반환한다.
 
 ```mermaid
 flowchart TD
     A["질문"] --> B["supervisor Agent"]
-    B --> C["validation"]
 
-    C --> D["research"]
-    C --> E["analystic"]
-    C --> F["calculator"]
-    B --> G["final_answer"]
+    B -->|"입력 state 계약 검증"| D["research"]
+    B -->|"입력 state 계약 검증"| E["analystic"]
+    B -->|"입력 state 계약 검증"| F["calculator"]
 
-    D --- D1["RAG<br/>(vector, graph, postgre)"]
-    D --> B
-    E --> B
-    F --> B
+    D --> D1["RAG<br/>(vector, graph, postgre)"]
+    D -->|"출력 state 계약 검증"| B
+    E -->|"출력 state 계약 검증"| B
+    F -->|"출력 state 계약 검증"| B
+    B -->|"입력 state 계약 검증"| G["final_answer"]
     G --> H{"evaluation"}
     H -->|"is_pass == False"| G
     H -->|"is_pass == True"| I["답변"]
@@ -178,7 +177,7 @@ flowchart TD
 |---|---|
 | `supervisor` | 사용자 질문을 분석하고 실행할 에이전트와 작업 순서를 정한다 |
 | `supervisor 재진입` | `research`, `analystic`, `calculator`의 결과는 supervisor로 반환되며, supervisor가 state를 확인한 뒤 다음 단계 또는 Final Answer Agent 진행 여부를 결정한다 |
-| `validation` | `common/validator.py` 기준으로 state 필수 입력과 누락 필드를 확인한다 |
+| `state 계약 검증` | 독립 에이전트가 아니라 `common/validator.py` 기준으로 각 에이전트 호출 전 필수 입력 state와 반환 전 필수 출력 state를 확인하는 과정이다 |
 | `research` | RAG 검색을 담당하며 vector, graph, postgre 기반 검색 결과를 `retrieved_docs`, `context`로 정리한다 |
 | `analystic` | 코드 기준 이름은 `analystic`이며, 캐릭터 상태 분석과 진단 결과를 생성한다 |
 | `calculator` | 장비/스탯/성장 수치 계산을 수행하고 계산 결과를 state에 기록한다 |
