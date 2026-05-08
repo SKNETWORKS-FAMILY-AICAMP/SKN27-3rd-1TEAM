@@ -151,7 +151,7 @@ LOW
 
 ### 7.1 기준 에이전트 흐름도
 
-Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 validation 단계를 거쳐 필요한 작업 에이전트로 라우팅한다. Research, analystic, calculator, final_answer의 모든 결과는 다시 Supervisor Agent로 반환된다. Supervisor Agent는 state를 확인한 뒤 다음 에이전트 실행 또는 evaluation 진행 여부를 결정한다. Evaluation 단계에서 `is_pass == False`이면 Supervisor Agent를 거쳐 Final Answer Agent가 다시 답변을 보완한다.
+Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 validation 단계를 거쳐 필요한 작업 에이전트로 라우팅한다. Research, analystic, calculator의 결과는 다시 Supervisor Agent로 반환된다. Supervisor Agent는 state를 확인한 뒤 다음 작업 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다. Final Answer Agent의 결과는 supervisor로 돌아가지 않고 Evaluation Agent로 전달된다. Evaluation 단계에서 `is_pass == False`이면 Final Answer Agent가 다시 답변을 보완하고, `is_pass == True`이면 답변을 반환한다.
 
 ```mermaid
 flowchart TD
@@ -161,18 +161,14 @@ flowchart TD
     C --> D["research"]
     C --> E["analystic"]
     C --> F["calculator"]
-    C --> G["final_answer"]
+    B --> G["final_answer"]
 
     D --- D1["RAG<br/>(vector, graph, postgre)"]
-    E --- E1["ML"]
-
     D --> B
     E --> B
     F --> B
-    G --> B
-
-    B --> H{"evaluation"}
-    H -->|"is_pass == False"| B
+    G --> H{"evaluation"}
+    H -->|"is_pass == False"| G
     H -->|"is_pass == True"| I["답변"]
 ```
 
@@ -181,13 +177,13 @@ flowchart TD
 | 단계 | 규칙 |
 |---|---|
 | `supervisor` | 사용자 질문을 분석하고 실행할 에이전트와 작업 순서를 정한다 |
-| `supervisor 재진입` | `research`, `analystic`, `calculator`, `final_answer`의 모든 결과는 supervisor로 반환되며, supervisor가 state를 확인한 뒤 다음 단계로 진행한다 |
+| `supervisor 재진입` | `research`, `analystic`, `calculator`의 결과는 supervisor로 반환되며, supervisor가 state를 확인한 뒤 다음 단계 또는 Final Answer Agent 진행 여부를 결정한다 |
 | `validation` | `common/validator.py` 기준으로 state 필수 입력과 누락 필드를 확인한다 |
 | `research` | RAG 검색을 담당하며 vector, graph, postgre 기반 검색 결과를 `retrieved_docs`, `context`로 정리한다 |
-| `analystic` | 코드 기준 이름은 `analystic`이며, 캐릭터 상태 분석과 ML 기반 진단 결과를 생성한다 |
+| `analystic` | 코드 기준 이름은 `analystic`이며, 캐릭터 상태 분석과 진단 결과를 생성한다 |
 | `calculator` | 장비/스탯/성장 수치 계산을 수행하고 계산 결과를 state에 기록한다 |
 | `final_answer` | 각 에이전트 결과를 종합해 `draft_answer`, `final_answer`, `confidence_score`를 생성한다 |
-| `evaluation` | 답변 품질을 평가하고 `is_pass == False`이면 supervisor를 거쳐 Final Answer Agent로 되돌려 보완하게 한다 |
+| `evaluation` | 답변 품질을 평가하고 `is_pass == False`이면 Final Answer Agent로 되돌려 보완하게 한다 |
 | `답변` | 평가를 통과한 결과만 `ApiResponseChat` 호환 응답으로 반환한다 |
 
 ### 7.2 전체 MultiAgent 상세 흐름
