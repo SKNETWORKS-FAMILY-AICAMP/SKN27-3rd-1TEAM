@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
+
+try:
+    from neo4j import GraphDatabase
+except Exception:  # pragma: no cover - neo4j is installed in the project env.
+    GraphDatabase = None
 
 try:
     from common.get_model import get_llm
@@ -29,6 +35,7 @@ if TYPE_CHECKING:
 
 
 _BOSS_GRAPH_CONNECTION: Any = None
+_BOSS_GRAPH_DATABASE: Optional[str] = None
 
 
 class BossStatAnalysisInput(BaseModel):
@@ -76,17 +83,53 @@ class AvailableBossesInput(BaseModel):
     max_results: int = Field(20, ge=1, le=100, description="Maximum number of bosses to return per group.")
 
 
-def set_boss_neo4j_connection(connection: Any) -> None:
+def _load_project_env() -> None:
+    project_root = Path(__file__).resolve().parents[2]
+    for env_path in (project_root / ".env", project_root / "database" / ".env"):
+        if not env_path.exists():
+            continue
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+def set_boss_neo4j_connection(connection: Any, database: Optional[str] = None) -> None:
     """Register the Neo4j driver/session/graph object used by the analytics tool."""
 
-    global _BOSS_GRAPH_CONNECTION
+    global _BOSS_GRAPH_CONNECTION, _BOSS_GRAPH_DATABASE
     _BOSS_GRAPH_CONNECTION = connection
+    if database is not None:
+        _BOSS_GRAPH_DATABASE = database
 
 
-def set_boss_db_connection(connection: Any) -> None:
+def set_boss_db_connection(connection: Any, database: Optional[str] = None) -> None:
     """Backward-compatible alias for registering the Neo4j boss graph connection."""
 
-    set_boss_neo4j_connection(connection)
+    set_boss_neo4j_connection(connection, database=database)
+
+
+def _get_boss_neo4j_connection() -> Any:
+    global _BOSS_GRAPH_CONNECTION, _BOSS_GRAPH_DATABASE
+
+    if _BOSS_GRAPH_CONNECTION is not None:
+        return _BOSS_GRAPH_CONNECTION
+
+    if GraphDatabase is None:
+        raise RuntimeError("neo4j package is not available.")
+
+    _load_project_env()
+    uri = os.environ.get("NEO4J_URI", "bolt://localhost:7687")
+    user = os.environ.get("NEO4J_USER", "neo4j")
+    password = os.environ.get("NEO4J_PASSWORD")
+    if not password:
+        raise RuntimeError("NEO4J_PASSWORD is required to connect to the boss graph.")
+
+    _BOSS_GRAPH_DATABASE = os.environ.get("NEO4J_DATABASE", _BOSS_GRAPH_DATABASE)
+    _BOSS_GRAPH_CONNECTION = GraphDatabase.driver(uri, auth=(user, password))
+    return _BOSS_GRAPH_CONNECTION
 
 
 def _value(source: Any, key: str, default: Any = None) -> Any:
