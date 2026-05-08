@@ -215,7 +215,25 @@ Final Answer Agent
 Research Agent는 `common/state.py`의 계약에 맞춰 `retrieved_docs`와 `context`를 채운다.
 Final Answer Agent는 `context`와 `retrieved_docs.metadata`의 `title`, `url`, `reliability`, `freshness`, `published_at`을 함께 사용하여 답변과 출처를 구성한다.
 
-## 11. 1차 구현 한계
+## 11. 공통 에이전트 흐름 내 Web RAG 위치
+
+Web RAG는 공통 에이전트 흐름에서 `research` 단계의 RAG 근거 중 `vector`, `graph`, `postgre`와 함께 검색 근거를 제공하는 역할을 담당한다.
+
+```text
+질문
+→ supervisor Agent
+→ validation
+→ research / analystic / calculator / final_answer
+→ 각 에이전트 결과는 supervisor Agent로 반환
+→ supervisor Agent가 다음 에이전트 또는 다음 단계 결정
+→ evaluation
+→ is_pass == False이면 final_answer로 재생성
+→ is_pass == True이면 답변 반환
+```
+
+Web RAG는 `validation` 이후 Research Agent가 호출하며, 검색 결과를 `retrieved_docs`, `context`, `tool_results` 형태로 정리한 뒤 supervisor로 반환한다. Supervisor Agent는 해당 state를 확인한 뒤 다음 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다. Final Answer Agent의 답변이 Evaluation Agent에서 실패하면 supervisor를 거쳐 `final_answer`가 보완 답변을 생성할 때 동일한 Web RAG 근거를 다시 사용한다.
+
+## 12. 1차 구현 한계
 
 현재 구현은 1차 POC 수준이므로 다음 한계가 있다.
 
@@ -227,7 +245,7 @@ Final Answer Agent는 `context`와 `retrieved_docs.metadata`의 `title`, `url`, 
 - 중복 문서 제거와 날짜 기반 최신성 판단은 최소 수준이다.
 - 수집 결과를 PGVector나 PostgreSQL에 저장하지 않고 메모리에서만 반환한다.
 
-## 12. 다음 개선 방향
+## 13. 다음 개선 방향
 
 향후 개선 시 다음 항목을 추가할 수 있다.
 

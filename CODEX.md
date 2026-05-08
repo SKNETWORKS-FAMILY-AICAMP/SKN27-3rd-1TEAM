@@ -42,6 +42,31 @@
 - 넓은 리팩터링보다 목적에 맞는 집중된 변경을 우선한다.
 - 필요한 경우가 아니면 관련 없는 파일이나 동작은 수정하지 않는다.
 
+## 멀티 에이전트 기준 흐름
+모든 런타임 에이전트 설계는 아래 흐름을 기준 규칙으로 따른다.
+
+```text
+질문
+→ supervisor Agent
+→ validation
+→ research / analystic / calculator / final_answer
+→ 각 에이전트 결과는 supervisor Agent로 반환
+→ supervisor Agent가 다음 에이전트 또는 다음 단계 결정
+→ evaluation
+→ is_pass == False이면 final_answer로 재생성
+→ is_pass == True이면 답변 반환
+```
+
+- `supervisor`: 사용자 질문을 분석하고 실행할 에이전트와 작업 순서를 정한다.
+- `supervisor 재진입`: `research`, `analystic`, `calculator`, `final_answer`의 모든 결과는 supervisor로 반환되며, supervisor가 state를 확인한 뒤 다음 단계로 진행한다.
+- `validation`: `common/validator.py` 기준으로 state 필수 입력과 누락 필드를 확인한다.
+- `research`: RAG 검색을 담당하며 vector, graph, postgre 기반 검색 결과를 `retrieved_docs`, `context`로 정리한다.
+- `analystic`: 코드 기준 이름은 `common/state.py`의 `analystic`이며, 캐릭터 상태 분석과 ML 기반 진단 결과를 생성한다.
+- `calculator`: 장비, 스탯, 성장 수치 계산을 수행하고 계산 결과를 state에 기록한다.
+- `final_answer`: 각 에이전트 결과를 종합해 `draft_answer`, `final_answer`, `confidence_score`를 생성한다.
+- `evaluation`: 답변 품질을 평가하고 `is_pass == False`이면 supervisor를 거쳐 `final_answer`로 되돌려 보완하게 한다.
+- `답변`: 평가를 통과한 결과만 `ApiResponseChat` 호환 응답으로 반환한다.
+
 ## 검증 (Feedback Loop)
 - 코드 변경 후 가능한 경우 프로젝트에 존재하는 검증 스크립트를 우선 실행한다.
 - 검증 스크립트가 없는 경우 `python -m compileall` 및 `common/validator.py` 기반 상태 계약 검증처럼 현재 구조에서 실행 가능한 검증을 수행한다.
