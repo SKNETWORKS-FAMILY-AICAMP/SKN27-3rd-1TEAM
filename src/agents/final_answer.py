@@ -17,6 +17,14 @@ HIGH_CONFIDENCE = 0.8
 LOW_CONFIDENCE = 0.3
 RELIABILITY_ORDER = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
 MAX_SOURCE_COUNT = 5
+MAX_RETRY_COUNT = 2
+
+EVALUATION_TOOL_KEY = "evaluation"
+FINAL_ANSWER_TOOL_KEY = "final_answer"
+EVALUATION_PASS = "PASS"
+EVALUATION_REWRITE = "REWRITE"
+EVALUATION_REPLAN = "REPLAN"
+EVALUATION_PENDING = "PENDING"
 
 
 def run_final_answer_agent(state: AgentState) -> AgentState:
@@ -28,16 +36,97 @@ def run_final_answer_agent(state: AgentState) -> AgentState:
     sources = collect_sources(state)
     draft_answer = build_draft_answer(state, sources)
     final_answer = generate_final_answer(state, draft_answer)
+    confidence_score = calculate_confidence(state, sources)
 
     next_state: AgentState = {
         **state,
         "draft_answer": draft_answer,
         "final_answer": final_answer,
-        "validation_passed": bool(final_answer),
-        "confidence_score": calculate_confidence(state, sources),
+        "validation_passed": bool(state.get("validation_passed", False)),
+        "confidence_score": confidence_score,
+        "tool_results": merge_tool_result(
+            state,
+            FINAL_ANSWER_TOOL_KEY,
+            build_final_answer_tool_result(state, sources, confidence_score),
+        ),
     }
     validate_agent_outputs("final_answer", next_state)
     return next_state
+
+
+def route_after_evaluation(state: AgentState) -> AgentState:
+    """Route evaluation result to FINISH, final_answer rewrite, or supervisor replan."""
+
+    validate_state_keys(state)
+
+    evaluation = get_evaluation_result(state)
+    route = normalize_evaluation_route(evaluation)
+    feedback = extract_evaluation_feedback(evaluation, state)
+    retry_count = int(state.get("retry_count") or 0)
+
+    if route == EVALUATION_PASS:
+        return {
+            **state,
+            "validation_passed": True,
+            "next_agent": "FINISH",
+            "retry_target": "FINISH",
+            "feedback": feedback,
+            "is_complete": True,
+            "tool_results": merge_tool_result(
+                state,
+                FINAL_ANSWER_TOOL_KEY,
+                build_evaluation_route_result(route, "FINISH", retry_count),
+            ),
+        }
+
+    if route == EVALUATION_REPLAN or retry_count >= MAX_RETRY_COUNT:
+        next_retry_count = retry_count + 1
+        return {
+            **state,
+            "validation_passed": False,
+            "next_agent": "supervisor",
+            "retry_target": "supervisor",
+            "retry_count": next_retry_count,
+            "feedback": feedback,
+            "is_complete": False,
+            "tool_results": merge_tool_result(
+                state,
+                FINAL_ANSWER_TOOL_KEY,
+                build_evaluation_route_result(
+                    EVALUATION_REPLAN,
+                    "supervisor",
+                    next_retry_count,
+                ),
+            ),
+        }
+
+    if route == EVALUATION_REWRITE:
+        next_retry_count = retry_count + 1
+        return {
+            **state,
+            "validation_passed": False,
+            "next_agent": "final_answer",
+            "retry_target": "final_answer",
+            "retry_count": next_retry_count,
+            "feedback": feedback,
+            "is_complete": False,
+            "tool_results": merge_tool_result(
+                state,
+                FINAL_ANSWER_TOOL_KEY,
+                build_evaluation_route_result(
+                    route,
+                    "final_answer",
+                    next_retry_count,
+                ),
+            ),
+        }
+
+    return {
+        **state,
+        "validation_passed": False,
+        "feedback": feedback,
+        "is_complete": False,
+    }
 
 
 def build_chat_response(state: AgentState) -> dict[str, JsonValue]:
@@ -45,10 +134,15 @@ def build_chat_response(state: AgentState) -> dict[str, JsonValue]:
 
     final_answer = state.get("final_answer", "")
     confidence = state.get("confidence_score", DEFAULT_CONFIDENCE)
+    success = bool(final_answer) and bool(state.get("validation_passed", True))
 
     return {
-        "success": bool(final_answer),
-        "message": "챗봇 응답 메시지 반환" if final_answer else "답변 생성에 실패했습니다.",
+        "success": success,
+        "message": (
+            "챗봇 응답 메시지 반환"
+            if success
+            else "답변 검증이 완료되지 않았거나 실패했습니다."
+        ),
         "confidence": confidence,
         "data": {
             "response": final_answer,
@@ -112,6 +206,7 @@ def should_use_llm() -> bool:
 
 
 def build_final_answer_prompt(state: AgentState, draft_answer: str = "") -> str:
+    evaluation = get_evaluation_result(state)
     return "\n".join(
         [
             master_prompt.strip(),
@@ -123,6 +218,8 @@ def build_final_answer_prompt(state: AgentState, draft_answer: str = "") -> str:
             f"사용자 질문: {state.get('user_query', '')}",
             f"근거 context: {state.get('context', '')}",
             f"추천 액션: {format_recommendations(state)}",
+            f"Evaluation route: {normalize_evaluation_route(evaluation)}",
+            f"Evaluation feedback: {extract_evaluation_feedback(evaluation, state)}",
             f"초안 답변: {draft_answer}",
         ]
     ).strip()
@@ -207,4 +304,153 @@ def build_steps(state: AgentState) -> list[dict[str, JsonValue]]:
             "log": "공통 state와 출처 정보를 기준으로 최종 답변을 생성했습니다.",
         }
     )
+
+    evaluation = get_evaluation_result(state)
+    if evaluation:
+        route = normalize_evaluation_route(evaluation)
+        steps.append(
+            {
+                "agent": "evaluation",
+                "action": "route",
+                "log": f"Evaluation 결과에 따라 {route} 경로로 판단했습니다.",
+            }
+        )
+
     return steps
+
+
+def get_evaluation_result(state: AgentState) -> dict[str, JsonValue]:
+    tool_results = state.get("tool_results") or {}
+    if not isinstance(tool_results, dict):
+        return {}
+
+    evaluation = tool_results.get(EVALUATION_TOOL_KEY)
+    if isinstance(evaluation, dict):
+        return evaluation
+    return {}
+
+
+def normalize_evaluation_route(evaluation: dict[str, JsonValue]) -> str:
+    if not evaluation:
+        return EVALUATION_PENDING
+
+    if is_truthy(evaluation.get("is_pass")):
+        return EVALUATION_PASS
+
+    explicit_route = str(
+        evaluation.get("route")
+        or evaluation.get("decision")
+        or evaluation.get("next_route")
+        or ""
+    ).strip().upper()
+    if explicit_route in {EVALUATION_PASS, EVALUATION_REWRITE, EVALUATION_REPLAN}:
+        return explicit_route
+
+    retry_target = str(
+        evaluation.get("retry_target")
+        or evaluation.get("next_agent")
+        or ""
+    ).strip().lower()
+    if retry_target == "supervisor":
+        return EVALUATION_REPLAN
+    if retry_target == "final_answer":
+        return EVALUATION_REWRITE
+
+    if is_irrelevant_evaluation(evaluation):
+        return EVALUATION_REPLAN
+
+    if "is_pass" in evaluation and not is_truthy(evaluation.get("is_pass")):
+        return EVALUATION_REWRITE
+
+    return EVALUATION_PENDING
+
+
+def extract_evaluation_feedback(
+    evaluation: dict[str, JsonValue],
+    state: AgentState,
+) -> str:
+    for key in ("feedback", "reason", "comment", "message"):
+        value = evaluation.get(key)
+        if value:
+            return str(value)
+
+    return str(state.get("feedback") or "")
+
+
+def is_irrelevant_evaluation(evaluation: dict[str, JsonValue]) -> bool:
+    for key in (
+        "is_relevant",
+        "context_relevant",
+        "answer_relevant",
+        "question_relevant",
+    ):
+        if is_falsy(evaluation.get(key)):
+            return True
+
+    failure_type = str(evaluation.get("failure_type") or "").strip().lower()
+    return failure_type in {
+        "irrelevant",
+        "question_mismatch",
+        "routing_error",
+        "wrong_intent",
+        "wrong_context",
+    }
+
+
+def is_truthy(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        return value.strip().lower() in {"true", "pass", "passed", "yes", "1"}
+    return False
+
+
+def is_falsy(value: Any) -> bool:
+    if isinstance(value, bool):
+        return not value
+    if isinstance(value, (int, float)):
+        return value == 0
+    if isinstance(value, str):
+        return value.strip().lower() in {"false", "fail", "failed", "no", "0"}
+    return False
+
+
+def merge_tool_result(
+    state: AgentState,
+    key: str,
+    result: dict[str, JsonValue],
+) -> dict[str, JsonValue]:
+    tool_results = dict(state.get("tool_results") or {})
+    tool_results[key] = result
+    return tool_results
+
+
+def build_final_answer_tool_result(
+    state: AgentState,
+    sources: list[dict[str, JsonValue]],
+    confidence_score: float,
+) -> dict[str, JsonValue]:
+    evaluation = get_evaluation_result(state)
+    return {
+        "next_step": "evaluation",
+        "source_count": len(sources),
+        "confidence_score": confidence_score,
+        "evaluation_route": normalize_evaluation_route(evaluation),
+        "used_evaluation_feedback": bool(
+            extract_evaluation_feedback(evaluation, state)
+        ),
+    }
+
+
+def build_evaluation_route_result(
+    route: str,
+    next_agent: str,
+    retry_count: int,
+) -> dict[str, JsonValue]:
+    return {
+        "evaluation_route": route,
+        "next_agent": next_agent,
+        "retry_count": retry_count,
+    }
