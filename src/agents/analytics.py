@@ -2103,8 +2103,8 @@ def analytics_agent(
     }
 
 
-if __name__ == "__main__":
-    state = analytics_agent(
-        state={"user_query": "내 캐릭터는 음표인데 노멀 발드릭스 가능해?"}
-    )
-    print(state["analysis"])
+# if __name__ == "__main__":
+#     state = analytics_agent(
+#         state={"user_query": "내 캐릭터는 음표인데 노멀 발드릭스 가능해?"}
+#     )
+#     print(state["analysis"])
