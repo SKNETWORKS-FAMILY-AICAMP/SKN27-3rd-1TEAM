@@ -4,6 +4,8 @@ from typing import Dict, List, Optional
 
 @dataclass
 class Stats:
+
+    """Final character stats used by calculation agents."""
     # 최종 계산 스탯
     attack: int
     crit_rate: float
@@ -12,7 +14,6 @@ class Stats:
     ignore_def: float
     damage: float
     attack_speed: int
-
 
 @dataclass
 class Equipment:
@@ -40,11 +41,13 @@ class StatPackage:
     boss_damage_percent: float = 0.0
     ignore_def_percent: float = 0.0
     final_damage_percent: float = 0.0
-    damage_percent: Optional[float] = 0.0
-    crit_damage: Optional[float] = 0.0
+    damage_percent: float = 0.0
+    crit_damage: float = 0.0
     all_stat_percent: float = 0.0
 
 
+
+@dataclass
 @dataclass
 class EquipmentDetail:
     """개별 장비의 상세 정보."""
@@ -55,6 +58,7 @@ class EquipmentDetail:
     starforce: Optional[int] = None
     potential_grade: Optional[str] = None
     additional_potential_grade: Optional[str] = None
+
 
     # 옵션 원천별 스탯
     total_stats: Optional[StatPackage] = None  # 최종 합산 옵션
@@ -67,11 +71,12 @@ class EquipmentDetail:
 
 @dataclass
 class CharacterStatDetail:
+
     """게임 내 스탯창 기준 상세 스탯 정보."""
 
     combat_power: int = 0
-    min_stat_damage: float = 0
-    max_stat_damage: float = 0
+    min_stat_damage: float = 0.0
+    max_stat_damage: float = 0.0
     str_val: int = 0
     dex: int = 0
     int_val: int = 0
@@ -90,16 +95,20 @@ class CharacterStatDetail:
     buff_duration: int = 0
     arcane_force: int = 0
     authentic_force: int = 0
+    starforce: int = 0
+
 
 
 @dataclass
 class UnionStatus:
+
     """유니온 및 아티팩트 정보."""
 
     union_level: int = 0
     union_grade: str = ""
     artifact_level: Optional[int] = None
     artifact_exp: int = 0
+
 
     # 유니온 공격대원 효과로 얻는 합산 스탯
     union_raider_stats: Optional[StatPackage] = None
@@ -169,12 +178,11 @@ class GrowthEfficiencyReport:
     data_reliability: str = ""
     timestamp: str = ""
 
-
 @dataclass
 class CharacterAbility:
-    union_level: int
-    arcane_force: int
-    authentic_force: int
+    union_level: int = 0
+    arcane_force: int = 0
+    authentic_force: int = 0
 
 
 @dataclass
@@ -182,7 +190,9 @@ class Character:
     ocid: str
     level: int
     char_class: str
+    stats: Stats = field(default_factory=Stats)
+    equipment: List[Equipment] = field(default_factory=list)
+    ability: CharacterAbility = field(default_factory=CharacterAbility)
 
-    stats: Stats
-    equipment: List[Equipment]
-    ability: CharacterAbility
+
+
