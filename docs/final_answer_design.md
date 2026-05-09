@@ -151,7 +151,7 @@ LOW
 
 ### 7.1 기준 에이전트 흐름도
 
-Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 각 작업 에이전트가 입력받아야 하는 state가 채워졌는지 확인하고 라우팅한다. Research는 RAG(vector, graph, postgre) 조회를 수행한다. Research, analystic, calculator는 결과를 Supervisor Agent로 반환하기 전에 자신이 채워야 하는 출력 state를 검증한다. Supervisor Agent는 반환된 state를 확인한 뒤 다음 작업 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다. Final Answer Agent의 결과는 supervisor로 돌아가지 않고 Evaluation Agent로 전달된다. Evaluation 단계에서 `is_pass == False`이면 Final Answer Agent가 다시 답변을 보완하고, `is_pass == True`이면 답변을 반환한다.
+Final Answer Agent는 아래 흐름을 기준 규칙으로 따른다. Supervisor Agent는 질문을 받은 뒤 각 작업 에이전트가 입력받아야 하는 state가 채워졌는지 확인하고 라우팅한다. Research는 RAG(vector, graph, postgre) 조회를 수행한다. Research, analystic, calculator는 결과를 Supervisor Agent로 반환하기 전에 자신이 채워야 하는 출력 state를 검증한다. Supervisor Agent는 반환된 state를 확인한 뒤 다음 작업 에이전트 실행 또는 Final Answer Agent 진행 여부를 결정한다. Final Answer Agent의 결과는 supervisor로 돌아가지 않고 Evaluation Agent로 전달된다. Evaluation 단계에서 답변이 질문과 문맥상 맞고 품질만 부족하면 Final Answer Agent가 다시 답변을 보완한다. 답변이 질문과 상관없거나 검색/분석 경로 자체가 잘못되었다고 판단되면 Supervisor Agent로 돌아가 처음부터 멀티 에이전트 계획을 다시 세운다. `is_pass == True`이면 답변을 반환한다.
 
 ```mermaid
 flowchart TD
@@ -167,8 +167,9 @@ flowchart TD
     F -->|"출력 state 계약 검증"| B
     B -->|"입력 state 계약 검증"| G["final_answer"]
     G --> H{"evaluation"}
-    H -->|"is_pass == False"| G
     H -->|"is_pass == True"| I["답변"]
+    H -->|"is_pass == False<br/>문맥/근거는 적합"| G
+    H -->|"질문 무관<br/>라우팅 오류"| B
 ```
 
 운영 규칙은 다음과 같다.
@@ -182,8 +183,19 @@ flowchart TD
 | `analystic` | 코드 기준 이름은 `analystic`이며, 캐릭터 상태 분석과 진단 결과를 생성한다 |
 | `calculator` | 장비/스탯/성장 수치 계산을 수행하고 계산 결과를 state에 기록한다 |
 | `final_answer` | 각 에이전트 결과를 종합해 `draft_answer`, `final_answer`, `confidence_score`를 생성한다 |
-| `evaluation` | 답변 품질을 평가하고 `is_pass == False`이면 Final Answer Agent로 되돌려 보완하게 한다 |
+| `evaluation` | 답변 품질과 질문 관련성을 평가한다. `is_pass == True`이면 답변을 반환하고, 문맥/근거는 맞지만 답변 품질이 부족하면 Final Answer Agent로 되돌려 보완하게 한다 |
+| `supervisor 재계획` | Evaluation Agent가 질문과 상관없는 답변, 잘못된 검색 의도, 잘못된 분석 경로로 판단하면 supervisor로 되돌아가 `intent`, `task_type`, `plan`, `next_agent`를 다시 세운다 |
 | `답변` | 평가를 통과한 결과만 `ApiResponseChat` 호환 응답으로 반환한다 |
+
+Evaluation 분기 기준은 다음과 같다.
+
+| Evaluation 결과 | 조건 | 다음 단계 |
+|---|---|---|
+| `PASS` | 답변이 질문에 맞고, 근거와 출처가 충분하며, `ApiResponseChat` 형식으로 반환 가능 | 답변 반환 |
+| `REWRITE` | 검색/분석 근거는 질문과 맞지만 답변 문장, 출처 표현, 누락 정보, 신뢰도 설명이 부족 | Final Answer Agent 재생성 |
+| `REPLAN` | 답변이 질문과 상관없거나, 잘못된 intent/task_type으로 검색/분석되어 근거 자체가 부적절 | Supervisor Agent 재진입 |
+
+현재 `common/state.py`에는 Evaluation 전용 필드가 아직 없으므로 1차 구현에서는 `tool_results["evaluation"]`에 `is_pass`, `route`, `reason`을 저장하는 방식으로 연결한다. 이후 Evaluation Agent 담당 구현에서 state 필드가 추가되면 해당 계약에 맞춰 변경한다.
 
 ### 7.2 Final Answer 내부 처리 흐름
 
@@ -257,6 +269,8 @@ flowchart LR
 ## 10. 프롬프트 설계
 
 Final Answer Agent가 LLM에 전달하는 시스템 프롬프트는 `common/prompt.py`의 `master_prompt`를 우선 포함하고, 다음 정책을 추가한다.
+
+LLM Provider는 `common/get_model.py`를 통해서만 선택한다. 프로젝트 제작/개발 단계에서는 `LLM_PROVIDER=groq`와 `GROQ_MODEL=openai/gpt-oss-120b`, 시연 단계에서는 `LLM_PROVIDER=openai`와 `OPENAI_MODEL=gpt-5.4-nano`로 전환한다. 각 provider의 API 키는 `.env`에 직접 작성하되, 코드와 문서에는 실제 키를 남기지 않는다.
 
 ```text
 당신은 메이플스토리 RAG 멀티 에이전트 챗봇의 Final Answer Agent입니다.

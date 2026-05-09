@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from common.get_model import get_llm, has_llm_config
 from common.prompt import master_prompt
 from common.state import AgentState, JsonValue, RetrievedDocument
 from common.validator import (
@@ -26,7 +27,7 @@ def run_final_answer_agent(state: AgentState) -> AgentState:
 
     sources = collect_sources(state)
     draft_answer = build_draft_answer(state, sources)
-    final_answer = finalize_answer(draft_answer)
+    final_answer = generate_final_answer(state, draft_answer)
 
     next_state: AgentState = {
         **state,
@@ -93,13 +94,36 @@ def finalize_answer(draft_answer: str) -> str:
     return draft_answer
 
 
-def build_final_answer_prompt(state: AgentState) -> str:
+def generate_final_answer(state: AgentState, draft_answer: str) -> str:
+    if not should_use_llm():
+        return finalize_answer(draft_answer)
+
+    prompt = build_final_answer_prompt(state, draft_answer)
+    response = get_llm().invoke(prompt)
+    content = getattr(response, "content", response)
+    if isinstance(content, list):
+        content = "\n".join(str(item) for item in content)
+
+    return str(content).strip() or finalize_answer(draft_answer)
+
+
+def should_use_llm() -> bool:
+    return has_llm_config()
+
+
+def build_final_answer_prompt(state: AgentState, draft_answer: str = "") -> str:
     return "\n".join(
         [
             master_prompt.strip(),
             "",
+            "당신은 메이플스토리 RAG 멀티 에이전트 챗봇의 Final Answer Agent입니다.",
+            "제공된 AgentState와 근거 context만 사용하여 한국어로 답변하세요.",
+            "state에 없는 정보는 추측하지 말고, 근거가 부족하면 한계를 명시하세요.",
+            "",
             f"사용자 질문: {state.get('user_query', '')}",
             f"근거 context: {state.get('context', '')}",
+            f"추천 액션: {format_recommendations(state)}",
+            f"초안 답변: {draft_answer}",
         ]
     ).strip()
 

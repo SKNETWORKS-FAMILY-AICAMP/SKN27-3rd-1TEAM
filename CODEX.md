@@ -54,8 +54,9 @@
 → supervisor Agent가 다음 에이전트 또는 final_answer 진행 결정
 → 입력 state 계약 검증 후 final_answer
 → evaluation
-→ is_pass == False이면 final_answer로 재생성
 → is_pass == True이면 답변 반환
+→ is_pass == False이고 근거/문맥은 맞으면 final_answer로 재생성
+→ 질문과 상관없는 답변이면 supervisor Agent로 돌아가 멀티 에이전트 재진입
 ```
 
 - `supervisor`: 사용자 질문을 분석하고 실행할 에이전트와 작업 순서를 정한다.
@@ -65,7 +66,7 @@
 - `analystic`: 코드 기준 이름은 `common/state.py`의 `analystic`이며, 캐릭터 상태 분석과 진단 결과를 생성한다.
 - `calculator`: 장비, 스탯, 성장 수치 계산을 수행하고 계산 결과를 state에 기록한다.
 - `final_answer`: 각 에이전트 결과를 종합해 `draft_answer`, `final_answer`, `confidence_score`를 생성한다.
-- `evaluation`: 답변 품질을 평가하고 `is_pass == False`이면 `final_answer`로 되돌려 보완하게 한다.
+- `evaluation`: 답변 품질과 질문 관련성을 평가한다. `is_pass == False`이면서 근거/문맥은 맞으면 `final_answer`로 되돌려 보완하고, 질문과 상관없는 답변이면 supervisor로 돌려보내 에이전트 계획부터 다시 수행하게 한다.
 - `답변`: 평가를 통과한 결과만 `ApiResponseChat` 호환 응답으로 반환한다.
 
 ## 검증 (Feedback Loop)
