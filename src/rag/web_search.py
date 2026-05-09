@@ -10,6 +10,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlparse
 from urllib.request import Request, urlopen
 
+from common.state import RetrievedDocument
+
 
 try:
     from dotenv import load_dotenv
@@ -57,13 +59,44 @@ CONTENT_SELECTORS_TO_DROP = (
     "nav",
     "aside",
     "form",
+    ".global_gnb",
+    ".login_popup_wrap",
+    ".event_bg",
+    ".event_view_roll",
+    ".sub_ev_dot",
+    ".right_aside_new",
+    ".con_title",
+    ".qs_info",
+    ".shortcut",
+    ".side_board_info",
+    ".side_board_wrap",
+    ".side_banner_wrap",
+    ".reply_wrap",
+    ".bottom_txar_wrap",
+    ".fix_toon_control",
+    "#ajaxRefresh",
 )
-DEFAULT_PRIORITY_URL_RULES = (
-    (
-        ("코어", "개편"),
-        "https://maplestory.nexon.com/promotion/event/2026/20260416/event01",
-        "메이플스토리 코어 개편 프로모션",
-    ),
+CONTENT_TAGS_TO_DROP = tuple(selector for selector in CONTENT_SELECTORS_TO_DROP if not selector.startswith((".", "#")))
+CONTENT_CLASSES_TO_DROP = tuple(selector[1:] for selector in CONTENT_SELECTORS_TO_DROP if selector.startswith("."))
+CONTENT_IDS_TO_DROP = tuple(selector[1:] for selector in CONTENT_SELECTORS_TO_DROP if selector.startswith("#"))
+DOCUMENT_MAIN_SELECTORS = (
+    ".contents_wrap",
+    ".new_board_con",
+    "main",
+    "article",
+    "#content",
+    "#contents",
+    ".content",
+    ".contents",
+)
+OFFICIAL_DETAIL_PATH_PATTERNS = (
+    r"^/News/Event/Ongoing/\d+$",
+    r"^/News/Event/\d+$",
+    r"^/News/Notice/\d+$",
+    r"^/News/Update/\d+$",
+    r"^/News/CashShop/\d+$",
+    r"^/News/NoticeMapleBoard/\d+$",
+    r"^/promotion/event/\d+/\d+/event\d+$",
 )
 
 
@@ -144,14 +177,26 @@ class DocumentTextParser(HTMLParser):
         self.in_title = False
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag in CONTENT_SELECTORS_TO_DROP:
+        if self.skip_depth:
+            self.skip_depth += 1
+            return
+
+        attr_map = {key: value or "" for key, value in attrs}
+        class_names = set(attr_map.get("class", "").split())
+        should_skip = (
+            tag in CONTENT_TAGS_TO_DROP
+            or attr_map.get("id") in CONTENT_IDS_TO_DROP
+            or bool(class_names.intersection(CONTENT_CLASSES_TO_DROP))
+        )
+        if should_skip:
             self.skip_depth += 1
         if tag == "title":
             self.in_title = True
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in CONTENT_SELECTORS_TO_DROP and self.skip_depth:
+        if self.skip_depth:
             self.skip_depth -= 1
+            return
         if tag == "title":
             self.in_title = False
 
@@ -278,8 +323,6 @@ def normalize_url(url: str) -> str:
     scheme = parsed.scheme.lower()
     hostname = (parsed.hostname or "").lower()
     path = parsed.path.rstrip("/") or parsed.path
-    if hostname == "maplestory.nexon.com":
-        path = path.lower()
     return parsed._replace(scheme=scheme, netloc=hostname, path=path, query="", fragment="").geturl()
 
 
@@ -386,39 +429,14 @@ def tokenize(text: str) -> set[str]:
     return {token.lower() for token in re.findall(r"[A-Za-z0-9가-힣]+", text) if len(token) > 1}
 
 
-def compact_text(text: str) -> str:
-    return re.sub(r"\s+", "", text).lower()
-
-
-def get_priority_results(question: str) -> list[dict[str, Any]]:
-    compact_question = compact_text(question)
-    results = []
-    for keywords, url, title in DEFAULT_PRIORITY_URL_RULES:
-        if all(compact_text(keyword) in compact_question for keyword in keywords):
-            normalized_url = normalize_url(url)
-            published_at = extract_published_at(normalized_url)
-            results.append(
-                {
-                    "title": title,
-                    "url": normalized_url,
-                    "query": question,
-                    "reliability": source_reliability(normalized_url, DEFAULT_OFFICIAL_DOMAINS),
-                    "published_at": published_at,
-                    "freshness": source_freshness(published_at),
-                }
-            )
-    return results
-
-
 def merge_search_results(
-    priority_results: list[dict[str, Any]],
     search_results: list[dict[str, Any]],
     max_results: int,
 ) -> list[dict[str, Any]]:
     merged = []
     seen_urls = set()
     index_by_url = {}
-    for result in priority_results + search_results:
+    for result in sorted(search_results, key=search_result_rank, reverse=True):
         url = normalize_url(result.get("url", ""))
         if not url:
             continue
@@ -439,6 +457,22 @@ def merge_search_results(
         if len(merged) >= max_results:
             break
     return merged
+
+
+def search_result_rank(result: dict[str, Any]) -> tuple[bool, bool, float]:
+    url = normalize_url(str(result.get("url", "")))
+    return (
+        source_reliability(url, DEFAULT_OFFICIAL_DOMAINS) == "HIGH",
+        is_official_detail_url(url),
+        float(result.get("tavily_score") or 0),
+    )
+
+
+def is_official_detail_url(url: str) -> bool:
+    parsed = urlparse(url)
+    if (parsed.hostname or "").lower() != "maplestory.nexon.com":
+        return False
+    return any(re.match(pattern, parsed.path, flags=re.IGNORECASE) for pattern in OFFICIAL_DETAIL_PATH_PATTERNS)
 
 
 def clean_text(text: str) -> str:
@@ -466,14 +500,86 @@ def parse_document(html: str, fallback_title: str, beautiful_soup: Any | None) -
         for selector in CONTENT_SELECTORS_TO_DROP:
             for tag in soup.select(selector):
                 tag.decompose()
-        title = clean_text(soup.title.get_text(" ")) if soup.title else fallback_title
-        return {"title": title, "text": clean_text(soup.get_text(" "))}
+        title = extract_document_title(soup, fallback_title)
+        text = extract_document_text(soup)
+        return {"title": title, "text": text}
 
     parser = DocumentTextParser()
-    parser.feed(html)
-    title = clean_text(" ".join(parser.title_parts)) or fallback_title
+    parser.feed(extract_fallback_main_html(html))
+    title = (
+        extract_fallback_document_title(html)
+        or clean_text(" ".join(parser.title_parts))
+        or fallback_title
+    )
     text = clean_text(" ".join(parser.text_parts))
     return {"title": title, "text": text}
+
+
+def extract_document_title(soup: Any, fallback_title: str) -> str:
+    for selector in (".qs_title span", "h1", "title"):
+        tag = soup.select_one(selector)
+        if tag:
+            title = clean_text(tag.get_text(" "))
+            if title:
+                return title
+    return fallback_title
+
+
+def extract_document_text(soup: Any) -> str:
+    for selector in DOCUMENT_MAIN_SELECTORS:
+        tag = soup.select_one(selector)
+        if not tag:
+            continue
+        text = clean_text(" ".join(collect_content_text(tag)))
+        if text:
+            return text
+    return clean_text(" ".join(collect_content_text(soup)))
+
+
+def collect_content_text(tag: Any) -> list[str]:
+    text_parts = [tag.get_text(" ")]
+    for image in tag.select("img[alt]"):
+        alt_text = clean_text(image.get("alt", ""))
+        if alt_text:
+            text_parts.append(alt_text)
+    return text_parts
+
+
+def extract_fallback_main_html(html: str) -> str:
+    match = re.search(
+        r"<[^>]+class=[\"'][^\"']*(?:contents_wrap|new_board_con)[^\"']*[\"'][^>]*>",
+        html,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return html
+
+    start = match.start()
+    lower_html = html.lower()
+    end_markers = (
+        '<div class="event_view_roll"',
+        '<div class="right_aside_new"',
+        '<div class="event_bg"',
+        '<div id="footer"',
+    )
+    end_positions = [
+        lower_html.find(marker, start + 1)
+        for marker in end_markers
+        if lower_html.find(marker, start + 1) != -1
+    ]
+    end = min(end_positions) if end_positions else len(html)
+    return html[start:end]
+
+
+def extract_fallback_document_title(html: str) -> str:
+    match = re.search(
+        r"<p[^>]+class=[\"'][^\"']*qs_title[^\"']*[\"'][^>]*>.*?<span[^>]*>(.*?)</span>",
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not match:
+        return ""
+    return clean_text(re.sub(r"<[^>]+>", " ", match.group(1)))
 
 
 def chunk_text(
@@ -545,16 +651,11 @@ class WebSearchRAG:
         max_results: int | None = None,
     ) -> list[dict[str, Any]]:
         max_results = max_results or get_env_int("WEB_RAG_MAX_RESULTS", DEFAULT_MAX_RESULTS)
-        priority_results = [
-            result
-            for result in get_priority_results(question)
-            if is_allowed_result_url(result["url"], self.get_allowed_domains(official_only), official_only)
-        ]
         if self.search_provider == "tavily":
             search_results = self.search_tavily(question, character_context, official_only, max_results)
         else:
             search_results = self.search_duckduckgo(question, character_context, official_only, max_results)
-        return merge_search_results(priority_results, search_results, max_results)
+        return merge_search_results(search_results, max_results)
 
     def search_tavily(
         self,
@@ -771,6 +872,49 @@ def format_contexts_for_prompt(retrieval_result: dict[str, Any]) -> str:
             )
         )
     return "\n\n".join(lines)
+
+
+def to_retrieved_documents(retrieval_result: dict[str, Any]) -> list[RetrievedDocument]:
+    documents: list[RetrievedDocument] = []
+    for context in retrieval_result.get("contexts", []):
+        documents.append(
+            {
+                "page_content": context.get("content", ""),
+                "metadata": {
+                    "title": context.get("title", ""),
+                    "url": context.get("url", ""),
+                    "chunk_index": context.get("chunk_index", 0),
+                    "reliability": context.get("reliability", "MEDIUM"),
+                    "freshness": context.get("freshness", "UNKNOWN"),
+                    "published_at": context.get("published_at"),
+                },
+                "score": float(context.get("score") or 0.0),
+                "source": context.get("url", ""),
+            }
+        )
+    return documents
+
+
+def retrieve_for_agent_state(
+    question: str,
+    character_context: Any | None = None,
+    official_only: bool = True,
+    max_results: int | None = None,
+    max_contexts: int | None = None,
+) -> dict[str, Any]:
+    rag = WebSearchRAG()
+    retrieval_result = rag.retrieve(
+        question=question,
+        character_context=character_context,
+        official_only=official_only,
+        max_results=max_results,
+        max_contexts=max_contexts,
+    )
+    return {
+        "retrieved_docs": to_retrieved_documents(retrieval_result),
+        "context": format_contexts_for_prompt(retrieval_result),
+        "tool_results": {"web_search_rag": retrieval_result},
+    }
 
 
 def main() -> None:
