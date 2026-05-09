@@ -1,18 +1,11 @@
-from __future__ import annotations
-
 from dataclasses import dataclass, field
-<<<<<<< HEAD
-from datetime import datetime, timezone
-=======
->>>>>>> origin/dev
 from typing import Dict, List, Optional
 
 
 @dataclass
 class Stats:
-<<<<<<< HEAD
+
     """Final character stats used by calculation agents."""
-=======
     # 최종 계산 스탯
     attack: int
     crit_rate: float
@@ -21,22 +14,7 @@ class Stats:
     ignore_def: float
     damage: float
     attack_speed: int
->>>>>>> origin/dev
 
-    attack: int = 0
-    crit_rate: float = 0.0
-    crit_damage: float = 0.0
-    boss_damage: float = 0.0
-    ignore_def: float = 0.0
-    damage: float = 0.0
-    attack_speed: int = 0
-
-<<<<<<< HEAD
-
-@dataclass
-class StatPackage:
-    """A bundle of additive and percentage stat values."""
-=======
 @dataclass
 class Equipment:
     # 기본 장비 정보
@@ -50,7 +28,6 @@ class Equipment:
 @dataclass
 class StatPackage:
     """장비, 세트 효과, 유니온 등이 가지는 스탯 묶음."""
->>>>>>> origin/dev
 
     str_val: int = 0
     dex_val: int = 0
@@ -59,11 +36,8 @@ class StatPackage:
     attack_power: int = 0
     magic_power: int = 0
     hp: int = 0
-<<<<<<< HEAD
-=======
 
     # 퍼센트 단위 옵션
->>>>>>> origin/dev
     boss_damage_percent: float = 0.0
     ignore_def_percent: float = 0.0
     final_damage_percent: float = 0.0
@@ -72,23 +46,11 @@ class StatPackage:
     all_stat_percent: float = 0.0
 
 
-<<<<<<< HEAD
-@dataclass
-class Equipment:
-    name: str
-    slot: str
-    starforce: int = 0
-    stats: StatPackage = field(default_factory=StatPackage)
-
 
 @dataclass
-class EquipmentDetail:
-    """Detailed equipment information from the Open API."""
-=======
 @dataclass
 class EquipmentDetail:
     """개별 장비의 상세 정보."""
->>>>>>> origin/dev
 
     item_name: str
     part: str
@@ -96,11 +58,7 @@ class EquipmentDetail:
     starforce: Optional[int] = None
     potential_grade: Optional[str] = None
     additional_potential_grade: Optional[str] = None
-<<<<<<< HEAD
-    total_stats: Optional[StatPackage] = None
-    bonus_stats: Optional[StatPackage] = None
-    scroll_stats: Optional[StatPackage] = None
-=======
+
 
     # 옵션 원천별 스탯
     total_stats: Optional[StatPackage] = None  # 최종 합산 옵션
@@ -108,17 +66,13 @@ class EquipmentDetail:
     scroll_stats: Optional[StatPackage] = None  # 주문서/업그레이드 수치
 
     # 세트 효과 이름
->>>>>>> origin/dev
     set_name: Optional[str] = None
 
 
 @dataclass
 class CharacterStatDetail:
-<<<<<<< HEAD
-    """Current stat window values for a processed character."""
-=======
+
     """게임 내 스탯창 기준 상세 스탯 정보."""
->>>>>>> origin/dev
 
     combat_power: int = 0
     min_stat_damage: float = 0.0
@@ -147,19 +101,14 @@ class CharacterStatDetail:
 
 @dataclass
 class UnionStatus:
-<<<<<<< HEAD
-=======
+
     """유니온 및 아티팩트 정보."""
 
->>>>>>> origin/dev
     union_level: int = 0
     union_grade: str = ""
     artifact_level: Optional[int] = None
     artifact_exp: int = 0
-<<<<<<< HEAD
-    union_raider_stats: Optional[StatPackage] = None
 
-=======
 
     # 유니온 공격대원 효과로 얻는 합산 스탯
     union_raider_stats: Optional[StatPackage] = None
@@ -229,8 +178,6 @@ class GrowthEfficiencyReport:
     data_reliability: str = ""
     timestamp: str = ""
 
->>>>>>> origin/dev
-
 @dataclass
 class CharacterAbility:
     union_level: int = 0
@@ -248,28 +195,4 @@ class Character:
     ability: CharacterAbility = field(default_factory=CharacterAbility)
 
 
-@dataclass
-class ProcessedCharacter:
-    """Integrated character model used by all analysis agents."""
 
-    character_name: str
-    job_name: str
-    world_name: str
-    level: int
-    gender: Optional[str] = None
-    final_stats: Optional[CharacterStatDetail] = None
-    equipment_list: List[EquipmentDetail] = field(default_factory=list)
-    union_info: Optional[UnionStatus] = None
-    v_matrix: Optional[Dict[str, int]] = None
-    hexa_core: Optional[Dict[str, int]] = None
-    ability_info: Optional[List[str]] = None
-    hyper_stats: Optional[Dict[str, int]] = None
-    active_buffs: List[str] = field(default_factory=list)
-
-
-<<<<<<< HEAD
-=======
-    stats: Stats
-    equipment: List[Equipment]
-    ability: CharacterAbility
->>>>>>> origin/dev
