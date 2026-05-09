@@ -1,0 +1,466 @@
+﻿equipment_id,name,part,slot,item_type,level_limit,set_name
+equipment_f5cbb9e8ca8b6f19449c,하이네스 원더러햇,모자,모자,equipment,150,루타비스 세트
+equipment_0bf35a76e15590bcbb26,루즈 컨트롤 머신 마크,얼굴장식,얼굴장식,equipment,160,
+equipment_4a31ad8e4423a3838eb6,마력이 깃든 안대,눈장식,눈장식,equipment,160,
+equipment_6ab2f1020ea228850274,커맨더 포스 이어링,귀고리,귀고리,equipment,200,
+equipment_92cf9fbf9614bce1c052,이글아이 원더러코트,상의,상의,equipment,150,
+equipment_f56f680b1aaf5270bb9d,트릭스터 원더러팬츠,하의,하의,equipment,150,
+equipment_c4782c6715f2325d7172,아케인셰이드 파이렛슈즈,신발,신발,equipment,200,아케인셰이드 세트
+equipment_d09b5c996f063ba8c6f3,아케인셰이드 파이렛글러브,장갑,장갑,equipment,200,아케인셰이드 세트
+equipment_af9e7f339efe7a385f96,아케인셰이드 파이렛케이프,망토,망토,equipment,200,아케인셰이드 세트
+equipment_945b98838c09b37842d4,이터널 매그넘,매그넘,보조무기,equipment,100,
+equipment_e1ca1aefb6ae71ff7c42,제네시스 피스톨,건,무기,equipment,200,
+equipment_4e73ac3724bfb29ad1fa,리스트레인트 링,반지,반지1,equipment,110,
+equipment_9280f30b2a0747662e44,거대한 공포,반지,반지2,equipment,200,
+equipment_cc56c731680689977dc8,마이스터링,반지,반지3,equipment,140,
+equipment_39865fbae9f24a96efb3,여명의 가디언 엔젤 링,반지,반지4,equipment,160,
+equipment_f9f61a716fc9ebb5c27a,고통의 근원,펜던트,펜던트,equipment,160,
+equipment_f5236cf823be65c67856,칠요의 몬스터파커,훈장,훈장,equipment,100,
+equipment_37cf76ce46bad8c34f73,몽환의 벨트,벨트,벨트,equipment,200,
+equipment_e04245a5111d5e6f25ff,아케인셰이드 파이렛숄더,어깨장식,어깨장식,equipment,200,아케인셰이드 세트
+equipment_78fbeaf827daf7df184c,저주받은 녹의 마도서,포켓 아이템,포켓 아이템,equipment,160,
+equipment_26c9e73ca73899047a4c,플라즈마 하트,기계 심장,기계 심장,equipment,130,
+equipment_6b3c38e169b05605edcd,크리스탈 웬투스 뱃지,뱃지,뱃지,equipment,130,
+equipment_773447f2d89c68f6e9ab,미트라의 분노 : 해적,엠블렘,엠블렘,equipment,200,
+equipment_61890924f0dfb194ad93,데이브레이크 펜던트,펜던트,펜던트2,equipment,140,
+equipment_8a762de36262cfbdbb07,컨티뉴어스 링,반지,예비 특수 반지,equipment,110,
+equipment_5e8c931e70ef15587f4d,하이네스 어새신보닛,모자,모자,equipment,150,루타비스 세트
+equipment_d1c13bfe6ea2f18127e1,트와일라이트 마크,얼굴장식,얼굴장식,equipment,140,
+equipment_2067e0eda9a8d9bd3ba1,파풀라투스 마크,눈장식,눈장식,equipment,145,
+equipment_79cdbe1ddbaf346ea621,이글아이 어새신셔츠,상의,상의,equipment,150,
+equipment_116c24d40bed28bc33d0,트릭스터 어새신팬츠,하의,하의,equipment,150,
+equipment_fa3afbf70ede1af30ba5,아케인셰이드 시프슈즈,신발,신발,equipment,200,아케인셰이드 세트
+equipment_a195b3cb7b0f23c2ed80,아케인셰이드 시프글러브,장갑,장갑,equipment,200,아케인셰이드 세트
+equipment_cbd045bba1bafbd5d997,아케인셰이드 시프케이프,망토,망토,equipment,200,아케인셰이드 세트
+equipment_02697f589cab4b767865,아스트라 베인 실드,방패,보조무기,equipment,200,
+equipment_099a4fdb5f604d0fbbb7,제네시스 대거,단검,무기,equipment,200,
+equipment_9c379d52bd6890403577,어웨이크 링,반지,반지1,equipment,120,
+equipment_a5eee0848907f52066e1,글로리온 링 : 슈프림,반지,반지2,equipment,120,
+equipment_040b895633f3aa57a89e,SS급 마스터 쥬얼링,반지,반지3,equipment,120,
+equipment_3772070e251f3488e86d,그리드 펜던트,펜던트,펜던트,equipment,75,
+equipment_9d741c573893308d0dcb,아케인셰이드 시프숄더,어깨장식,어깨장식,equipment,200,아케인셰이드 세트
+equipment_c075cc7320d9d91a8eb0,저주받은 황의 마도서,포켓 아이템,포켓 아이템,equipment,160,
+equipment_a9c647ad7d8f9fde202c,칠요의 뱃지,뱃지,뱃지,equipment,100,
+equipment_fe09b32a63a3ef6e2c77,골드 메이플리프 엠블렘,엠블렘,엠블렘,equipment,100,
+equipment_f1eb086da50bb3a47906,에테르넬 메이지햇,모자,모자,equipment,250,에테르넬 세트
+equipment_0e0412d2dca8c19a2014,레드 매지션 마이스터 심볼,얼굴장식,얼굴장식,equipment,100,
+equipment_73d3dbbda0b6d1b99b35,미카엘라의 새 안경,눈장식,눈장식,equipment,90,
+equipment_ff980fb66f6425a5382c,하프 이어링,귀고리,귀고리,equipment,75,
+equipment_8f989fc5818c42ed6f45,에테르넬 메이지로브,상의,상의,equipment,250,에테르넬 세트
+equipment_6e57ca07b17949ea2110,에테르넬 메이지팬츠,하의,하의,equipment,250,에테르넬 세트
+equipment_4557bf03f8457e3a396a,앱솔랩스 메이지슈즈,신발,신발,equipment,160,앱솔랩스 세트
+equipment_66269d58e2400d35959f,앱솔랩스 메이지글러브,장갑,장갑,equipment,160,앱솔랩스 세트
+equipment_ff172e64163811bf3cd4,앱솔랩스 메이지케이프,망토,망토,equipment,160,앱솔랩스 세트
+equipment_3ba8f6c14c9586ae9608,아스트라 체스피스 디 킹,체스피스,보조무기,equipment,200,
+equipment_cef3f655ed92110b7b0a,제네시스 ESP리미터,ESP 리미터,무기,equipment,200,
+equipment_b5a334108ac42e54d68e,마이스터 올마이티링,반지,반지1,equipment,75,
+equipment_f4a46d7cb711ff078550,마이스터링,반지,반지2,equipment,140,
+equipment_477e83dcd97a6698f9c0,아크로드의 마이스터 이터널 링,반지,반지3,equipment,90,
+equipment_35709bd990d2560d0374,가디언 엔젤 링,반지,반지4,equipment,160,
+equipment_06e15f94bba2b95f2e90,앱솔랩스 메이지숄더,어깨장식,어깨장식,equipment,160,앱솔랩스 세트
+equipment_f376d55437620d890b64,저주받은 청의 마도서,포켓 아이템,포켓 아이템,equipment,160,
+equipment_37632634dbb9badae606,컴플리트 언더컨트롤,기계 심장,기계 심장,equipment,200,
+equipment_109fc5c3ef7b79cf9631,창세의 뱃지,뱃지,뱃지,equipment,200,
+equipment_3d9f96a0087a36fb916c,미트라의 분노 : 마법사,엠블렘,엠블렘,equipment,200,
+equipment_ec448465d9bf7d5ef842,고통의 근원,펜던트,펜던트2,equipment,160,
+equipment_93108a0168aa882db545,에테르넬 아처햇,모자,모자,equipment,250,에테르넬 세트
+equipment_e9b8810507e6384d2b8d,에테르넬 아처후드,상의,상의,equipment,250,에테르넬 세트
+equipment_70009129b01955296bea,에테르넬 아처팬츠,하의,하의,equipment,250,에테르넬 세트
+equipment_02ba306c759951dde4f7,아케인셰이드 아처슈즈,신발,신발,equipment,200,아케인셰이드 세트
+equipment_31c9f5a2d43faf448732,에테르넬 아처글러브,장갑,장갑,equipment,250,에테르넬 세트
+equipment_d243fc9b1765bd6aa9be,아케인셰이드 아처케이프,망토,망토,equipment,200,아케인셰이드 세트
+equipment_4087e9689394806f0980,아스트라 마법 화살,마법화살,보조무기,equipment,200,
+equipment_1268e6ce8d99487b0295,데스티니 듀얼보우건,듀얼 보우건,무기,equipment,250,
+equipment_0f229a8eb3314a6f64d8,여명의 가디언 엔젤 링,반지,반지3,equipment,160,
+equipment_c0c337bad81641389789,마이스터링,반지,반지4,equipment,140,
+equipment_cca6ad7cc1c0aa19e6f6,아케인셰이드 아처숄더,어깨장식,어깨장식,equipment,200,아케인셰이드 세트
+equipment_7854c55ee720e4d42184,미트라의 분노 : 궁수,엠블렘,엠블렘,equipment,200,
+equipment_14c08a17bc1d5c8b797d,에테르넬 파이렛햇,모자,모자,equipment,250,에테르넬 세트
+equipment_43c43610cf242d868c8f,블랙빈 마크,눈장식,눈장식,equipment,135,
+equipment_23a04387ec85a0c1e5db,에테르넬 파이렛코트,상의,상의,equipment,250,에테르넬 세트
+equipment_682b790355f6d512d1a5,에테르넬 파이렛팬츠,하의,하의,equipment,250,에테르넬 세트
+equipment_c65693f27f4d68f8a8f1,앱솔랩스 파이렛슈즈,신발,신발,equipment,160,앱솔랩스 세트
+equipment_880293956b594309fe77,앱솔랩스 파이렛글러브,장갑,장갑,equipment,160,앱솔랩스 세트
+equipment_6e6474a6ebe8a38dec6e,앱솔랩스 파이렛케이프,망토,망토,equipment,160,앱솔랩스 세트
+equipment_93b49ef85dca8a4bfd78,아스트라 여우구슬,여우구슬,보조무기,equipment,200,
+equipment_47702c5b8c12c4dd5958,제네시스 클로,너클,무기,equipment,200,
+equipment_01308ea90aa7fc50234b,버서커의 마이스터 임모탈 링,반지,반지1,equipment,90,
+equipment_5dc05a62271d39a5c8a8,어웨이크 링,반지,반지2,equipment,120,
+equipment_9c089f0b31a6cfde9d6a,베어스 그린 펜던트,펜던트,펜던트,equipment,100,
+equipment_2a8cd0688b8b31b9e28a,THE RED,훈장,훈장,equipment,0,
+equipment_37811da88b36d5f19578,에테르넬 파이렛숄더,어깨장식,어깨장식,equipment,250,에테르넬 세트
+equipment_3f016e28e52801a02a86,저주받은 적의 마도서,포켓 아이템,포켓 아이템,equipment,160,
+equipment_dc37dea920ba5a238739,에테르넬 시프반다나,모자,모자,equipment,250,에테르넬 세트
+equipment_38d28fede137f0febd11,에스텔라 이어링,귀고리,귀고리,equipment,160,
+equipment_41f50c3a93db63eeeb94,에테르넬 시프셔츠,상의,상의,equipment,250,에테르넬 세트
+equipment_0d3dfe230ea162e2ff26,에테르넬 시프팬츠,하의,하의,equipment,250,에테르넬 세트
+equipment_5219f6baac4e4aa5efae,에테르넬 시프슈즈,신발,신발,equipment,250,에테르넬 세트
+equipment_7298b890902846a24596,앱솔랩스 시프글러브,장갑,장갑,equipment,160,앱솔랩스 세트
+equipment_5672416c2318e4887a6f,에테르넬 시프케이프,망토,망토,equipment,250,에테르넬 세트
+equipment_f6bbf25e61240d6bdaf7,아스트라 카르트,카드,보조무기,equipment,200,
+equipment_fb79bfbc06022e60bf62,제네시스 케인,케인,무기,equipment,200,
+equipment_1110786527ef9fd32f97,테네브리스 원정대 반지,반지,반지1,equipment,120,
+equipment_9bb4ffa105cce551eefe,결속의 반지,반지,반지2,equipment,120,
+equipment_d477594fc5cc35efca01,카오스 링,반지,반지4,equipment,120,루타비스 세트
+equipment_24e68dccfd802533c510,THE BLACK,훈장,훈장,equipment,0,
+equipment_8a02bc7d4ccf275f56d6,에테르넬 시프숄더,어깨장식,어깨장식,equipment,250,에테르넬 세트
+equipment_794af8c490fff304177a,골드 히어로즈 엠블렘,엠블렘,엠블렘,equipment,100,
+equipment_c0a6b2c21c2ddb772b58,도미네이터 펜던트,펜던트,펜던트2,equipment,140,
+equipment_499f09ef25b9005b2522,앱솔랩스 나이트헬름,모자,모자,equipment,160,앱솔랩스 세트
+equipment_f8f05fb99160fc2e9976,마이스터 이어링,귀고리,귀고리,equipment,140,
+equipment_297ee24a0c7b48870650,이글아이 워리어아머,상의,상의,equipment,150,
+equipment_45bc92c81787fd58e573,트릭스터 워리어팬츠,하의,하의,equipment,150,
+equipment_9eef35aac45f65a259b3,앱솔랩스 나이트슈즈,신발,신발,equipment,160,앱솔랩스 세트
+equipment_12c48b01820d39022c4b,앱솔랩스 나이트글러브,장갑,장갑,equipment,160,앱솔랩스 세트
+equipment_1d3b6440b2bed4eed7ca,앱솔랩스 나이트케이프,망토,망토,equipment,160,앱솔랩스 세트
+equipment_51b69619628670fbb9a4,버츄스 메달,메달,보조무기,equipment,100,
+equipment_d512654b3519ebb3ee5c,제네시스 투핸드소드,두손검,무기,equipment,200,
+equipment_c5f122196cecc7cf4207,벤젼스 링,반지,반지1,equipment,120,
+equipment_7b42f9dc641836c48127,테네브리스 원정대 반지,반지,반지2,equipment,120,
+equipment_78da05b4648a1dca3f9f,데이브레이크 펜던트,펜던트,펜던트,equipment,140,
+equipment_a8e938a689fd2a6e4b0e,타일런트 히아데스 벨트,벨트,벨트,equipment,150,
+equipment_59b11ef2faab2fac734f,앱솔랩스 나이트숄더,어깨장식,어깨장식,equipment,160,앱솔랩스 세트
+equipment_289949b50f0373c79662,미트라의 분노 : 전사,엠블렘,엠블렘,equipment,200,
+equipment_e15e26eb89d640bb6dde,그리드 펜던트,펜던트,펜던트2,equipment,75,
+equipment_ffd3857db82009d290d9,하이네스 워리어헬름,모자,모자,equipment,150,루타비스 세트
+equipment_b47102380cddef8c2c90,샤이니 레드 워리어 마이스터 심볼,얼굴장식,얼굴장식,equipment,130,
+equipment_459d0614bdaaef9c99c4,라이온하트 배틀브레이서,장갑,장갑,equipment,140,
+equipment_7a622fe2411481b81fe0,노블 브레이슬릿,브레이슬릿,보조무기,equipment,100,
+equipment_ce62f1be55f7e73ae5c0,제네시스 튜너,튜너,무기,equipment,200,
+equipment_d8a14bdfd352eac69407,가디언의 마이스터 임모탈 링,반지,반지2,equipment,90,
+equipment_6b442f74b9c4163e7865,스칼렛 링,반지,반지3,equipment,135,
+equipment_99c80545b8ffb9983c31,에테르넬 나이트숄더,어깨장식,어깨장식,equipment,250,에테르넬 세트
+equipment_d4b5aa19ffe9c423f988,티타늄 하트,기계 심장,기계 심장,equipment,100,
+equipment_7b4c2b4b003a16c8e7b0,에테르넬 메이지슈즈,신발,신발,equipment,250,에테르넬 세트
+equipment_0d5cc844e3bdaf679c61,에테르넬 메이지글러브,장갑,장갑,equipment,250,에테르넬 세트
+equipment_55da4ed857f097ede049,에테르넬 메이지케이프,망토,망토,equipment,250,에테르넬 세트
+equipment_3e00ac34446fe0daefc7,아스트라 아케인 실드,방패,보조무기,equipment,200,
+equipment_dadec2949c335c9f5561,제네시스 스태프,스태프,무기,equipment,200,
+equipment_f804eff2d7f445a4ad78,SS급 마스터 쥬얼링,반지,반지1,equipment,120,
+equipment_9314865b6ca53157761b,버서커의 마이스터 임모탈 링,반지,반지2,equipment,90,
+equipment_61517a3b8ad82c2b88c5,가디언의 마이스터 임모탈 링,반지,반지3,equipment,90,
+equipment_445dd8e3514ed59fb066,카오스 벨룸 킬러,훈장,훈장,equipment,0,루타비스 세트
+equipment_4d2ffba662504d89340a,에테르넬 메이지숄더,어깨장식,어깨장식,equipment,250,에테르넬 세트
+equipment_59f5f02bf43617fff0d1,리튬 하트,기계 심장,기계 심장,equipment,30,
+equipment_4dfc271d949f5649ebed,샤이니 레드 시프 마이스터 심볼,얼굴장식,얼굴장식,equipment,130,
+equipment_5e9900d5e0659033b28c,앱솔랩스 시프슈즈,신발,신발,equipment,160,앱솔랩스 세트
+equipment_d15f673222c9ea62ccc9,앱솔랩스 시프케이프,망토,망토,equipment,160,앱솔랩스 세트
+equipment_08f1cc8d957c9d0ea456,파사부,부적,보조무기,equipment,100,
+equipment_25898ee486405e4ef03f,제네시스 가즈,아대,무기,equipment,200,
+equipment_76b64bd382c8729f3f51,글로리온 링 : 슈프림,반지,반지3,equipment,120,
+equipment_3af12f2080ddd28f5ddc,메이플 대학교,훈장,훈장,equipment,0,
+equipment_c16407c73e8bacda5c3f,분노한 자쿰의 벨트,벨트,벨트,equipment,150,
+equipment_c138b0f926da02e97ad5,앱솔랩스 시프숄더,어깨장식,어깨장식,equipment,160,앱솔랩스 세트
+equipment_b51d277ff7450ea54534,아케인셰이드 투핸드엑스,두손도끼,무기,equipment,200,아케인셰이드 세트
+equipment_45fd58f16aa81693e668,어비스 헌터스 링,반지,반지1,equipment,130,
+equipment_55056fd3eb1dfe6e944b,2024 싸전귀 레전드,훈장,훈장,equipment,0,
+equipment_fdc648570935d1b19d88,핑크빛 성배,포켓 아이템,포켓 아이템,equipment,140,
+equipment_c0d71ef19b3c769a7dd9,페어리 하트,기계 심장,기계 심장,equipment,100,
+equipment_443bd43b00e593657760,하이네스 던위치햇,모자,모자,equipment,150,루타비스 세트
+equipment_d2d07ea6c71fb5da65da,이글아이 던위치로브,상의,상의,equipment,150,
+equipment_0064436c6c5a643eb8e5,트릭스터 던위치팬츠,하의,하의,equipment,150,
+equipment_3d3767dd80200c05b1b3,아케인셰이드 메이지슈즈,신발,신발,equipment,200,아케인셰이드 세트
+equipment_d501736d7dfdf64f1511,아케인셰이드 메이지글러브,장갑,장갑,equipment,200,아케인셰이드 세트
+equipment_3c0f7ff9420bee92e965,아케인셰이드 메이지케이프,망토,망토,equipment,200,아케인셰이드 세트
+equipment_06949a6ddb3352283ab2,☆메이프릴 아일랜드☆,훈장,훈장,equipment,0,
+equipment_111fbdef45374c021614,아케인셰이드 메이지숄더,어깨장식,어깨장식,equipment,200,아케인셰이드 세트
+equipment_d1ad25c49800f6147e71,가디언 엔젤 링,반지,반지2,equipment,160,
+equipment_5aa07f4b61f85beb5408,어웨이크 링,반지,반지3,equipment,120,
+equipment_9d2609635c7e46b849a5,글로리온 링 : 슈프림,반지,반지4,equipment,120,
+equipment_fc303d7af3185c770d1e,에테르넬 파이렛슈즈,신발,신발,equipment,250,에테르넬 세트
+equipment_871873398e954e82ac1d,에테르넬 파이렛글러브,장갑,장갑,equipment,250,에테르넬 세트
+equipment_1e9c52cec9f866e9b070,에테르넬 파이렛케이프,망토,망토,equipment,250,에테르넬 세트
+equipment_2ffb2014e571c5ddc1cd,아스트라 패스,패스 오브 어비스,보조무기,equipment,200,
+equipment_5ce91ded41f22dfd18b9,데스티니 클로,너클,무기,equipment,250,
+equipment_a57fd5fc3841d3113df0,거대한 공포,반지,반지4,equipment,200,
+equipment_969db0d752d2380715f4,불멸의 유산,훈장,훈장,equipment,250,
+equipment_9ba7092e2e4867e02ff1,아케인셰이드 나이트슈즈,신발,신발,equipment,200,아케인셰이드 세트
+equipment_715a913ad18650518913,아케인셰이드 나이트글러브,장갑,장갑,equipment,200,아케인셰이드 세트
+equipment_cbe27f97bdc89ca81680,아케인셰이드 나이트케이프,망토,망토,equipment,200,아케인셰이드 세트
+equipment_105c5bc1186f6903520b,버서크 체인,쇠사슬,보조무기,equipment,100,
+equipment_d56f6f89dcd49e0d101b,제네시스 스피어,창,무기,equipment,200,
+equipment_9d8c4ebce127535fe008,아케인셰이드 나이트숄더,어깨장식,어깨장식,equipment,200,아케인셰이드 세트
+equipment_27cd3b101eb367f9958f,피콕스 핑크 펜던트,펜던트,펜던트2,equipment,120,
+equipment_d58cd064aeb05fbcfa20,아스트라 프로미넌트 실드,방패,보조무기,equipment,200,
+equipment_d67d0c9a9294ed2b485a,데스티니 스태프,스태프,무기,equipment,250,
+equipment_7f32a0b851125cfc21af,여명의 가디언 엔젤 링,반지,반지2,equipment,160,
+equipment_3e008f4dfd6ad4d6ea1c,거대한 공포,반지,반지3,equipment,200,
+equipment_2468e46145925f221142,샤이니 레드 매지션 마이스터 심볼,얼굴장식,얼굴장식,equipment,130,
+equipment_49123c3bf1f5aa255ce7,백금의 서 <종장>,마도서,보조무기,equipment,100,
+equipment_ccbc9a826b1c78f39588,마이스터 올마이티링,반지,반지4,equipment,75,
+equipment_f6114194708a3755fdd1,타일런트 헤르메스 벨트,벨트,벨트,equipment,150,
+equipment_5cb078f6eb9034bd6e82,하이네스 레인져베레,모자,모자,equipment,150,루타비스 세트
+equipment_087ae9754e39c56c81ac,샤이니 레드 아처 마이스터 심볼,얼굴장식,얼굴장식,equipment,130,
+equipment_2cbd3fe6211f1d836538,오션 글로우 이어링,귀고리,귀고리,equipment,150,
+equipment_d7c847b5b75a1eb58ca2,이글아이 레인져후드,상의,상의,equipment,150,
+equipment_31cbf4953ca5833acdb8,트릭스터 레인져팬츠,하의,하의,equipment,150,
+equipment_696246e8089c1af4c7ae,아케인셰이드 아처글러브,장갑,장갑,equipment,200,아케인셰이드 세트
+equipment_2c8d3874da9c14d9c743,에레브의 광휘,보석,보조무기,equipment,100,
+equipment_0acdeee5e5399b8b7ecd,제네시스 보우,활,무기,equipment,200,
+equipment_8d303a4d8d04b1760409,도미네이터 펜던트,펜던트,펜던트,equipment,140,
+equipment_1fc2f3a2b673595bd3d0,정령의 펜던트,펜던트,펜던트2,equipment,0,
+equipment_fc6d12eb07bd55038e2e,에테르넬 나이트헬름,모자,모자,equipment,250,에테르넬 세트
+equipment_b1959904d50eab2d3a34,레드 워리어 마이스터 심볼,얼굴장식,얼굴장식,equipment,100,
+equipment_0ce28964a39cae9af336,에테르넬 나이트아머,상의,상의,equipment,250,에테르넬 세트
+equipment_0bf5f6239fde81490bf5,에테르넬 나이트팬츠,하의,하의,equipment,250,에테르넬 세트
+equipment_63a8504cdf8ba35ad7fd,아스트라 체인,쇠사슬,보조무기,equipment,200,
+equipment_ac8de347e046b18a8ed7,마이스터링,반지,반지1,equipment,140,
+equipment_6ff2032805859a81d0c5,마이스터 올마이티링,반지,반지3,equipment,75,
+equipment_cb9ce6072a5c076e9b37,드래곤마스터의 유산,문서,보조무기,equipment,100,
+equipment_44b33a55e3898f986f98,컨티뉴어스 링,반지,반지1,equipment,110,
+equipment_2822abf69ee6e31d7e9b,웨폰퍼프 - I링,반지,예비 특수 반지,equipment,110,
+equipment_d2170bba4d3b4f0ba670,아스트라 백호추,무게추,보조무기,equipment,200,
+equipment_59521cf022e5f0f7103b,제네시스 폴암,폴암,무기,equipment,200,
+equipment_65b8543ff9efcfb30593,벤젼스 링,반지,반지3,equipment,120,
+equipment_70fb8957cf05773a21cf,청은의 서 <종장>,마도서,보조무기,equipment,100,
+equipment_96d6301a24c3cc25023f,마이스터 올마이티링,반지,반지2,equipment,75,
+equipment_e4cc58747b895b951aa3,버서커의 마이스터 임모탈 링,반지,반지4,equipment,90,
+equipment_4fd94fa9c860deb1b8a6,데이모스 세이지 실드,방패,보조무기,equipment,130,
+equipment_27cb375a326dde7eae73,카오스 링,반지,반지1,equipment,120,루타비스 세트
+equipment_28f86b63e8b3db64b5a5,벤젼스 링,반지,반지4,equipment,120,
+equipment_719c2df6d007fe9a41c8,아스트라 림리스,화약통,보조무기,equipment,200,
+equipment_69536ea9a9de55c85e2a,데스티니 블래스트캐논,핸드캐논,무기,equipment,250,
+equipment_c5d38b5f896f9407c016,체스피스 디 퀸,체스피스,보조무기,equipment,100,
+equipment_74da6dc373a865a3d936,데스티니 ESP리미터,ESP 리미터,무기,equipment,250,
+equipment_df4dc26f9407f76c2331,실버블라썸 링,반지,반지2,equipment,110,
+equipment_7fca272b61500ba6a6ba,카오스 링,반지,반지3,equipment,120,루타비스 세트
+equipment_811829b9652e9d8c6a25,글로리온 링 : 가디언,반지,반지1,equipment,120,
+equipment_6aeb5e049b79c9885fbc,어웨이크 링,반지,반지4,equipment,120,
+equipment_e0c73b49da98ab16aef0,미트라의 분노 : 도적,엠블렘,엠블렘,equipment,200,
+equipment_24f2e1735f0137ac6de0,글로리온 링 : 가디언,반지,반지2,equipment,120,
+equipment_4a395088755f86bd1327,아쿠아틱 레터 눈장식,눈장식,눈장식,equipment,100,
+equipment_88ae262bb410542ceb38,테네브리스 원정대 반지,반지,반지4,equipment,120,
+equipment_a2556290eb2039d28dfa,빅토리아컵,훈장,훈장,equipment,0,
+equipment_e8a77b5702f20e7a8d27,골든 클로버 벨트,벨트,벨트,equipment,140,
+equipment_68f01270369e8854ddb9,리스트레인트 링,반지,예비 특수 반지,equipment,110,
+equipment_97f4a9ec425209939a0d,레드 파이렛 마이스터 심볼,얼굴장식,얼굴장식,equipment,100,
+equipment_70f0c9be98bfd6295cd5,아스트라 사파이어,보석,보조무기,equipment,200,
+equipment_b14663b702b8046a6fcc,글로리온 링 : 슈프림,반지,반지1,equipment,120,
+equipment_79ce2dff017a8fd71c18,제네시스 라피스,대검,보조무기,equipment,200,
+equipment_2d528e48d3f6c1c19d56,제네시스 라즐리,태도,무기,equipment,200,
+equipment_a0c06a0d46f899e9431a,이터널 타임 엠블렘,엠블렘,엠블렘,equipment,100,
+equipment_f45ec8a493d4afa469c6,에테르넬 아처슈즈,신발,신발,equipment,250,에테르넬 세트
+equipment_61901a39546f1d387620,에테르넬 아처케이프,망토,망토,equipment,250,에테르넬 세트
+equipment_71d09fc146ffdd272955,이볼빙 블라스트 페더,화살깃,보조무기,equipment,100,
+equipment_c7419a6cb2bf5e0c93d9,데스티니 보우,활,무기,equipment,250,
+equipment_4777d36d24886ffbe386,에테르넬 아처숄더,어깨장식,어깨장식,equipment,250,에테르넬 세트
+equipment_db8df66f1ce3d533e84f,에테르넬 시프글러브,장갑,장갑,equipment,250,에테르넬 세트
+equipment_95ca39de08e5b12b9972,아스트라 트랜스미터,무기 전송장치,보조무기,equipment,200,
+equipment_451ee9686cc9fbe5801e,제네시스 체인,체인,무기,equipment,200,
+equipment_59f7c3188907f2cdcef2,데스티니 라피스,대검,보조무기,equipment,250,
+equipment_d62f69844bbd0a1f0b3b,데스티니 라즐리,태도,무기,equipment,250,
+equipment_805ff969bb52ab1ee672,벤젼스 링,반지,반지2,equipment,120,
+equipment_0d91d1c521de0fa81932,테네브리스 원정대 반지,반지,반지3,equipment,120,
+equipment_4fd778b6083044fbfa36,결속의 반지,반지,반지4,equipment,120,
+equipment_a4dfd6389d08a39ffd31,에테르넬 나이트슈즈,신발,신발,equipment,250,에테르넬 세트
+equipment_f81629dae83d231e5d3b,에테르넬 나이트글러브,장갑,장갑,equipment,250,에테르넬 세트
+equipment_d341cdfbf358682dba39,에테르넬 나이트케이프,망토,망토,equipment,250,에테르넬 세트
+equipment_64fa23533e002945116a,아스트라 메달,메달,보조무기,equipment,200,
+equipment_6eeb13382aa888ef32bf,제네시스 투핸드엑스,두손도끼,무기,equipment,200,
+equipment_72608480e9afdd8c92eb,골드 나이트 엠블렘,엠블렘,엠블렘,equipment,100,
+equipment_d5953a54cbb4f33c9c9c,앱솔랩스 시프캡,모자,모자,equipment,160,앱솔랩스 세트
+equipment_52ede615ab5f04654ad5,월장석 선추,선추,보조무기,equipment,100,
+equipment_ec7ae2f8c8c8b24449c2,제네시스 창세선,부채,무기,equipment,200,
+equipment_1dd9effa227fea7f782c,타일런트 리카온 벨트,벨트,벨트,equipment,150,
+equipment_455c7f7e5578fe74f04b,금빛 천지인 엠블렘,엠블렘,엠블렘,equipment,100,
+equipment_4661543d400b6343b3fc,가디언의 마이스터 임모탈 링,반지,반지1,equipment,90,
+equipment_208a1275ffb25fc024c6,코스모스 링,반지,반지3,equipment,120,
+equipment_2c57494e252c14a2fe38,데스티니 폴암,폴암,무기,equipment,250,
+equipment_b0d89a0ba7291bcfecc2,아스트라 매그넘,매그넘,보조무기,equipment,200,
+equipment_0d96df720db7456a8f9b,데스티니 피스톨,건,무기,equipment,250,
+equipment_e2c642516a5112ee5dc2,샤이니 레드 파이렛 마이스터 심볼,얼굴장식,얼굴장식,equipment,130,
+equipment_08423b5c240dda249602,튼튼한 기계 장갑,장갑,장갑,equipment,90,
+equipment_23328c83960f6fa07669,메이플 트레져 리스트아머,리스트밴드,보조무기,equipment,110,
+equipment_13ba3cbb725a04e0ba3f,타일런트 알테어 벨트,벨트,벨트,equipment,150,
+equipment_62fa010bcf6d438e6f6f,앱솔랩스 파이렛숄더,어깨장식,어깨장식,equipment,160,앱솔랩스 세트
+equipment_31438169ba6574cf5b5f,매커네이터 펜던트,펜던트,펜던트2,equipment,120,
+equipment_8cbd48d8487cbab2b6f8,버서커의 마이스터 임모탈 링,반지,반지3,equipment,90,
+equipment_de82d00fcd71123e92d5,베어스 그린 펜던트,펜던트,펜던트2,equipment,100,
+equipment_d049c5441d8eef2429ad,아스트라 토파즈,보석,보조무기,equipment,200,
+equipment_96be33476ca5086de81b,데스티니 투핸드소드,두손검,무기,equipment,250,
+equipment_e8e24849618ca6550a0e,이터널 플레임 링,반지,반지1,equipment,120,
+equipment_3c9cc8c88697bf0cd5cc,혼테일의 목걸이,펜던트,펜던트,equipment,120,
+equipment_7bc460bc2f2a724dda21,리스트레인트 링,반지,반지3,equipment,110,
+equipment_a121174436b0d5d1f50e,카오스 핑크빈 마크,눈장식,눈장식,equipment,135,루타비스 세트
+equipment_e37446761ae08c427ffa,아케인셰이드 블레이드,블레이드,보조무기,equipment,200,아케인셰이드 세트
+equipment_f5b97e594f0eb9583cac,데스티니 대거,단검,무기,equipment,250,
+equipment_7d1e467b83b67e9859d8,SS급 마스터 쥬얼링,반지,반지2,equipment,120,
+equipment_81baf62002aa60a3f171,가디언의 마이스터 임모탈 링,반지,반지4,equipment,90,
+equipment_b5db9995cbf9e10de3da,아스트라 포스실드,포스실드,보조무기,equipment,200,
+equipment_ef69fadadce896de3bf8,데스티니 데스페라도,데스페라도,무기,equipment,250,
+equipment_5de1fd879d7fbbac0f05,아스트라 로자리오,로자리오,보조무기,equipment,200,
+equipment_c648882ae7586d36a298,가디언 엔젤 링,반지,반지1,equipment,160,
+equipment_aceaa48c8d47632634d6,아스트라 웨폰 벨트,웨폰 벨트,보조무기,equipment,200,
+equipment_fc66640bfab4d6fa3a3d,데스티니 브레스 슈터,브레스 슈터,무기,equipment,250,
+equipment_8e9b0baff8ea5e030a48,아스트라 에메랄드,보석,보조무기,equipment,200,
+equipment_bffdefcbad5f12b266f2,팔콘아이,조준기,보조무기,equipment,100,
+equipment_db43ec4141f762c7e401,스칼렛 숄더,어깨장식,어깨장식,equipment,135,
+equipment_08042651011889ea182a,데스티니 튜너,튜너,무기,equipment,250,
+equipment_a5495b430e99923370f1,아스트라 렐릭,렐릭,보조무기,equipment,200,
+equipment_da143748a5bc0248c9d3,데스티니 에인션트 보우,에인션트 보우,무기,equipment,250,
+equipment_b7d5a0da535a763d842a,실버블라썸 링,반지,반지1,equipment,110,
+equipment_b14c0c7fe29088365749,데스티니 케인,케인,무기,equipment,250,
+equipment_a3e51e82db4fab537bfb,아케인셰이드 메이지햇,모자,모자,equipment,200,아케인셰이드 세트
+equipment_b8340cd566391bd16c4e,베어스 레드 펜던트,펜던트,펜던트,equipment,110,
+equipment_d7b5a38254b6c8c2f432,아스트라 데카코어 컨트롤러,컨트롤러,보조무기,equipment,200,
+equipment_882702cf0134b72b2f65,데스티니 에너지체인,에너지소드,무기,equipment,250,
+equipment_3ee57d6ef32a08a4e533,아스트라 노바의 정수,용의 정수,보조무기,equipment,200,
+equipment_98596cef57a3de20a0fe,제네시스 투핸드해머,두손둔기,무기,equipment,200,
+equipment_a05c7dd6b920a40ed4c2,아스트라 브레이슬릿,브레이슬릿,보조무기,equipment,200,
+equipment_f0bc1dfa5387a5b6e423,코스모스 링,반지,반지1,equipment,120,
+equipment_74795ae887aeb0e6fa57,아스트라 탈리스만,부적,보조무기,equipment,200,
+equipment_fbe4a6b7812ef125da1b,SS급 마스터 쥬얼링,반지,반지4,equipment,120,
+equipment_4e1e7e99f11027bdf8ea,꿈나무,훈장,훈장,equipment,0,
+equipment_aa1b94fea66acb88f1d5,결속의 반지,반지,반지3,equipment,120,
+equipment_802cdb1a29d3b42fcf03,코스모스 링,반지,반지4,equipment,120,
+equipment_28b2dc5f9cf8e3535a0f,아스트라 매직윙,매직윙,보조무기,equipment,200,
+equipment_4bc9c15b190a8190cc89,제네시스 매직 건틀렛,매직 건틀렛,무기,equipment,200,
+equipment_84fcfe9511701fd5421f,골드 크리스탈 엠블렘,엠블렘,엠블렘,equipment,100,
+equipment_d2e96b0de4efa20c4b69,어비스 마스크,드래곤 모자,드래곤 모자,equipment,125,
+equipment_6d77fc800850980a4182,어비스 펜던트,드래곤 펜던트,드래곤 펜던트,equipment,125,
+equipment_ef710fcc153c3b9ee965,어비스 윙즈,드래곤 날개장식,드래곤 날개장식,equipment,125,
+equipment_e1ff36041674e8901125,어비스 테일,드래곤 꼬리장식,드래곤 꼬리장식,equipment,125,
+equipment_869f90b9ce2120974c97,퓨어 골드 엔진,메카닉 엔진,메카닉 엔진,equipment,120,
+equipment_b36b94cd5ce81e208b4e,퓨어 골드 머신 암,메카닉 암,메카닉 암,equipment,120,
+equipment_e02d0289c04e480aa812,퓨어 골드 머신 레그,메카닉 레그,메카닉 레그,equipment,120,
+equipment_a7adf06d560a9804b202,퓨어 골드 바디 프레임,메카닉 프레임,메카닉 프레임,equipment,120,
+equipment_61f91c914cb88d226a7d,퓨어 골드 트랜지스터,메카닉 트랜지스터,메카닉 트랜지스터,equipment,120,
+equipment_f58e66031361f1fed99d,앱솔랩스 무기,무기,무기,equipment,160,앱솔랩스 세트
+equipment_7f10fc424386b7f5836d,앱솔랩스 견장,어깨장식,어깨장식,equipment,160,앱솔랩스 세트
+equipment_5dd323baecaac34daa89,아케인셰이드 무기,무기,무기,equipment,200,아케인셰이드 세트
+equipment_1fa64aaaedbca814ced2,아케인셰이드 방어구,방어구,방어구,equipment,200,아케인셰이드 세트
+equipment_9b477280be217e8a10ab,에테르넬 방어구,방어구,방어구,equipment,250,에테르넬 세트
+equipment_8b858b0feb0084ca3241,fafnir_or_absolab weapon,weapon,weapon,equipment_growth_rule,200,
+equipment_6da20ca8440dbcbd72d3,fafnir_or_absolab secondary_weapon,secondary_weapon,secondary_weapon,equipment_growth_rule,200,
+equipment_23514846c3d0123eba1d,fafnir_or_absolab emblem,emblem,emblem,equipment_growth_rule,200,
+equipment_bc1c510c087beb4f2ed5,cra_3set_or_absolab armor_set,armor_set,armor_set,equipment_growth_rule,200,
+equipment_3687735655384bad2081,boss_accessory_9set accessory_set,accessory_set,accessory_set,equipment_growth_rule,200,
+equipment_acf691741bb45a92b9cf,absolab_or_arcane weapon,weapon,weapon,equipment_growth_rule,220,
+equipment_3bcd23490f463ffd2347,absolab_or_arcane secondary_weapon,secondary_weapon,secondary_weapon,equipment_growth_rule,220,
+equipment_0fbd39d353a0a957c4d0,absolab_or_arcane emblem,emblem,emblem,equipment_growth_rule,220,
+equipment_416f846b418d556b422f,cra_3set_absolab_5set armor_set,armor_set,armor_set,equipment_growth_rule,220,
+equipment_e2d5e5aee6fe7fdb4122,boss_accessory_or_dawn_pitched_seed accessory_set,accessory_set,accessory_set,equipment_growth_rule,220,
+equipment_5a00ec9f1bde116e1f8e,arcane_or_high_absolab weapon,weapon,weapon,equipment_growth_rule,250,
+equipment_ab3ec7f7e761f830c29c,arcane_or_high_absolab secondary_weapon,secondary_weapon,secondary_weapon,equipment_growth_rule,250,
+equipment_7d7e408ca9e00d723923,arcane_or_high_absolab emblem,emblem,emblem,equipment_growth_rule,250,
+equipment_0425924f72b6e02369d2,arcane_5set_or_22_star_absolab_path armor_set,armor_set,armor_set,equipment_growth_rule,250,
+equipment_66cb15dbf79b7c037b47,dawn_or_pitched_boss_progression accessory_set,accessory_set,accessory_set,equipment_growth_rule,250,
+equipment_7f1e432d8548e4409007,genesis_or_optimized_arcane weapon,weapon,weapon,equipment_growth_rule,270,
+equipment_183bef5fc45f927f2241,genesis_or_optimized_arcane secondary_weapon,secondary_weapon,secondary_weapon,equipment_growth_rule,270,
+equipment_37e6a2af63b2bb350e68,genesis_or_optimized_arcane emblem,emblem,emblem,equipment_growth_rule,270,
+equipment_99da21f09c1d62beb7c0,22_star_arcane_or_eternal_path armor_set,armor_set,armor_set,equipment_growth_rule,270,
+equipment_99ad87b2a40675d0ae9c,pitched_boss_optimized accessory_set,accessory_set,accessory_set,equipment_growth_rule,270,
+equipment_29fa94a3ed94c587091c,early_bossing weapon priority weapon priority_rank: 1 why: largest visible damage increase recommended_action: secure epic potential and basic starforce,weapon priority_rank: 1 why: largest visible damage increase recommended_action: secure epic potential and basic starforce,weapon priority_rank: 1 why: largest visible damage increase recommended_action: secure epic potential and basic starforce,equipment_growth_rule,,
+equipment_b64d1268a025e83a9a5c,early_bossing emblem priority emblem priority_rank: 2 why: does not get replaced often and potential is efficient recommended_action: roll useful attack/magic attack or ignore defense lines,emblem priority_rank: 2 why: does not get replaced often and potential is efficient recommended_action: roll useful attack/magic attack or ignore defense lines,emblem priority_rank: 2 why: does not get replaced often and potential is efficient recommended_action: roll useful attack/magic attack or ignore defense lines,equipment_growth_rule,,
+equipment_6203fb5c85b613dbfd56,early_bossing secondary_weapon priority secondary_weapon priority_rank: 3 why: WSE potential affects bossing strongly recommended_action: secure epic potential and useful line,secondary_weapon priority_rank: 3 why: WSE potential affects bossing strongly recommended_action: secure epic potential and useful line,secondary_weapon priority_rank: 3 why: WSE potential affects bossing strongly recommended_action: secure epic potential and useful line,equipment_growth_rule,,
+equipment_500aba004d12d0141079,early_bossing armor_set priority armor_set priority_rank: 4 why: set effect and starforce baseline recommended_action: fill CRA/Absolab transition pieces,armor_set priority_rank: 4 why: set effect and starforce baseline recommended_action: fill CRA/Absolab transition pieces,armor_set priority_rank: 4 why: set effect and starforce baseline recommended_action: fill CRA/Absolab transition pieces,equipment_growth_rule,,
+equipment_1f7443397e6d6216d6e3,early_bossing accessory_set priority accessory_set priority_rank: 5 why: cheap slot completion recommended_action: complete boss accessory set,accessory_set priority_rank: 5 why: cheap slot completion recommended_action: complete boss accessory set,accessory_set priority_rank: 5 why: cheap slot completion recommended_action: complete boss accessory set,equipment_growth_rule,,
+equipment_95be60ddde62727b9507,mid_bossing weapon priority weapon priority_rank: 1 why: boss clear thresholds depend heavily on weapon tier/potential recommended_action: 17 star and unique/legendary WSE path,weapon priority_rank: 1 why: boss clear thresholds depend heavily on weapon tier/potential recommended_action: 17 star and unique/legendary WSE path,weapon priority_rank: 1 why: boss clear thresholds depend heavily on weapon tier/potential recommended_action: 17 star and unique/legendary WSE path,equipment_growth_rule,,
+equipment_437c06b3f341d2224a47,mid_bossing emblem priority emblem priority_rank: 2 why: high efficiency potential slot recommended_action: target useful unique lines,emblem priority_rank: 2 why: high efficiency potential slot recommended_action: target useful unique lines,emblem priority_rank: 2 why: high efficiency potential slot recommended_action: target useful unique lines,equipment_growth_rule,,
+equipment_95ee1b0f755a495186c2,mid_bossing secondary_weapon priority secondary_weapon priority_rank: 3 why: boss damage and IED source recommended_action: target boss/IED/attack lines,secondary_weapon priority_rank: 3 why: boss damage and IED source recommended_action: target boss/IED/attack lines,secondary_weapon priority_rank: 3 why: boss damage and IED source recommended_action: target boss/IED/attack lines,equipment_growth_rule,,
+equipment_573c46b1b06d12fd5ab8,mid_bossing gloves priority gloves priority_rank: 4 why: critical damage potential can be a breakpoint recommended_action: consider glove potential after WSE,gloves priority_rank: 4 why: critical damage potential can be a breakpoint recommended_action: consider glove potential after WSE,gloves priority_rank: 4 why: critical damage potential can be a breakpoint recommended_action: consider glove potential after WSE,equipment_growth_rule,,
+equipment_707910d5de1907938569,mid_bossing armor_set priority armor_set priority_rank: 5 why: 17 star baseline stabilizes progression recommended_action: bring key pieces to 17 star,armor_set priority_rank: 5 why: 17 star baseline stabilizes progression recommended_action: bring key pieces to 17 star,armor_set priority_rank: 5 why: 17 star baseline stabilizes progression recommended_action: bring key pieces to 17 star,equipment_growth_rule,,
+equipment_67c942c8280279dbcd89,late_bossing weapon priority weapon priority_rank: 1 why: arcane/genesis path determines ceiling recommended_action: prioritize weapon tier and potential,weapon priority_rank: 1 why: arcane/genesis path determines ceiling recommended_action: prioritize weapon tier and potential,weapon priority_rank: 1 why: arcane/genesis path determines ceiling recommended_action: prioritize weapon tier and potential,equipment_growth_rule,,
+equipment_28a279d75170d55006cd,late_bossing emblem priority emblem priority_rank: 2 why: permanent slot optimization recommended_action: legendary valid lines,emblem priority_rank: 2 why: permanent slot optimization recommended_action: legendary valid lines,emblem priority_rank: 2 why: permanent slot optimization recommended_action: legendary valid lines,equipment_growth_rule,,
+equipment_9386a4bfafc71e69c476,late_bossing secondary_weapon priority secondary_weapon priority_rank: 3 why: boss damage/IED optimization recommended_action: legendary valid lines,secondary_weapon priority_rank: 3 why: boss damage/IED optimization recommended_action: legendary valid lines,secondary_weapon priority_rank: 3 why: boss damage/IED optimization recommended_action: legendary valid lines,equipment_growth_rule,,
+equipment_04f50d762979abee9030,late_bossing gloves priority gloves priority_rank: 4 why: crit damage lines are valuable recommended_action: optimize gloves after WSE,gloves priority_rank: 4 why: crit damage lines are valuable recommended_action: optimize gloves after WSE,gloves priority_rank: 4 why: crit damage lines are valuable recommended_action: optimize gloves after WSE,equipment_growth_rule,,
+equipment_0a42d4685804eabf36c4,late_bossing accessory_set priority accessory_set priority_rank: 5 why: dawn/pitched transition has high cost recommended_action: upgrade by efficiency and transfer path,accessory_set priority_rank: 5 why: dawn/pitched transition has high cost recommended_action: upgrade by efficiency and transfer path,accessory_set priority_rank: 5 why: dawn/pitched transition has high cost recommended_action: upgrade by efficiency and transfer path,equipment_growth_rule,,
+equipment_f5f821ebbe6312d393bc,endgame weapon priority weapon priority_rank: 1 why: liberation/genesis path recommended_action: optimize final weapon path,weapon priority_rank: 1 why: liberation/genesis path recommended_action: optimize final weapon path,weapon priority_rank: 1 why: liberation/genesis path recommended_action: optimize final weapon path,equipment_growth_rule,,
+equipment_bc1dcc827f8acd9570b2,endgame accessory_set priority accessory_set priority_rank: 2 why: pitched boss upgrades define endgame ceiling recommended_action: evaluate cost and set effects,accessory_set priority_rank: 2 why: pitched boss upgrades define endgame ceiling recommended_action: evaluate cost and set effects,accessory_set priority_rank: 2 why: pitched boss upgrades define endgame ceiling recommended_action: evaluate cost and set effects,equipment_growth_rule,,
+equipment_d7c6f0e632469ea715e6,endgame armor_set priority armor_set priority_rank: 3 why: 22 star/eternal transition recommended_action: plan high starforce upgrades carefully,armor_set priority_rank: 3 why: 22 star/eternal transition recommended_action: plan high starforce upgrades carefully,armor_set priority_rank: 3 why: 22 star/eternal transition recommended_action: plan high starforce upgrades carefully,equipment_growth_rule,,
+equipment_6ff51fbd77f2aa921a6d,warrior armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_dd623ded7bd0528a422a,magician armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_1a86f0943d383979d452,bowman armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_1719cb9ce7ac5b4823cc,thief armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_2dd23c7b806d3040394f,pirate armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_8b8e898866110847a561,xenon armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_dd1e23d8e07a4009b0e8,demon_avenger armor_or_accessory potential rule armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,armor_or_accessory option_type: main_potential,equipment_growth_rule,,
+equipment_f85c827ba43e95a12b9a,all weapon potential rule weapon option_type: main_potential,weapon option_type: main_potential,weapon option_type: main_potential,equipment_growth_rule,,
+equipment_05f5e169bbb599006797,all secondary_weapon potential rule secondary_weapon option_type: main_potential,secondary_weapon option_type: main_potential,secondary_weapon option_type: main_potential,equipment_growth_rule,,
+equipment_d91051f7d7672002e860,all emblem potential rule emblem option_type: main_potential,emblem option_type: main_potential,emblem option_type: main_potential,equipment_growth_rule,,
+equipment_f4a3bcd0679ad50109a0,all gloves potential rule gloves option_type: main_potential,gloves option_type: main_potential,gloves option_type: main_potential,equipment_growth_rule,,
+equipment_11edd71dcb7c65656c4c,all heart potential rule heart option_type: main_potential,heart option_type: main_potential,heart option_type: main_potential,equipment_growth_rule,,
+equipment_22979b1d1765a7db5834,all any potential rule any option_type: additional_potential,any option_type: additional_potential,any option_type: additional_potential,equipment_growth_rule,,
+equipment_7752a68cdf93393d0a8c,warrior weapon flame score rule weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_285ed3fd85e2a910409f,warrior weapon flame score rule weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_112ca06ee5e868e6a403,warrior weapon flame score rule weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_34f5bba4c1f5124fb454,warrior armor flame score rule armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_9d2bde5af1587acd4de8,warrior armor flame score rule armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_80c60288336f6936e7e9,warrior armor flame score rule armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_f72df840cf9067ca6837,warrior accessory flame score rule accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_fec436767ccb50359399,warrior accessory flame score rule accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_818dad9cce2cb182cdc0,warrior accessory flame score rule accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_b7c6688b72ec17a093e9,magician weapon flame score rule weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_e9dccee751d7ff2091d6,magician weapon flame score rule weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_274e99a4bce334bc94a7,magician weapon flame score rule weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_60e34616d830c042012f,magician armor flame score rule armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_96ab85d6477887ced0ea,magician armor flame score rule armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_766702175fc6c070bf96,magician armor flame score rule armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_6f25c7a76f575a4c99a2,magician accessory flame score rule accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_c9c06905f80a2049d5a1,magician accessory flame score rule accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_f4956a36ca7755cfc074,magician accessory flame score rule accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_55fe8deb6bf938109c3b,bowman weapon flame score rule weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_26a41bc6b9612cd9dff8,bowman weapon flame score rule weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_5e93bba71db38541a542,bowman weapon flame score rule weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_1b29915bb47038f3dc9f,bowman armor flame score rule armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_76523c3d2455d2b95e86,bowman armor flame score rule armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_9baefbf647087322aacd,bowman armor flame score rule armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_6802281dbd6db2dd6f5e,bowman accessory flame score rule accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_be0300f2f9b6d3b1dca2,bowman accessory flame score rule accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_ce46ff17a0649c4806df,bowman accessory flame score rule accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_5d2a3c7decae6cc374ed,thief weapon flame score rule weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_6297c864384850a7db1d,thief weapon flame score rule weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_af1d29230b9c8a4b8360,thief weapon flame score rule weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_13db24c7e6c941983aa7,thief armor flame score rule armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_bf1c6be9061720ded4d0,thief armor flame score rule armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_f802a5cd533d50b48629,thief armor flame score rule armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_ecdd334ee44285541ece,thief accessory flame score rule accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_656cb933ceeccfd63bbc,thief accessory flame score rule accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_4bdfa8912c2ada9acd27,thief accessory flame score rule accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_b54fc407dd1bf60ead02,pirate weapon flame score rule weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_9ad25e934e39f6dc4d6d,pirate weapon flame score rule weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_11c75438cf316810eaf9,pirate weapon flame score rule weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,weapon level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_e071b43ac117f10b4053,pirate armor flame score rule armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_a8ab3fba37ce27d5adba,pirate armor flame score rule armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_db295def1466370198a4,pirate armor flame score rule armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,armor level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_58ae3c1ee3e364b7db3b,pirate accessory flame score rule accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 200-219 minimum_score: 40 recommended_score: 60 high_score: 80 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_e8549292714921311599,pirate accessory flame score rule accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 220-249 minimum_score: 60 recommended_score: 80 high_score: 100 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_ee68cd0eb82d73f668fe,pirate accessory flame score rule accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,accessory level_range: 250-300 minimum_score: 80 recommended_score: 100 high_score: 120 calculation_note: score = main_stat + all_stat%*10 + attack_or_magic*4 rough seed,equipment_growth_rule,,
+equipment_65efe8962dc7b19a9a0b,xenon armor_or_accessory flame score rule armor_or_accessory level_range: 200-300 minimum_score: 50 recommended_score: 80 high_score: 110 calculation_note: xenon uses multi-stat valuation; team review required,armor_or_accessory level_range: 200-300 minimum_score: 50 recommended_score: 80 high_score: 110 calculation_note: xenon uses multi-stat valuation; team review required,armor_or_accessory level_range: 200-300 minimum_score: 50 recommended_score: 80 high_score: 110 calculation_note: xenon uses multi-stat valuation; team review required,equipment_growth_rule,,
+equipment_24ba05d18009178c6373,demon_avenger armor_or_accessory flame score rule armor_or_accessory level_range: 200-300 minimum_score: 50 recommended_score: 80 high_score: 110 calculation_note: demon avenger HP valuation differs; team review required,armor_or_accessory level_range: 200-300 minimum_score: 50 recommended_score: 80 high_score: 110 calculation_note: demon avenger HP valuation differs; team review required,armor_or_accessory level_range: 200-300 minimum_score: 50 recommended_score: 80 high_score: 110 calculation_note: demon avenger HP valuation differs; team review required,equipment_growth_rule,,
+equipment_15c9f17661b5902dc5dc,"200-219 all starforce target all minimum_starforce: 10 recommended_starforce: 12 stop_point: 12 risk_note: cheap baseline, do not overinvest if replacement is near","all minimum_starforce: 10 recommended_starforce: 12 stop_point: 12 risk_note: cheap baseline, do not overinvest if replacement is near","all minimum_starforce: 10 recommended_starforce: 12 stop_point: 12 risk_note: cheap baseline, do not overinvest if replacement is near",equipment_growth_rule,,
+equipment_03b27ac99da380919250,200-219 armor_or_weapon starforce target armor_or_weapon minimum_starforce: 12 recommended_starforce: 15 stop_point: 15 risk_note: early CRA transition target,armor_or_weapon minimum_starforce: 12 recommended_starforce: 15 stop_point: 15 risk_note: early CRA transition target,armor_or_weapon minimum_starforce: 12 recommended_starforce: 15 stop_point: 15 risk_note: early CRA transition target,equipment_growth_rule,,
+equipment_0971b8717746f44705eb,220-249 armor starforce target armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: 17 star is common midgame breakpoint,armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: 17 star is common midgame breakpoint,armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: 17 star is common midgame breakpoint,equipment_growth_rule,,
+equipment_375a06e911da796415f1,220-249 weapon_or_armor starforce target weapon_or_armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: 17 star baseline before hard boss attempts,weapon_or_armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: 17 star baseline before hard boss attempts,weapon_or_armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: 17 star baseline before hard boss attempts,equipment_growth_rule,,
+equipment_0d20d76431ef19414698,220-249 accessory starforce target accessory minimum_starforce: 10 recommended_starforce: 17 stop_point: 17 risk_note: upgrade slots that will stay longer first,accessory minimum_starforce: 10 recommended_starforce: 17 stop_point: 17 risk_note: upgrade slots that will stay longer first,accessory minimum_starforce: 10 recommended_starforce: 17 stop_point: 17 risk_note: upgrade slots that will stay longer first,equipment_growth_rule,,
+equipment_2564ddb30a7000cf401d,250-269 weapon_or_armor starforce target weapon_or_armor minimum_starforce: 17 recommended_starforce: 18 stop_point: 18 risk_note: evaluate arcane transition before pushing high stars,weapon_or_armor minimum_starforce: 17 recommended_starforce: 18 stop_point: 18 risk_note: evaluate arcane transition before pushing high stars,weapon_or_armor minimum_starforce: 17 recommended_starforce: 18 stop_point: 18 risk_note: evaluate arcane transition before pushing high stars,equipment_growth_rule,,
+equipment_e12af1798b0646ed90bc,250-269 weapon_or_armor starforce target weapon_or_armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: arcane 17 star baseline,weapon_or_armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: arcane 17 star baseline,weapon_or_armor minimum_starforce: 15 recommended_starforce: 17 stop_point: 17 risk_note: arcane 17 star baseline,equipment_growth_rule,,
+equipment_b500e1d38adbf762a288,270-300 weapon_or_armor starforce target weapon_or_armor minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: high cost endgame path; use event/backup planning,weapon_or_armor minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: high cost endgame path; use event/backup planning,weapon_or_armor minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: high cost endgame path; use event/backup planning,equipment_growth_rule,,
+equipment_a98da992a883f0c621d9,270-300 accessory starforce target accessory minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: very high cost; validate replacement and set effect first,accessory minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: very high cost; validate replacement and set effect first,accessory minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: very high cost; validate replacement and set effect first,equipment_growth_rule,,
+equipment_915c95baa545f90a816b,270-300 armor starforce target armor minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: endgame path requiring team review,armor minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: endgame path requiring team review,armor minimum_starforce: 17 recommended_starforce: 22 stop_point: 22 risk_note: endgame path requiring team review,equipment_growth_rule,,
+equipment_4198ec37fb1d9b8c9558,무기 equipment slot mapping Y recommendation_use: attack_power_and_starforce_priority,Y recommendation_use: attack_power_and_starforce_priority,Y recommendation_use: attack_power_and_starforce_priority,equipment_growth_rule,,
+equipment_c94ff72b7b3d5830a77e,보조무기 equipment slot mapping Y recommendation_use: wse_potential_priority,Y recommendation_use: wse_potential_priority,Y recommendation_use: wse_potential_priority,equipment_growth_rule,,
+equipment_a57a99f9d005b64ca0c3,엠블렘 equipment slot mapping Y recommendation_use: wse_potential_priority,Y recommendation_use: wse_potential_priority,Y recommendation_use: wse_potential_priority,equipment_growth_rule,,
+equipment_eb55751dc2e91722fdfe,모자 equipment slot mapping Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,equipment_growth_rule,,
+equipment_ebc2183e84877d78fbf7,상의 equipment slot mapping Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,equipment_growth_rule,,
+equipment_472e9b5139de9124e250,하의 equipment slot mapping Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,equipment_growth_rule,,
+equipment_9956a7d9b3a5a6168c01,한벌옷 equipment slot mapping Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,equipment_growth_rule,,
+equipment_b1d98c2d8ac7e9df112c,장갑 equipment slot mapping Y recommendation_use: critical_damage_priority,Y recommendation_use: critical_damage_priority,Y recommendation_use: critical_damage_priority,equipment_growth_rule,,
+equipment_a38f0f52245a222e659a,신발 equipment slot mapping Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,equipment_growth_rule,,
+equipment_d6c17ab1ebda6a54d802,망토 equipment slot mapping Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,Y recommendation_use: set_and_starforce_priority,equipment_growth_rule,,
+equipment_cafceaa2aca5d2898f4f,벨트 equipment slot mapping Y recommendation_use: boss_accessory_transition,Y recommendation_use: boss_accessory_transition,Y recommendation_use: boss_accessory_transition,equipment_growth_rule,,
+equipment_2e214e0b457e9ae10c31,어깨장식 equipment slot mapping Y recommendation_use: set_transition,Y recommendation_use: set_transition,Y recommendation_use: set_transition,equipment_growth_rule,,
+equipment_b30cd521faafb95ed874,얼굴장식 equipment slot mapping Y recommendation_use: boss_accessory_priority,Y recommendation_use: boss_accessory_priority,Y recommendation_use: boss_accessory_priority,equipment_growth_rule,,
+equipment_9920e5586a89ae90b0b7,눈장식 equipment slot mapping Y recommendation_use: boss_accessory_priority,Y recommendation_use: boss_accessory_priority,Y recommendation_use: boss_accessory_priority,equipment_growth_rule,,
+equipment_6720375793b40f5bca2a,귀고리 equipment slot mapping Y recommendation_use: boss_accessory_priority,Y recommendation_use: boss_accessory_priority,Y recommendation_use: boss_accessory_priority,equipment_growth_rule,,
+equipment_d3b3e71b1ea931cc243c,반지1 equipment slot mapping Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,equipment_growth_rule,,
+equipment_819da476ada2990b44d9,반지2 equipment slot mapping Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,equipment_growth_rule,,
+equipment_e13ee91a2a84850f1451,반지3 equipment slot mapping Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,equipment_growth_rule,,
+equipment_2cb14e2202647d93b96f,반지4 equipment slot mapping Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,Y recommendation_use: ring_priority,equipment_growth_rule,,
+equipment_9bcd9749c3ba62313a64,펜던트 equipment slot mapping Y recommendation_use: pendant_priority,Y recommendation_use: pendant_priority,Y recommendation_use: pendant_priority,equipment_growth_rule,,
+equipment_53b1e6ab9b4ac07cc89c,펜던트2 equipment slot mapping Y recommendation_use: pendant_priority,Y recommendation_use: pendant_priority,Y recommendation_use: pendant_priority,equipment_growth_rule,,
+equipment_1254e3d99ba702e2ff07,포켓 아이템 equipment slot mapping N recommendation_use: minor_stat_check,N recommendation_use: minor_stat_check,N recommendation_use: minor_stat_check,equipment_growth_rule,,
+equipment_e38fec6dabeaf3969e68,뱃지 equipment slot mapping N recommendation_use: minor_stat_check,N recommendation_use: minor_stat_check,N recommendation_use: minor_stat_check,equipment_growth_rule,,
+equipment_5bdc8f0295ae3ed414ef,훈장 equipment slot mapping N recommendation_use: minor_stat_check,N recommendation_use: minor_stat_check,N recommendation_use: minor_stat_check,equipment_growth_rule,,
+equipment_18a70f217fda9cdd9686,기계 심장 equipment slot mapping Y recommendation_use: starforce_and_potential_check,Y recommendation_use: starforce_and_potential_check,Y recommendation_use: starforce_and_potential_check,equipment_growth_rule,,
+equipment_71fc62f498a7c70e9070,안드로이드 equipment slot mapping N recommendation_use: metadata_only,N recommendation_use: metadata_only,N recommendation_use: metadata_only,equipment_growth_rule,,

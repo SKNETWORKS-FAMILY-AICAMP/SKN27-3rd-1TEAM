@@ -200,3 +200,10 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,python
+
+# Local database runtime files
+database/neo4j_data/
+database/neo4j_logs/
+database/postgres/
+database/postgres_data/
+CODEX.md

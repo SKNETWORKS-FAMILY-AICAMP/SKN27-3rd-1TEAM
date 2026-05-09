@@ -1,0 +1,93 @@
+# Docker Compose가 관리할 서비스 목록입니다.
+services:
+  # PostgreSQL + PGVector 데이터베이스 서비스입니다.
+  postgres:
+    # PGVector 확장이 포함된 PostgreSQL 16 이미지를 사용합니다.
+    image: pgvector/pgvector:pg16
+    # Docker 컨테이너 이름을 고정합니다.
+    container_name: maplestory-postgres
+    # 호스트와 컨테이너의 포트 연결 목록입니다.
+    ports:
+      # 호스트 POSTGRES_PORT 값을 컨테이너 5432 포트에 연결하며, 기본값은 5432입니다.
+      - "${POSTGRES_PORT:-5432}:5432"
+    # PostgreSQL 컨테이너에 전달할 환경변수 목록입니다.
+    environment:
+      # PostgreSQL 접속 계정이며, 기본값은 admin입니다.
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      # PostgreSQL 접속 비밀번호이며, 기본값은 admin123입니다.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+      # 생성할 기본 데이터베이스 이름이며, 기본값은 mapledb입니다.
+      POSTGRES_DB: ${POSTGRES_DB:-mapledb}
+    # PostgreSQL 데이터 영속화를 위한 Docker 볼륨 목록입니다.
+    volumes:
+      # Docker named volume을 PostgreSQL 데이터 저장 경로에 연결합니다.
+      - postgres_data:/var/lib/postgresql/data
+    # 컨테이너가 정상 동작 중인지 확인하는 헬스체크 설정입니다.
+    healthcheck:
+      # pg_isready로 PostgreSQL 접속 가능 여부를 확인합니다.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-mapledb}"]
+      # 헬스체크를 10초마다 실행합니다.
+      interval: 10s
+      # 헬스체크 응답 대기 시간은 5초입니다.
+      timeout: 5s
+      # 헬스체크 실패를 최대 10회까지 재시도합니다.
+      retries: 10
+    # 사용자가 직접 중지하지 않은 경우 컨테이너를 자동 재시작합니다.
+    restart: unless-stopped
+
+  # Neo4j GraphDB 서비스입니다.
+  neo4j:
+    # Neo4j 5.26 Enterprise 이미지를 사용합니다.
+    image: neo4j:5.26-enterprise
+    # Docker 컨테이너 이름을 고정합니다.
+    container_name: maplestory-neo4j
+    # 호스트와 컨테이너의 포트 연결 목록입니다.
+    ports:
+      # Neo4j Browser용 HTTP 포트이며, 기본값은 7474입니다.
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+      # Neo4j Bolt 드라이버 접속 포트이며, 기본값은 7687입니다.
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+    # Neo4j 컨테이너에 전달할 환경변수 목록입니다.
+    environment:
+      # Neo4j 로그인 계정과 비밀번호를 설정하며, 기본값은 admin/admin123입니다.
+      NEO4J_AUTH: ${NEO4J_USER:-admin}/${NEO4J_PASSWORD:-admin123}
+      # APOC 플러그인을 활성화합니다.
+      NEO4J_PLUGINS: '["apoc"]'
+      # Neo4j Enterprise 라이선스 동의를 명시합니다.
+      NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
+      # Neo4j의 기본 데이터베이스 이름을 설정하며, 기본값은 mapledb입니다.
+      NEO4J_initial_dbms_default__database: ${NEO4J_DATABASE:-mapledb}
+    # Neo4j 데이터와 로그 영속화를 위한 Docker 볼륨 목록입니다.
+    volumes:
+      # Docker named volume을 Neo4j 데이터 저장 경로에 연결합니다.
+      - neo4j_data:/data
+      # Docker named volume을 Neo4j 로그 저장 경로에 연결합니다.
+      - neo4j_logs:/logs
+    # 컨테이너가 정상 동작 중인지 확인하는 헬스체크 설정입니다.
+    healthcheck:
+      # 헬스체크 명령을 여러 줄 배열로 정의합니다.
+      test:
+        # Docker가 실행할 명령 배열입니다.
+        [
+          # 셸 명령으로 헬스체크를 실행한다는 의미입니다.
+          "CMD-SHELL",
+          # cypher-shell로 Neo4j에 접속해 RETURN 1 쿼리가 성공하는지 확인합니다.
+          "cypher-shell -a bolt://localhost:7687 -u ${NEO4J_USER:-admin} -p ${NEO4J_PASSWORD:-admin123} 'RETURN 1'"
+        ]
+      # 헬스체크를 10초마다 실행합니다.
+      interval: 10s
+      # 헬스체크 응답 대기 시간은 10초입니다.
+      timeout: 10s
+      # Neo4j 기동 시간이 길 수 있어 최대 20회까지 재시도합니다.
+      retries: 20
+    # 사용자가 직접 중지하지 않은 경우 컨테이너를 자동 재시작합니다.
+    restart: unless-stopped
+
+# 서비스에서 사용할 Docker named volume 목록입니다.
+volumes:
+  # PostgreSQL 데이터가 저장될 Docker named volume입니다.
+  postgres_data:
+  # Neo4j 그래프 데이터가 저장될 Docker named volume입니다.
+  neo4j_data:
+  # Neo4j 로그가 저장될 Docker named volume입니다.
+  neo4j_logs:
