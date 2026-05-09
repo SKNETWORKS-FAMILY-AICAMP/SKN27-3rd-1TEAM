@@ -2084,7 +2084,7 @@ def analytics_agent(
     analytics_agent = create_agent(
         model=model,
         tools=[],
-        system_prompt=ANALYTICS_ANSWER_SYSTEM_PROMPT
+        system_prompt=ANALYTICS_SYSTEM_PROMPT
     )
 
     analysis_context = _compact_analytics_context(state)
