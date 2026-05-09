@@ -6,6 +6,7 @@ langsmith==0.8.0          # 에이전트 간 대화 트레이싱 및 디버깅
 # --- LLM  ---
 langchain-groq==1.1.2
 langchain-openai==1.2.1
+langchain-huggingface==1.1.0
 
 # --- Vector & Graph Databases (B, D) ---
 psycopg2-binary==2.9.12   # PostgreSQL 연결 (캐릭터 데이터 저장)
@@ -17,11 +18,15 @@ pandas==3.0.2            # API JSON 데이터 가공 및 분석
 numpy==2.4.4
 scikit-learn==1.8.0      # RandomForest 모델 학습 및 예측
 joblib==1.5.3            # 학습된 ML 모델 저장 및 로드
+# xgboost==3.0.4
+# seaborn==0.13.2
+# koreanize-matplotlib
 
 # --- RAG & Evaluation (A, D, E) ---
 ragas==0.4.3              # RAG 성능 평가 (A의 핵심)
 beautifulsoup4     # 웹 서칭 RAG를 위한 크롤링 (E의 핵심)
 langchain-community==0.4.1
+sentence-transformers
 
 # --- API & Web UI (E ) ---
 requests==2.33.1           # 넥슨 Open API 호출
@@ -34,4 +39,3 @@ python-dotenv==1.2.2      # .env 파일의 API KEY 관리
 
 openapi-generator-cli # yaml로 model 자동 생성
 pydantic==2.13.3    # 데이터 규격 정의 (API Spec 및 에이전트 통신용)
-

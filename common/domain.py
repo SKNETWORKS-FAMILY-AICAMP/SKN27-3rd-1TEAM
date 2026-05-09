@@ -186,3 +186,5 @@ class Character:
     stats: Stats
     equipment: List[Equipment]
     ability: CharacterAbility
+
+

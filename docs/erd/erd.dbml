@@ -1,0 +1,350 @@
+// PostgreSQL ERD - MapleStory character analysis + DB RAG
+// Basis: common/domain.py, NEXON Open API raw data, maple_chatbot_final_dataset.csv
+// Usage: paste this DBML into https://dbdiagram.io
+
+Table users {
+  id uuid [pk]
+  username varchar(50) [not null, unique]
+  nexon_api_key text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: '서비스 사용자 정보. 캐릭터 소유 관계의 기준 테이블'
+}
+
+Table characters {
+  id uuid [pk]
+  user_id uuid [not null]
+  ocid varchar(64) [not null, unique]
+  character_name varchar(50) [not null]
+  world_name varchar(30)
+  character_gender varchar(10)
+  character_class varchar(50)
+  character_class_level varchar(10)
+  character_level int [note: 'CHECK character_level IS NULL OR character_level >= 1']
+  character_exp bigint
+  character_exp_rate decimal(8,3)
+  character_guild_name varchar(50)
+  character_image text
+  character_date_create timestamptz
+  access_flag boolean
+  liberation_quest_clear boolean
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'NEXON Open API character_basic 및 ocid 기준 캐릭터 기본 정보'
+}
+
+Table char_stat {
+  id uuid [pk]
+  character_id uuid [not null]
+  combat_power bigint [note: 'CHECK combat_power IS NULL OR combat_power >= 0']
+  min_stat_damage bigint
+  max_stat_damage bigint
+  str_val int
+  dex int
+  int_val int
+  luk int
+  hp int
+  mp int
+  damage decimal(8,2)
+  boss_damage decimal(8,2)
+  final_damage decimal(8,2)
+  ignore_def decimal(8,2)
+  crit_rate decimal(8,2)
+  crit_damage decimal(8,2)
+  attack_power int
+  magic_power int
+  attack_speed int
+  buff_duration int
+  arcane_force int
+  authentic_force int
+  remain_ap int
+  raw_final_stat jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'CharacterStatDetail 주요 필드. 원본 final_stat 배열은 raw_final_stat에 보존'
+}
+
+Table char_equipment {
+  id uuid [pk]
+  character_id uuid [not null]
+  preset_no int [note: 'CHECK preset_no IS NULL OR preset_no BETWEEN 1 AND 3']
+  part varchar(50)
+  slot varchar(50)
+  item_name varchar(120)
+  item_gender varchar(10)
+  starforce int [note: 'CHECK starforce IS NULL OR starforce BETWEEN 0 AND 25']
+  potential_grade varchar(30)
+  additional_potential_grade varchar(30)
+  set_name varchar(120)
+  total_stats jsonb
+  bonus_stats jsonb
+  scroll_stats jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'EquipmentDetail 핵심 정보. 옵션 묶음은 polymorphic FK 대신 JSONB로 보존'
+}
+
+Table char_symbols {
+  id uuid [pk]
+  character_id uuid [not null]
+  symbol_name varchar(100) [not null]
+  symbol_force varchar(30)
+  symbol_level int [note: 'CHECK symbol_level IS NULL OR symbol_level >= 0']
+  symbol_str int
+  symbol_dex int
+  symbol_int int
+  symbol_luk int
+  symbol_hp int
+  symbol_growth_count int
+  symbol_require_growth_count int
+  raw_payload jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'character_symbol_equipment API 기반 아케인/어센틱 심볼 정보'
+}
+
+Table char_union {
+  id uuid [pk]
+  character_id uuid [not null, unique]
+  union_level int
+  union_grade varchar(50)
+  union_artifact_level int
+  union_artifact_exp bigint
+  union_artifact_point int
+  raider_payload jsonb
+  artifact_payload jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'user_union 기본 정보와 user_union_raider, user_union_artifact 상세를 통합 저장'
+}
+
+Table char_skill_options {
+  id uuid [pk]
+  character_id uuid [not null]
+  option_type varchar(30) [not null, note: 'ability, hyper_stat, link_skill']
+  preset_no int
+  slot_no int
+  option_name varchar(120)
+  option_grade varchar(30)
+  option_level int
+  option_value text
+  option_effect text
+  raw_payload jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: '어빌리티, 하이퍼스탯, 링크스킬을 option_type으로 구분해 통합 관리'
+}
+
+Table char_cores {
+  id uuid [pk]
+  character_id uuid [not null]
+  core_group varchar(30) [not null, note: 'v_matrix, hexa_core, hexa_stat']
+  slot_id int
+  slot_level int
+  core_name varchar(150)
+  core_type varchar(50)
+  core_level int
+  main_stat_name varchar(80)
+  main_stat_level int
+  skill_payload jsonb
+  stat_payload jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'character_vmatrix, character_hexamatrix, character_hexamatrix_stat 통합 테이블'
+}
+
+Table char_set_effects {
+  id uuid [pk]
+  character_id uuid [not null]
+  set_name varchar(120) [not null]
+  total_set_count int
+  set_count int
+  set_option text
+  set_option_full text
+  raw_payload jsonb
+  synced_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'character_set_effect API 기반 장비 세트 효과'
+}
+
+Table analysis_reports {
+  id uuid [pk]
+  character_id uuid [not null]
+  report_type varchar(30) [not null]
+  current_combat_power bigint
+  timestamp timestamptz
+  attack int
+  damage decimal(8,2)
+  boss_damage decimal(8,2)
+  ignore_def decimal(8,2)
+  crit_rate decimal(8,2)
+  crit_damage decimal(8,2)
+  bottleneck_analysis jsonb
+  boss_clear_prediction jsonb
+  data_reliability varchar(30)
+  result_payload jsonb
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'GrowthEfficiencyReport 분석 결과. timestamp, attack, damage, boss_damage, ignore_def, crit_rate, crit_damage를 명시 컬럼으로 보존'
+}
+
+Table action_plans {
+  id uuid [pk]
+  analysis_report_id uuid [not null]
+  category varchar(50) [not null]
+  target varchar(120) [not null]
+  priority int [note: 'CHECK priority BETWEEN 1 AND 5']
+  expected_cp_gain int
+  description text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'ActionPlan 성장 추천 액션'
+}
+
+Table source_catalog {
+  source_id varchar(50) [pk]
+  source_name varchar(100) [not null]
+  source_type varchar(30) [not null]
+  category varchar(50)
+  url text
+  trust_level char(1) [note: 'CHECK trust_level IN S,A,B,C']
+  collection_method varchar(30)
+  notes text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: '문서 출처 카탈로그. official_notice, official_event, official_update, testworld_update, wiki 등'
+}
+
+Table documents {
+  id uuid [pk]
+  doc_id varchar(100) [not null, unique]
+  source_id varchar(50) [not null]
+  unified_id varchar(255) [unique]
+  title text [not null]
+  category varchar(80)
+  chatbot_purpose varchar(100)
+  collection_scope varchar(120)
+  source_type varchar(30)
+  source_url text
+  normalized_url text
+  trust_level char(1) [note: 'CHECK trust_level IN S,A,B,C']
+  language varchar(10)
+  content_format varchar(50)
+  text_length int [note: 'CHECK text_length IS NULL OR text_length >= 0']
+  text_preview text
+  content text [not null]
+  rag_ready boolean [not null, default: true]
+  is_final_keep boolean [not null, default: true]
+  published_at date
+  collected_at date
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'RAG 원본 문서. maple_chatbot_final_dataset.csv의 한 행을 기본 단위로 저장'
+}
+
+Table tags {
+  id uuid [pk]
+  tag_name varchar(80) [not null, unique]
+  normalized_name varchar(80) [not null, unique]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: '문서 태그 마스터. documents.tags 배열 대신 N:M 정규화를 위해 분리'
+}
+
+Table document_tags {
+  document_id uuid [not null]
+  tag_id uuid [not null]
+  created_at timestamptz [not null]
+
+  indexes {
+    (document_id, tag_id) [pk]
+  }
+
+  Note: 'documents와 tags의 N:M 조인 테이블'
+}
+
+Table wiki_entities {
+  id uuid [pk]
+  document_id uuid [not null]
+  entity_type varchar(30) [not null, note: 'monster, boss, skill, item, quest, map']
+  entity_name varchar(150) [not null]
+  normalized_name varchar(150)
+  category varchar(80)
+  level int
+  description text
+  metadata jsonb [note: 'type별 상세 속성 JSONB']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'wiki 문서에서 추출한 게임 엔티티 색인'
+}
+
+Table document_chunks {
+  id uuid [pk]
+  document_id uuid [not null]
+  chunk_id varchar(100) [not null, unique]
+  chunk_index int [not null, note: 'UNIQUE(document_id, chunk_index), CHECK chunk_index >= 0']
+  content text [not null]
+  token_count int [note: 'CHECK token_count IS NULL OR token_count >= 0']
+  char_start int [note: 'CHECK char_start IS NULL OR char_start >= 0']
+  char_end int [note: 'CHECK char_end IS NULL OR char_end >= char_start']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: '문서 검색 단위. 문서 메타데이터는 documents에서 조인'
+}
+
+Table document_embeddings {
+  id uuid [pk]
+  chunk_id uuid [not null, unique]
+  embedding vector(1536) [not null]
+  embedding_model varchar(100) [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: '문서 청크 임베딩. PGVector 검색 대상'
+}
+
+Ref: users.id < characters.user_id
+
+Ref: characters.id < char_stat.character_id
+Ref: characters.id < char_equipment.character_id
+Ref: characters.id < char_symbols.character_id
+Ref: characters.id < char_union.character_id
+Ref: characters.id < char_skill_options.character_id
+Ref: characters.id < char_cores.character_id
+Ref: characters.id < char_set_effects.character_id
+Ref: characters.id < analysis_reports.character_id
+Ref: analysis_reports.id < action_plans.analysis_report_id
+
+Ref: source_catalog.source_id < documents.source_id
+Ref: documents.id < wiki_entities.document_id
+Ref: documents.id < document_tags.document_id
+Ref: tags.id < document_tags.tag_id
+Ref: documents.id < document_chunks.document_id
+Ref: document_chunks.id < document_embeddings.chunk_id
+
+
+Ref: "char_cores"."slot_level" < "char_cores"."id"
