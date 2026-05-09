@@ -1,0 +1,213 @@
+{
+  "date": null,
+  "android_name": "페어리로이드(여)",
+  "android_nickname": "민경",
+  "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJGMH",
+  "android_description": "안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.",
+  "android_hair": {
+    "hair_name": "빨간색 요정여왕 티타니아 헤어",
+    "base_color": "빨간색",
+    "mix_color": "파란색",
+    "mix_rate": "59",
+    "freestyle_flag": "0"
+  },
+  "android_face": {
+    "face_name": "졸린 조용한 얼굴",
+    "base_color": "파란색",
+    "mix_color": "갈색",
+    "mix_rate": "50",
+    "freestyle_flag": "0"
+  },
+  "android_skin": {
+    "skin_name": "뽀송 라벤더 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "android_cash_item_equipment": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "밤의 엘로디",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCKGMB",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": "여",
+      "freestyle_flag": "1"
+    },
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "포실 반디",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCIPJBNKDAEKFBNJ",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": "스페셜라벨",
+      "cash_item_coloring_prism": {
+        "color_range": "전체 색상 계열",
+        "hue": 0,
+        "saturation": -99,
+        "value": 1
+      },
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "얼굴장식",
+      "cash_item_equipment_slot": "얼굴장식",
+      "cash_item_name": "뽀뽀 표정 얼굴장식",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPDJPGH",
+      "cash_item_description": "착용 시 기본 표정이 뽀뽀 표정으로 변경된다.\n주의! 일부 특수한 성형에서는 표정 변화가 없을 수 있습니다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "한벌옷",
+      "cash_item_equipment_slot": "상의",
+      "cash_item_name": "조향사 하모니",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPHKAODNICBGKNDLL",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": "블랙라벨",
+      "cash_item_coloring_prism": {
+        "color_range": "자주색 계열",
+        "hue": 150,
+        "saturation": 99,
+        "value": 99
+      },
+      "android_item_gender": "여",
+      "freestyle_flag": "1"
+    },
+    {
+      "cash_item_equipment_part": "신발",
+      "cash_item_equipment_slot": "신발",
+      "cash_item_name": "별나라 양말",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPFPHPD",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": "블랙라벨",
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "장갑",
+      "cash_item_equipment_slot": "장갑",
+      "cash_item_name": "기억의 매듭",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPKJAKFNKDACOFLKG",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": "블랙라벨",
+      "cash_item_coloring_prism": {
+        "color_range": "전체 색상 계열",
+        "hue": 9,
+        "saturation": 99,
+        "value": 60
+      },
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "눈장식",
+      "cash_item_equipment_slot": "눈장식",
+      "cash_item_name": "매력만쩜",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPAJEKA",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "반지",
+      "cash_item_equipment_slot": "반지1",
+      "cash_item_name": "체인지 루시드 말풍선 반지",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEODOBHE",
+      "cash_item_description": "캐릭터가 대화를 할 때, 체인지 루시드 말풍선이 나타난다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "반지",
+      "cash_item_equipment_slot": "반지2",
+      "cash_item_name": "체인지 루시드 명찰 반지",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEODOAHI",
+      "cash_item_description": "캐릭터 이름이 체인지 루시드 명찰에 나타난다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    }
+  ],
+  "android_ear_sensor_clip_flag": "적용",
+  "android_gender": "여",
+  "android_grade": "9",
+  "android_non_humanoid_flag": "인간형",
+  "android_shop_usable_flag": "가능",
+  "preset_no": 2,
+  "android_preset_1": {
+    "android_name": "페어리로이드(여)",
+    "android_nickname": "민경",
+    "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJGMH",
+    "android_description": "안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.",
+    "android_gender": "여",
+    "android_grade": "9",
+    "android_skin": {
+      "skin_name": "뽀송 라벤더 피부",
+      "color_style": null,
+      "hue": null,
+      "saturation": null,
+      "brightness": null
+    },
+    "android_hair": {
+      "hair_name": "빨간색 요정여왕 티타니아 헤어",
+      "base_color": "빨간색",
+      "mix_color": "파란색",
+      "mix_rate": "59",
+      "freestyle_flag": "0"
+    },
+    "android_face": {
+      "face_name": "졸린 조용한 얼굴",
+      "base_color": "파란색",
+      "mix_color": "갈색",
+      "mix_rate": "50",
+      "freestyle_flag": "0"
+    },
+    "android_ear_sensor_clip_flag": "적용",
+    "android_non_humanoid_flag": "인간형",
+    "android_shop_usable_flag": "가능"
+  },
+  "android_preset_2": null,
+  "android_preset_3": null,
+  "ocid": "34a26c1ef60b5be39e38f5447384e809efe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "모냐"
+}

@@ -1,0 +1,161 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "미스트랄 스프링",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "미스트랄 스프링"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "엘리멘트 템페스트",
+      "hexa_core_level": 9,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "엘리멘트 템페스트"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "천공의 노래 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "천공의 노래 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "트라이플링 윔 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "트라이플링 윔 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "페어리 턴 VI/스톰 브링어 VI/몬순 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "페어리 턴 VI"
+        },
+        {
+          "hexa_skill_id": "스톰 브링어 VI"
+        },
+        {
+          "hexa_skill_id": "몬순 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "스톰 윔 VI/아네모이",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "스톰 윔 VI"
+        },
+        {
+          "hexa_skill_id": "아네모이"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "하울링 게일",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "하울링 게일 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "아이들 윔",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "아이들 윔 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "윈드 월",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "윈드 월 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "볼텍스 스피어",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "볼텍스 스피어 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 25,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "시그너스 팔랑크스 VI",
+      "hexa_core_level": 1,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "시그너스 팔랑크스 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "b978efa17ca24e90f7ddcd2f6c3c591d",
+  "character_name": "이보영"
+}

@@ -1,0 +1,199 @@
+{
+  "date": null,
+  "android_name": "플로라로이드(남)",
+  "android_nickname": "칭티",
+  "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJGGF",
+  "android_description": "안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.",
+  "android_hair": {
+    "hair_name": "검은색 플로리안 헤어",
+    "base_color": "검은색",
+    "mix_color": "초록색",
+    "mix_rate": "33",
+    "freestyle_flag": "0"
+  },
+  "android_face": {
+    "face_name": "조용한 눈 얼굴",
+    "base_color": "검은색",
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_skin": {
+    "skin_name": "뽀송 꽃잎 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "android_cash_item_equipment": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "투명 모자",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCJGGH",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "데스 왈츠",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCJPOINKCBBCAGPH",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": "마스터라벨",
+      "cash_item_coloring_prism": {
+        "color_range": "전체 색상 계열",
+        "hue": 176,
+        "saturation": 99,
+        "value": 99
+      },
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "얼굴장식",
+      "cash_item_equipment_slot": "얼굴장식",
+      "cash_item_name": "발그레 발그레",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPDJEJINKBCNMGBMH",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": {
+        "color_range": "전체 색상 계열",
+        "hue": 350,
+        "saturation": 0,
+        "value": 49
+      },
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "장갑",
+      "cash_item_equipment_slot": "장갑",
+      "cash_item_name": "라이트닝 타투 글로브",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPKJGJCNIEEGIHFAO",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": {
+        "color_range": "전체 색상 계열",
+        "hue": 88,
+        "saturation": -22,
+        "value": 88
+      },
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "눈장식",
+      "cash_item_equipment_slot": "눈장식",
+      "cash_item_name": "투명 안경",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPAJHJI",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "귀고리",
+      "cash_item_equipment_slot": "귀고리",
+      "cash_item_name": "투명 귀고리",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPBJHMF",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "반지",
+      "cash_item_equipment_slot": "반지1",
+      "cash_item_name": "황혼 명찰 반지",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEODOCMC",
+      "cash_item_description": "캐릭터 이름이 황혼 명찰에 나타난다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "반지",
+      "cash_item_equipment_slot": "반지2",
+      "cash_item_name": "황혼 말풍선 반지",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEODODMA",
+      "cash_item_description": "캐릭터가 대화를 할 때, 황혼 말풍선이 나타난다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    }
+  ],
+  "android_ear_sensor_clip_flag": "적용",
+  "android_gender": "남",
+  "android_grade": "9",
+  "android_non_humanoid_flag": "인간형",
+  "android_shop_usable_flag": "가능",
+  "preset_no": 3,
+  "android_preset_1": {
+    "android_name": "플로라로이드(남)",
+    "android_nickname": "칭티",
+    "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJGGF",
+    "android_description": "안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.",
+    "android_gender": "남",
+    "android_grade": "9",
+    "android_skin": {
+      "skin_name": "뽀송 꽃잎 피부",
+      "color_style": null,
+      "hue": null,
+      "saturation": null,
+      "brightness": null
+    },
+    "android_hair": {
+      "hair_name": "검은색 플로리안 헤어",
+      "base_color": "검은색",
+      "mix_color": "초록색",
+      "mix_rate": "33",
+      "freestyle_flag": "0"
+    },
+    "android_face": {
+      "face_name": "조용한 눈 얼굴",
+      "base_color": "검은색",
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_ear_sensor_clip_flag": "적용",
+    "android_non_humanoid_flag": "인간형",
+    "android_shop_usable_flag": "가능"
+  },
+  "android_preset_2": null,
+  "android_preset_3": null,
+  "ocid": "76d94793a3d6fc3b5770aea167ef192f",
+  "character_name": "SingPlay"
+}

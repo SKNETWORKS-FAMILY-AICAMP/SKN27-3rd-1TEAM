@@ -1,0 +1,167 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "어센던트 셰이드",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "어센던트 셰이드"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "포인트 제로",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "포인트 제로"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "폭풍의 시 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "폭풍의 시 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "애로우 플래터 VI/언카운터블 애로우 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "애로우 플래터 VI"
+        },
+        {
+          "hexa_skill_id": "언카운터블 애로우 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "퀴버 카트리지 VI/피닉스 VI/엑스트라 퀴버 카트리지",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "퀴버 카트리지 VI"
+        },
+        {
+          "hexa_skill_id": "피닉스 VI"
+        },
+        {
+          "hexa_skill_id": "엑스트라 퀴버 카트리지"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "플레시 미라주 VI/윈드 오브 프레이 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "플레시 미라주 VI"
+        },
+        {
+          "hexa_skill_id": "윈드 오브 프레이 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "애로우 레인",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "애로우 레인 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "잔영의 시",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "잔영의 시 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "퀴버 풀버스트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "퀴버 풀버스트 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "실루엣 미라주",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "실루엣 미라주 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "이볼브 VI",
+      "hexa_core_level": 16,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "이볼브 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "551cf811a3a265eebe7eb02f9eee5edd",
+  "character_name": "보마노랑이"
+}

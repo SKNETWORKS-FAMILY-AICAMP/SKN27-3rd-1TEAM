@@ -1,0 +1,164 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "생사여탈",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "생사여탈"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "크루셜 어썰트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "크루셜 어썰트"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "쿼드러플 스로우 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "쿼드러플 스로우 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "마크 오브 어쌔신 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "마크 오브 어쌔신 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "다크 플레어 VI/쇼다운 챌린지 VI/다크니스 슈리켄",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "쇼다운 챌린지 VI"
+        },
+        {
+          "hexa_skill_id": "다크 플레어 VI"
+        },
+        {
+          "hexa_skill_id": "다크니스 슈리켄"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "써든레이드 VI/포 시즌 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "써든레이드 VI"
+        },
+        {
+          "hexa_skill_id": "포 시즌 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "스프레드 스로우",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "스프레드 스로우 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "풍마수리검",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "풍마수리검 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "다크로드의 비전서",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "다크로드의 비전서 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "스로우 블래스팅",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "스로우 블래스팅 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "얼티밋 다크 사이트 VI",
+      "hexa_core_level": 26,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "얼티밋 다크 사이트 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "5352b52492e2ed5f095df43d9bcf62a6",
+  "character_name": "한계"
+}

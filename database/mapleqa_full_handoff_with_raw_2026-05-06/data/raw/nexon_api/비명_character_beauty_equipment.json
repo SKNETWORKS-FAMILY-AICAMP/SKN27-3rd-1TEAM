@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "남",
+  "character_class": "카데나",
+  "character_hair": {
+    "hair_name": "검은색 다크 미로 헤어",
+    "base_color": "검은색",
+    "mix_color": "파란색",
+    "mix_rate": "24",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "수호령 얼굴",
+    "base_color": "에메랄드",
+    "mix_color": "자수정",
+    "mix_rate": "59",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "커스텀 뽀송 라벤더 컬러라인 피부",
+    "color_style": "파란색 계열",
+    "hue": 103,
+    "saturation": -99,
+    "brightness": -34
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "bfb9448bd14435ec808c3950e13c84c4",
+  "character_name": "비명"
+}

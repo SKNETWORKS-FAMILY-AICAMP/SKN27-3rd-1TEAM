@@ -1,0 +1,129 @@
+{
+  "date": null,
+  "pet_1_name": "쁘띠 초롱",
+  "pet_1_nickname": "쁘띠 초롱",
+  "pet_1_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJGHI",
+  "pet_1_description": "나비 정원에서 태어난 쁘띠 초롱입니다. 언제나 밝게 빛납니다.\n쁘띠 초롱나비 펫을 장착하면 나비 정원의 빛 세트효과를 얻게 되며, 장착한 쁘띠 초롱나비 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 초롱나비 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_1_equipment": {
+    "item_name": "초롱초롱해",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAJD",
+    "item_description": "쁘띠 초롱은 항상 초롱초롱해!",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "44"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "초롱초롱해",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAJD",
+    "item_date_expire": null
+  },
+  "pet_1_auto_skill": {
+    "skill_1": "쓸만한 컴뱃 오더스",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBME",
+    "skill_2": "쓸만한 홀리 심볼",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBOA"
+  },
+  "pet_1_pet_type": "루나 쁘띠",
+  "pet_1_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "특정 아이템 줍지 않기",
+    "HP 물약충전",
+    "MP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_1_date_expire": "2026-07-21T03:00+09:00",
+  "pet_1_appearance": "쁘띠 초롱",
+  "pet_1_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJGHI",
+  "pet_2_name": "뒤뚱",
+  "pet_2_nickname": "뒤뚱",
+  "pet_2_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJCPH",
+  "pet_2_description": "한 여름 더위에 꾸벅꾸벅 졸고있는 아기 펭귄 뒤뚱입니다.",
+  "pet_2_equipment": {
+    "item_name": "뒤뚱 썬캡",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJONI",
+    "item_description": "뒤뚱이의 여행 필수품 썬캡",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "46"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "5"
+      }
+    ],
+    "scroll_upgrade": 9,
+    "scroll_upgradable": 0,
+    "item_shape": "뒤뚱 썬캡",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJONI",
+    "item_date_expire": null
+  },
+  "pet_2_auto_skill": {
+    "skill_1": "스카링 소드",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KFPDKGPBMD",
+    "skill_2": "스피릿 블레이드",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KFPDKHPBMG"
+  },
+  "pet_2_pet_type": "루나 드림",
+  "pet_2_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "HP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_2_date_expire": "2026-05-24T10:00+09:00",
+  "pet_2_appearance": "뒤뚱",
+  "pet_2_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJCPH",
+  "pet_3_name": "꾸벅",
+  "pet_3_nickname": "꾸벅",
+  "pet_3_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJCPF",
+  "pet_3_description": "한 여름 더위에 꾸벅꾸벅 졸고있는 아기 펭귄 꾸벅입니다.",
+  "pet_3_equipment": {
+    "item_name": "꾸벅 튜브",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJONG",
+    "item_description": "물놀이를 좋아하는 꾸벅이가 좋아하는 튜브",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "42"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "5"
+      }
+    ],
+    "scroll_upgrade": 9,
+    "scroll_upgradable": 0,
+    "item_shape": "꾸벅 튜브",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJONG",
+    "item_date_expire": null
+  },
+  "pet_3_auto_skill": {
+    "skill_1": "오라 웨폰",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLGPBMA",
+    "skill_2": "쓸만한 샤프 아이즈",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBMC"
+  },
+  "pet_3_pet_type": "루나 드림",
+  "pet_3_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_3_date_expire": "2026-05-24T10:00+09:00",
+  "pet_3_appearance": "꾸벅",
+  "pet_3_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJCPF",
+  "ocid": "d5bbec0b99c1eeeb30d5a7ab6cdf1afdefe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "RJ115697"
+}

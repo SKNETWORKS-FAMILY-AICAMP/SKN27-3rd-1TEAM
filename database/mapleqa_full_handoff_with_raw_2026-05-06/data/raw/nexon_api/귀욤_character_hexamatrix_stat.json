@@ -1,0 +1,108 @@
+{
+  "date": null,
+  "character_class": "아크",
+  "character_hexa_stat_core": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "보스 데미지 증가",
+      "sub_stat_name_1": "공격력 증가",
+      "sub_stat_name_2": "크리티컬 데미지 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    }
+  ],
+  "character_hexa_stat_core_2": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "크리티컬 데미지 증가",
+      "sub_stat_name_1": "공격력 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 9,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 6,
+      "stat_grade": 20
+    }
+  ],
+  "character_hexa_stat_core_3": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "공격력 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 8,
+      "sub_stat_level_2": 4,
+      "stat_grade": 20
+    }
+  ],
+  "preset_hexa_stat_core": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "보스 데미지 증가",
+      "sub_stat_name_1": "공격력 증가",
+      "sub_stat_name_2": "크리티컬 데미지 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    },
+    {
+      "slot_id": "1",
+      "main_stat_name": "보스 데미지 증가",
+      "sub_stat_name_1": "공격력 증가",
+      "sub_stat_name_2": "크리티컬 데미지 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    }
+  ],
+  "preset_hexa_stat_core_2": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "크리티컬 데미지 증가",
+      "sub_stat_name_1": "공격력 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 9,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 6,
+      "stat_grade": 20
+    },
+    {
+      "slot_id": "1",
+      "main_stat_name": "크리티컬 데미지 증가",
+      "sub_stat_name_1": "공격력 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 9,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 6,
+      "stat_grade": 20
+    }
+  ],
+  "preset_hexa_stat_core_3": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "공격력 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 8,
+      "sub_stat_level_2": 4,
+      "stat_grade": 20
+    },
+    {
+      "slot_id": "1",
+      "main_stat_name": "공격력 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 8,
+      "sub_stat_level_2": 4,
+      "stat_grade": 20
+    }
+  ],
+  "ocid": "f862af7425ab8702c9d9795b45fb60f9",
+  "character_name": "귀욤"
+}

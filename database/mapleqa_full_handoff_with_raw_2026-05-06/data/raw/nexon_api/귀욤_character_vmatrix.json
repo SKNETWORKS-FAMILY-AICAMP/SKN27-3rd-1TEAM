@@ -1,0 +1,309 @@
+{
+  "date": null,
+  "character_class": "아크",
+  "character_v_core_equipment": [
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "근원의 기억",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "2",
+      "slot_level": 0,
+      "v_core_name": "인피니티 스펠",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "3",
+      "slot_level": 0,
+      "v_core_name": "새어 나오는 악몽",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "4",
+      "slot_level": 0,
+      "v_core_name": "영원히 굶주리는 짐승",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "어비스 차지드라이브/걷잡을 수 없는 혼돈 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "2",
+      "slot_level": 0,
+      "v_core_name": "거스트 차지드라이브/채워지지 않는 굶주림 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "3",
+      "slot_level": 0,
+      "v_core_name": "스칼렛 차지 드라이브/지워지지 않는 상처 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "4",
+      "slot_level": 0,
+      "v_core_name": "플레인 차지드라이브/기어 다니는 공포/황홀한 구속/끝없는 고통 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "5",
+      "slot_level": 0,
+      "v_core_name": "잊혀지지 않는 악몽/잊혀지지 않는 흉몽/다가오는 죽음/돌아오는 증오 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "6",
+      "slot_level": 0,
+      "v_core_name": "멈출 수 없는 본능/멈출 수 없는 충동 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "그란디스 여신의 축복",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "2",
+      "slot_level": 0,
+      "v_core_name": "매직 서킷 풀드라이브",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "3",
+      "slot_level": 0,
+      "v_core_name": "로디드 다이스",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "4",
+      "slot_level": 0,
+      "v_core_name": "오버 드라이브",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "5",
+      "slot_level": 0,
+      "v_core_name": "에르다 노바",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "6",
+      "slot_level": 0,
+      "v_core_name": "에르다의 의지",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "7",
+      "slot_level": 0,
+      "v_core_name": "블링크",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "8",
+      "slot_level": 0,
+      "v_core_name": "에르다 샤워",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "9",
+      "slot_level": 0,
+      "v_core_name": "로프 커넥트",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "10",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 홀리 심볼",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "11",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 홀리 파운틴",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "12",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 윈드 부스터",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "13",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 어드밴스드 블레스",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "14",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 컴뱃 오더스",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "15",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 하이퍼 바디",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "16",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 샤프 아이즈",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "17",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 미스틱 도어",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "18",
+      "slot_level": 0,
+      "v_core_name": "스파이더 인 미러",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "19",
+      "slot_level": 0,
+      "v_core_name": "크레스트 오브 더 솔라",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "일격필살 I",
+      "v_core_type": "특수 코어",
+      "v_core_level": 1,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    }
+  ],
+  "character_v_matrix_remain_slot_upgrade_point": 0,
+  "ocid": "f862af7425ab8702c9d9795b45fb60f9",
+  "character_name": "귀욤"
+}

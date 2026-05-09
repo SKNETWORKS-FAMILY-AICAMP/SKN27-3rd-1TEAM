@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "남",
+  "character_class": "에반",
+  "character_hair": {
+    "hair_name": "검은색 플로리안 헤어",
+    "base_color": "검은색",
+    "mix_color": "초록색",
+    "mix_rate": "16",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "백안 멍한 얼굴",
+    "base_color": "검은색",
+    "mix_color": "파란색",
+    "mix_rate": "23",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "커스텀 뽀송 라벤더 컬러라인 피부",
+    "color_style": "전체 색상 계열",
+    "hue": 86,
+    "saturation": -70,
+    "brightness": 70
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "e8d9ad67fcc4890395b6ab78e11df31f",
+  "character_name": "남한"
+}

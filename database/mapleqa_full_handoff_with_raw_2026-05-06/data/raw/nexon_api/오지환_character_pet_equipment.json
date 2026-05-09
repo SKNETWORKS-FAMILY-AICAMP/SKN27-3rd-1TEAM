@@ -1,0 +1,130 @@
+{
+  "date": null,
+  "pet_1_name": "빅토리",
+  "pet_1_nickname": "누네",
+  "pet_1_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJHJI",
+  "pet_1_description": "포니 라이더의 제왕 빅토리입니다. 시크한 성격이지만 종종 귀여운 모습도 반전으로 보여줍니다. \n쁘띠 포니 펫을 장착하면 포니 파워 세트효과를 얻게 되며, 장착한 쁘띠 포니 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 포니 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_1_equipment": {
+    "item_name": "당구리구리",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAPE",
+    "item_description": "전설의 포니 라이더 빅토리, 글로리가 지니고 다니는 맛있는 당근",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "10"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "44"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "당구리구리",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAPE",
+    "item_date_expire": null
+  },
+  "pet_1_auto_skill": {
+    "skill_1": "쓸만한 샤프 아이즈",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBMC",
+    "skill_2": null,
+    "skill_2_icon": null
+  },
+  "pet_1_pet_type": "루나 쁘띠",
+  "pet_1_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬",
+    "펫 자이언트 스킬"
+  ],
+  "pet_1_date_expire": "2026-09-14T19:00+09:00",
+  "pet_1_appearance": "갈색고양이",
+  "pet_1_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLHOB",
+  "pet_2_name": "쁘띠 포니",
+  "pet_2_nickname": "누네",
+  "pet_2_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJHGA",
+  "pet_2_description": "빅토리와 글로리가 많이 아끼는 쁘띠 포니입니다. 어딘지 엉뚱한 면이 매력 넘칩니다.\n쁘띠 포니 펫을 장착하면 포니 파워 세트효과를 얻게 되며, 장착한 쁘띠 포니 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 포니 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_2_equipment": {
+    "item_name": "자체 발광 포니",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAPH",
+    "item_description": "쁘띠 포니의 복슬복슬한 헤어가 반짝반짝 빛나고 있다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "10"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "44"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "자체 발광 포니",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAPH",
+    "item_date_expire": null
+  },
+  "pet_2_auto_skill": {
+    "skill_1": "쓸만한 컴뱃 오더스",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBME",
+    "skill_2": "쓸만한 홀리 심볼",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBOA"
+  },
+  "pet_2_pet_type": "루나 쁘띠",
+  "pet_2_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "HP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬",
+    "펫 자이언트 스킬"
+  ],
+  "pet_2_date_expire": "2026-06-26T11:00+09:00",
+  "pet_2_appearance": "갈색고양이",
+  "pet_2_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLHOB",
+  "pet_3_name": "글로리",
+  "pet_3_nickname": "누네",
+  "pet_3_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJHGB",
+  "pet_3_description": "영광의 스타 라이더 글로리입니다. 차가워보이지만 의외로 귀엽습니다. \n쁘띠 포니 펫을 장착하면 포니 파워 세트효과를 얻게 되며, 장착한 쁘띠 포니 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 포니 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_3_equipment": {
+    "item_name": "당구리구리",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAPE",
+    "item_description": "전설의 포니 라이더 빅토리, 글로리가 지니고 다니는 맛있는 당근",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "10"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "43"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "당구리구리",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJAPE",
+    "item_date_expire": null
+  },
+  "pet_3_auto_skill": {
+    "skill_1": "ESP 부스터",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KELALHPBMC",
+    "skill_2": null,
+    "skill_2_icon": null
+  },
+  "pet_3_pet_type": "루나 쁘띠",
+  "pet_3_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "HP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬",
+    "펫 자이언트 스킬"
+  ],
+  "pet_3_date_expire": "2026-05-07T21:00+09:00",
+  "pet_3_appearance": "갈색고양이",
+  "pet_3_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLHOB",
+  "ocid": "e39f3066e9e969f077e0e2419dee386d",
+  "character_name": "오지환"
+}

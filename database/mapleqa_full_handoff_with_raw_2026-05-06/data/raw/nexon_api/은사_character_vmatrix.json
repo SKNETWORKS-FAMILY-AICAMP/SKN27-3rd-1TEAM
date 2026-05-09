@@ -1,0 +1,309 @@
+{
+  "date": null,
+  "character_class": "팔라딘",
+  "character_v_core_equipment": [
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "홀리 유니티",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "2",
+      "slot_level": 0,
+      "v_core_name": "블래스드 해머",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "3",
+      "slot_level": 0,
+      "v_core_name": "그랜드 크로스",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "4",
+      "slot_level": 0,
+      "v_core_name": "마이티 묠니르",
+      "v_core_type": "직업 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "블래스트/디바인 저지먼트 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "2",
+      "slot_level": 0,
+      "v_core_name": "디바인 차지/디바인 스티그마 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "3",
+      "slot_level": 0,
+      "v_core_name": "생츄어리 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "4",
+      "slot_level": 0,
+      "v_core_name": "파이널 어택/스마이트 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "5",
+      "slot_level": 0,
+      "v_core_name": "리프 어택/돌진 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "6",
+      "slot_level": 0,
+      "v_core_name": "디바인 스윙/페이지 오더 강화",
+      "v_core_type": "강화 코어",
+      "v_core_level": 60,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "메이플월드 여신의 축복",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "2",
+      "slot_level": 0,
+      "v_core_name": "블리츠 실드",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "3",
+      "slot_level": 0,
+      "v_core_name": "오라 웨폰",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "4",
+      "slot_level": 0,
+      "v_core_name": "바디 오브 스틸",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "5",
+      "slot_level": 0,
+      "v_core_name": "에르다 노바",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "6",
+      "slot_level": 0,
+      "v_core_name": "에르다의 의지",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "7",
+      "slot_level": 0,
+      "v_core_name": "블링크",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "8",
+      "slot_level": 0,
+      "v_core_name": "에르다 샤워",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "9",
+      "slot_level": 0,
+      "v_core_name": "로프 커넥트",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "10",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 홀리 심볼",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "11",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 홀리 파운틴",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "12",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 윈드 부스터",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "13",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 어드밴스드 블레스",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "14",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 컴뱃 오더스",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "15",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 하이퍼 바디",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "16",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 샤프 아이즈",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "17",
+      "slot_level": 0,
+      "v_core_name": "쓸만한 미스틱 도어",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "18",
+      "slot_level": 0,
+      "v_core_name": "스파이더 인 미러",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "19",
+      "slot_level": 0,
+      "v_core_name": "크레스트 오브 더 솔라",
+      "v_core_type": "공용 코어",
+      "v_core_level": 30,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    },
+    {
+      "slot_id": "1",
+      "slot_level": 0,
+      "v_core_name": "일격필살 I",
+      "v_core_type": "특수 코어",
+      "v_core_level": 1,
+      "v_core_skill_1": null,
+      "v_core_skill_2": null,
+      "v_core_skill_3": null
+    }
+  ],
+  "character_v_matrix_remain_slot_upgrade_point": 0,
+  "ocid": "e05736e85564a6272abe13c4013f5dd8",
+  "character_name": "은사"
+}

@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "남",
+  "character_class": "호영",
+  "character_hair": {
+    "hair_name": "초록색 꼬마 웨이브 헤어",
+    "base_color": "초록색",
+    "mix_color": "보라색",
+    "mix_rate": "70",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "루시드 얼굴",
+    "base_color": "보라색",
+    "mix_color": "자수정",
+    "mix_rate": "50",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "뽀송 꽃잎 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "e3bc79347dae85944b2f98364880617e",
+  "character_name": "시눙식"
+}

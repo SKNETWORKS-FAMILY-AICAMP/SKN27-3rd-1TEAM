@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "남",
+  "character_class": "배틀메이지",
+  "character_hair": {
+    "hair_name": "주황색 루야 헤어",
+    "base_color": "주황색",
+    "mix_color": "파란색",
+    "mix_rate": "50",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "아잉 얼굴",
+    "base_color": "검은색",
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "뽀송 꽃잎 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "348a6d80245eee39464cfc937385673eefe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "케인WWE챔프"
+}

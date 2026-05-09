@@ -1,0 +1,130 @@
+{
+  "date": null,
+  "pet_1_name": "쁘띠 사이타마",
+  "pet_1_nickname": "쁘띠 사이타마",
+  "pet_1_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPLB",
+  "pet_1_description": "프로 히어로인 쁘띠 사이타마.\n쁘띠 사이타마는 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.\n쁘띠 히어로 펫을 장착하면 쁘띠 히어로의 힘 스킬을 얻게 되며, 장착한 쁘띠 히어로 펫의 종류가 많을수록 해당 스킬은 강화됩니다",
+  "pet_1_equipment": {
+    "item_name": "쁘띠 사이타마의 망토",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGIG",
+    "item_description": "쁘띠 사이타마의 망토이다",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "44"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "쁘띠 사이타마의 망토",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGIG",
+    "item_date_expire": null
+  },
+  "pet_1_auto_skill": {
+    "skill_1": "쓸만한 홀리 심볼",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBOA",
+    "skill_2": "샤프 아이즈",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KFPBIFPBOC"
+  },
+  "pet_1_pet_type": "루나 쁘띠",
+  "pet_1_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "HP 물약충전",
+    "MP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬",
+    "펫 자이언트 스킬"
+  ],
+  "pet_1_date_expire": "2026-12-08T22:00+09:00",
+  "pet_1_appearance": "쁘띠 사이타마",
+  "pet_1_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPLB",
+  "pet_2_name": "쁘띠 타츠마키",
+  "pet_2_nickname": "쁘띠 타츠마키",
+  "pet_2_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPLD",
+  "pet_2_description": "프로 히어로인 쁘띠 타츠마키.\n쁘띠 타츠마키는 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.\n쁘띠 히어로 펫을 장착하면 쁘띠 히어로의 힘 스킬을 얻게 되며, 장착한 쁘띠 히어로 펫의 종류가 많을수록 해당 스킬은 강화됩니다",
+  "pet_2_equipment": {
+    "item_name": "쁘띠 타츠마키의 초능력",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGII",
+    "item_description": "쁘띠 타츠마키의 초능력이다",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "43"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "쁘띠 타츠마키의 초능력",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGII",
+    "item_date_expire": null
+  },
+  "pet_2_auto_skill": {
+    "skill_1": "쓸만한 컴뱃 오더스",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBME",
+    "skill_2": null,
+    "skill_2_icon": null
+  },
+  "pet_2_pet_type": "루나 쁘띠",
+  "pet_2_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬",
+    "펫 자이언트 스킬"
+  ],
+  "pet_2_date_expire": "2026-12-08T22:00+09:00",
+  "pet_2_appearance": "쁘띠 타츠마키",
+  "pet_2_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPLD",
+  "pet_3_name": "쁘띠 제노스",
+  "pet_3_nickname": "쁘띠 제노스",
+  "pet_3_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPLA",
+  "pet_3_description": "프로 히어로인 쁘띠 제노스.\n쁘띠 제노스는 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.\n쁘띠 히어로 펫을 장착하면 쁘띠 히어로의 힘 스킬을 얻게 되며, 장착한 쁘띠 히어로 펫의 종류가 많을수록 해당 스킬은 강화됩니다",
+  "pet_3_equipment": {
+    "item_name": "쁘띠 제노스의 소각포",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGIJ",
+    "item_description": "쁘띠 제노스의 소각포이다",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "44"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "쁘띠 제노스의 소각포",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGIJ",
+    "item_date_expire": null
+  },
+  "pet_3_auto_skill": {
+    "skill_1": null,
+    "skill_1_icon": null,
+    "skill_2": "커스 톨러런스",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KFPBIGPBNC"
+  },
+  "pet_3_pet_type": "루나 쁘띠",
+  "pet_3_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬",
+    "펫 자이언트 스킬"
+  ],
+  "pet_3_date_expire": "2026-11-30T16:00+09:00",
+  "pet_3_appearance": "쁘띠 제노스",
+  "pet_3_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPLA",
+  "ocid": "512a7be70203c301c2a641a1028f14c3",
+  "character_name": "최무등"
+}

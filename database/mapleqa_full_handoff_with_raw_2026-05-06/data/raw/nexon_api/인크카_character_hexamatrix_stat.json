@@ -1,0 +1,108 @@
+{
+  "date": null,
+  "character_class": "카인",
+  "character_hexa_stat_core": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "보스 데미지 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "공격력 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    }
+  ],
+  "character_hexa_stat_core_2": [
+    {
+      "slot_id": "1",
+      "main_stat_name": "공격력 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 6,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 9,
+      "stat_grade": 20
+    }
+  ],
+  "character_hexa_stat_core_3": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "크리티컬 데미지 증가",
+      "sub_stat_name_1": "보스 데미지 증가",
+      "sub_stat_name_2": "공격력 증가",
+      "main_stat_level": 6,
+      "sub_stat_level_1": 7,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    }
+  ],
+  "preset_hexa_stat_core": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "보스 데미지 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "공격력 증가",
+      "main_stat_level": 8,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    },
+    {
+      "slot_id": "1",
+      "main_stat_name": "보스 데미지 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "공격력 증가",
+      "main_stat_level": 6,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 9,
+      "stat_grade": 20
+    }
+  ],
+  "preset_hexa_stat_core_2": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "공격력 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 0,
+      "sub_stat_level_1": 0,
+      "sub_stat_level_2": 2,
+      "stat_grade": 2
+    },
+    {
+      "slot_id": "1",
+      "main_stat_name": "공격력 증가",
+      "sub_stat_name_1": "크리티컬 데미지 증가",
+      "sub_stat_name_2": "보스 데미지 증가",
+      "main_stat_level": 6,
+      "sub_stat_level_1": 5,
+      "sub_stat_level_2": 9,
+      "stat_grade": 20
+    }
+  ],
+  "preset_hexa_stat_core_3": [
+    {
+      "slot_id": "0",
+      "main_stat_name": "크리티컬 데미지 증가",
+      "sub_stat_name_1": "보스 데미지 증가",
+      "sub_stat_name_2": "공격력 증가",
+      "main_stat_level": 6,
+      "sub_stat_level_1": 7,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    },
+    {
+      "slot_id": "1",
+      "main_stat_name": "크리티컬 데미지 증가",
+      "sub_stat_name_1": "보스 데미지 증가",
+      "sub_stat_name_2": "공격력 증가",
+      "main_stat_level": 6,
+      "sub_stat_level_1": 7,
+      "sub_stat_level_2": 7,
+      "stat_grade": 20
+    }
+  ],
+  "ocid": "7250019a5f013b392531fca20e3f1c9eefe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "인크카"
+}

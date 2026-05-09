@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "여",
+  "character_class": "보우마스터",
+  "character_hair": {
+    "hair_name": "초록색 더듬이 헤어",
+    "base_color": "초록색",
+    "mix_color": "보라색",
+    "mix_rate": "58",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "몬스터 예티 얼굴",
+    "base_color": "빨간색",
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "몬스터 주황버섯 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "551cf811a3a265eebe7eb02f9eee5edd",
+  "character_name": "보마노랑이"
+}

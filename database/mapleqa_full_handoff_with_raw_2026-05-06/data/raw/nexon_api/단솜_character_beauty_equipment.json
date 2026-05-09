@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "여",
+  "character_class": "윈드브레이커",
+  "character_hair": {
+    "hair_name": "검은색 상큼 단발 헤어",
+    "base_color": "검은색",
+    "mix_color": "노란색",
+    "mix_rate": "25",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "백안 조용한 눈 얼굴",
+    "base_color": "자수정",
+    "mix_color": "초록색",
+    "mix_rate": "42",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "커스텀 뽀송 라벤더 컬러라인 피부",
+    "color_style": "전체 색상 계열",
+    "hue": 0,
+    "saturation": -75,
+    "brightness": 0
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "9708ef10c2d20138c2b5d321340a2f07",
+  "character_name": "단솜"
+}

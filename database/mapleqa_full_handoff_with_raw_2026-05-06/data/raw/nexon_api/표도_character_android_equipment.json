@@ -1,0 +1,114 @@
+{
+  "date": null,
+  "android_name": "죽음의데스로이드(여)",
+  "android_nickname": "벨라",
+  "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJGNA",
+  "android_description": "안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.",
+  "android_hair": {
+    "hair_name": "노란색 벨라 헤어",
+    "base_color": "노란색",
+    "mix_color": "파란색",
+    "mix_rate": "63",
+    "freestyle_flag": "0"
+  },
+  "android_face": {
+    "face_name": "조용한 눈 얼굴",
+    "base_color": "빨간색",
+    "mix_color": "에메랄드",
+    "mix_rate": "50",
+    "freestyle_flag": "0"
+  },
+  "android_skin": {
+    "skin_name": "뽀송 라벤더 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "android_cash_item_equipment": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "밤의 라리엘",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCKGKC",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": "여",
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "얼굴장식",
+      "cash_item_equipment_slot": "얼굴장식",
+      "cash_item_name": "발그레 발그레",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPDJEJI",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "한벌옷",
+      "cash_item_equipment_slot": "상의",
+      "cash_item_name": "염원의 끝",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPHKCNI",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": "마스터라벨",
+      "cash_item_coloring_prism": null,
+      "android_item_gender": "여",
+      "freestyle_flag": "0"
+    }
+  ],
+  "android_ear_sensor_clip_flag": "적용",
+  "android_gender": "여",
+  "android_grade": "9",
+  "android_non_humanoid_flag": "인간형",
+  "android_shop_usable_flag": "가능",
+  "preset_no": 2,
+  "android_preset_1": {
+    "android_name": "죽음의데스로이드(여)",
+    "android_nickname": "벨라",
+    "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJGNA",
+    "android_description": "안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.",
+    "android_gender": "여",
+    "android_grade": "9",
+    "android_skin": {
+      "skin_name": "뽀송 라벤더 피부",
+      "color_style": null,
+      "hue": null,
+      "saturation": null,
+      "brightness": null
+    },
+    "android_hair": {
+      "hair_name": "노란색 벨라 헤어",
+      "base_color": "노란색",
+      "mix_color": "파란색",
+      "mix_rate": "63",
+      "freestyle_flag": "0"
+    },
+    "android_face": {
+      "face_name": "조용한 눈 얼굴",
+      "base_color": "빨간색",
+      "mix_color": "에메랄드",
+      "mix_rate": "50",
+      "freestyle_flag": "0"
+    },
+    "android_ear_sensor_clip_flag": "적용",
+    "android_non_humanoid_flag": "인간형",
+    "android_shop_usable_flag": "가능"
+  },
+  "android_preset_2": null,
+  "android_preset_3": null,
+  "ocid": "3c487577e99d30af80806e7d48f4f244",
+  "character_name": "표도"
+}

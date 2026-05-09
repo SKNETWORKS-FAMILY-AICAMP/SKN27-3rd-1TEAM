@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "남",
+  "character_class": "듀얼블레이더",
+  "character_hair": {
+    "hair_name": "검은색 번개 스크래치",
+    "base_color": "검은색",
+    "mix_color": "주황색",
+    "mix_rate": "16",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "남자얼굴13",
+    "base_color": "검은색",
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "고져스 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "c0946ad66d8ae6c5cb7f49e9c8acc39a",
+  "character_name": "우정"
+}

@@ -1,0 +1,85 @@
+{
+  "date": null,
+  "ability_grade": "레전드리",
+  "ability_info": [
+    {
+      "ability_no": "1",
+      "ability_grade": "레전드리",
+      "ability_value": "아이템 드롭률 20% 증가"
+    },
+    {
+      "ability_no": "2",
+      "ability_grade": "유니크",
+      "ability_value": "메소 획득량 15% 증가"
+    },
+    {
+      "ability_no": "3",
+      "ability_grade": "유니크",
+      "ability_value": "스킬 사용 시 8% 확률로 재사용 대기시간이 미적용"
+    }
+  ],
+  "remain_fame": 9999999,
+  "preset_no": 1,
+  "ability_preset_1": {
+    "ability_preset_grade": "레전드리",
+    "ability_info": [
+      {
+        "ability_no": "1",
+        "ability_grade": "레전드리",
+        "ability_value": "아이템 드롭률 20% 증가"
+      },
+      {
+        "ability_no": "2",
+        "ability_grade": "유니크",
+        "ability_value": "메소 획득량 15% 증가"
+      },
+      {
+        "ability_no": "3",
+        "ability_grade": "유니크",
+        "ability_value": "스킬 사용 시 8% 확률로 재사용 대기시간이 미적용"
+      }
+    ]
+  },
+  "ability_preset_2": {
+    "ability_preset_grade": "레전드리",
+    "ability_info": [
+      {
+        "ability_no": "1",
+        "ability_grade": "레전드리",
+        "ability_value": "보스 몬스터 공격 시 데미지 20% 증가"
+      },
+      {
+        "ability_no": "2",
+        "ability_grade": "유니크",
+        "ability_value": "상태 이상에 걸린 대상 공격 시 데미지 7% 증가"
+      },
+      {
+        "ability_no": "3",
+        "ability_grade": "유니크",
+        "ability_value": "버프 스킬의 지속 시간 38% 증가"
+      }
+    ]
+  },
+  "ability_preset_3": {
+    "ability_preset_grade": "에픽",
+    "ability_info": [
+      {
+        "ability_no": "1",
+        "ability_grade": "에픽",
+        "ability_value": "모든 능력치 15 증가"
+      },
+      {
+        "ability_no": "2",
+        "ability_grade": "레어",
+        "ability_value": "모든 능력치 5 증가"
+      },
+      {
+        "ability_no": "3",
+        "ability_grade": "레어",
+        "ability_value": "모든 능력치 5 증가"
+      }
+    ]
+  },
+  "ocid": "3a84007dd5dbe02c65a731da2304372a",
+  "character_name": "Chaos"
+}

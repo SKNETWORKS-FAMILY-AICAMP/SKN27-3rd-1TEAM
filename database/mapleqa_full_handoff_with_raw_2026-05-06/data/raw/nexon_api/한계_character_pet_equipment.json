@@ -1,0 +1,130 @@
+{
+  "date": null,
+  "pet_1_name": "티타니아",
+  "pet_1_nickname": "여친구함",
+  "pet_1_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLONA",
+  "pet_1_description": "페어리의 여왕 티타니아입니다. 어딘지 도도해보입니다. \n쁘띠 페어리 펫을 장착하면 페어리의 가호 세트효과를 얻게 되며, 장착한 쁘띠 페어리 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 페어리 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_1_equipment": {
+    "item_name": "루나 크리스탈 키",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_description": "달빛의 힘을 받은 아름다운 열쇠이다. 모든 종류의 루나 쁘띠 펫이 착용할 수 있으며 착용한 루나 쁘띠 펫 전용 펫 장비의 외형이 적용된다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "44"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "루나 크리스탈 키",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_date_expire": null
+  },
+  "pet_1_auto_skill": {
+    "skill_1": "쓸만한 컴뱃 오더스",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBME",
+    "skill_2": "쓸만한 샤프 아이즈",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBMC"
+  },
+  "pet_1_pet_type": "루나 쁘띠",
+  "pet_1_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "특정 아이템 줍지 않기",
+    "HP 물약충전",
+    "MP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_1_date_expire": "2026-11-22T18:00+09:00",
+  "pet_1_appearance": "티타니아",
+  "pet_1_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLONA",
+  "pet_2_name": "오베론",
+  "pet_2_nickname": "41남",
+  "pet_2_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLONB",
+  "pet_2_description": "페어리의 왕 오베론입니다. 어딘지 근엄해보입니다. \n쁘띠 페어리 펫을 장착하면 페어리의 가호 세트효과를 얻게 되며, 장착한 쁘띠 페어리 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 페어리 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_2_equipment": {
+    "item_name": "루나 크리스탈 키",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_description": "달빛의 힘을 받은 아름다운 열쇠이다. 모든 종류의 루나 쁘띠 펫이 착용할 수 있으며 착용한 루나 쁘띠 펫 전용 펫 장비의 외형이 적용된다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "44"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "루나 크리스탈 키",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_date_expire": null
+  },
+  "pet_2_auto_skill": {
+    "skill_1": "쓸만한 홀리 심볼",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBOA",
+    "skill_2": null,
+    "skill_2_icon": null
+  },
+  "pet_2_pet_type": "루나 쁘띠",
+  "pet_2_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "특정 아이템 줍지 않기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_2_date_expire": "2026-11-22T18:00+09:00",
+  "pet_2_appearance": "오베론",
+  "pet_2_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLONB",
+  "pet_3_name": "쁘띠 피코",
+  "pet_3_nickname": "캐시필수",
+  "pet_3_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLOND",
+  "pet_3_description": "귀요미 페어리 쁘띠 피코입니다. 귀여움을 담당하고 있습니다.\n쁘띠 페어리 펫을 장착하면 페어리의 가호 세트효과를 얻게 되며, 장착한 쁘띠 페어리 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 페어리 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_3_equipment": {
+    "item_name": "루나 크리스탈 키",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_description": "달빛의 힘을 받은 아름다운 열쇠이다. 모든 종류의 루나 쁘띠 펫이 착용할 수 있으며 착용한 루나 쁘띠 펫 전용 펫 장비의 외형이 적용된다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "44"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "루나 크리스탈 키",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_date_expire": null
+  },
+  "pet_3_auto_skill": {
+    "skill_1": "쉐도우 파트너",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KFPGKGPBMC",
+    "skill_2": "블리딩 톡신",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KFPGKFPBJE"
+  },
+  "pet_3_pet_type": "루나 쁘띠",
+  "pet_3_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "특정 아이템 줍지 않기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_3_date_expire": "2026-11-22T18:00+09:00",
+  "pet_3_appearance": "쁘띠 피코",
+  "pet_3_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLOND",
+  "ocid": "5352b52492e2ed5f095df43d9bcf62a6",
+  "character_name": "한계"
+}

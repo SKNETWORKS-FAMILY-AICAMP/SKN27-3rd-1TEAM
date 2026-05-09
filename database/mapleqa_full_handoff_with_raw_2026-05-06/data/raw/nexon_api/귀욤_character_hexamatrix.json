@@ -1,0 +1,182 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "가장 오래된 심연",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "가장 오래된 심연"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "절대 심연의 속삭임",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "절대 심연의 속삭임"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "플레인 차지드라이브 VI/스칼렛 차지드라이브 VI/거스트 차지드라이브 VI/어비스 차지드라이브 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "플레인 차지드라이브 VI"
+        },
+        {
+          "hexa_skill_id": "스칼렛 차지드라이브 VI"
+        },
+        {
+          "hexa_skill_id": "거스트 차지드라이브 VI"
+        },
+        {
+          "hexa_skill_id": "어비스 차지드라이브 VI"
+        },
+        {
+          "hexa_skill_id": "깨어난 심연"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "지워지지 않는 상처 VI/채워지지 않는 굶주림 VI/걷잡을 수 없는 혼돈 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "지워지지 않는 상처 VI"
+        },
+        {
+          "hexa_skill_id": "채워지지 않는 굶주림 VI"
+        },
+        {
+          "hexa_skill_id": "걷잡을 수 없는 혼돈 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "돌아오는 증오 VI/황홀한 구속 VI/끝없는 고통 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "돌아오는 증오 VI"
+        },
+        {
+          "hexa_skill_id": "황홀한 구속 VI"
+        },
+        {
+          "hexa_skill_id": "끝없는 고통 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "잊혀지지 않는 악몽 VI/잊혀지지 않는 흉몽 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "잊혀지지 않는 악몽 VI"
+        },
+        {
+          "hexa_skill_id": "잊혀지지 않는 흉몽 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "근원의 기억",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "근원의 기억 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "인피니티 스펠",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "인피니티 스펠 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "새어 나오는 악몽/새어 나오는 흉몽",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "새어 나오는 악몽/새어 나오는 흉몽 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "영원히 굶주리는 짐승",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "영원히 굶주리는 짐승 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "매직 서킷 풀드라이브 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "매직 서킷 풀드라이브 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "f862af7425ab8702c9d9795b45fb60f9",
+  "character_name": "귀욤"
+}

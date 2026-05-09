@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "남",
+  "character_class": "캐논마스터",
+  "character_hair": {
+    "hair_name": "빨간색 은율 헤어",
+    "base_color": "빨간색",
+    "mix_color": "초록색",
+    "mix_rate": "50",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "백안 졸린 얼굴",
+    "base_color": "초록색",
+    "mix_color": "자수정",
+    "mix_rate": "36",
+    "freestyle_flag": "1"
+  },
+  "character_skin": {
+    "skin_name": "뽀송 라벤더 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "6a3d4c1f905116c25fc9db05536e9bc8",
+  "character_name": "맛살"
+}

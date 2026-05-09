@@ -1,0 +1,102 @@
+{
+  "date": null,
+  "android_name": "유니온로이드",
+  "android_nickname": "뚠뚠",
+  "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJFJI",
+  "android_description": "나의 유니온 캐릭터를 꼭 닮은 안드로이드다. 안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.\n\n헤어 변경 및 성형이 불가능하며, 캐시 아이템을 장착하여도 외형이 변경되지 않는 안드로이드이다.",
+  "android_hair": {
+    "hair_name": null,
+    "base_color": null,
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_face": {
+    "face_name": null,
+    "base_color": null,
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_skin": null,
+  "android_cash_item_equipment": [
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "도시의 별무리",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCIEHI",
+      "cash_item_description": "금손 어워즈 금손 수상작 \"잿빛 도시의 빛나는 별 세트\"의 망토",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "얼굴장식",
+      "cash_item_equipment_slot": "얼굴장식",
+      "cash_item_name": "아일린 블러셔",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPDJAPI",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "신발",
+      "cash_item_equipment_slot": "신발",
+      "cash_item_name": "투명 신발",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPFJGLC",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    }
+  ],
+  "android_ear_sensor_clip_flag": "미적용",
+  "android_gender": "기타",
+  "android_grade": "9",
+  "android_non_humanoid_flag": "비인간형",
+  "android_shop_usable_flag": "가능",
+  "preset_no": 2,
+  "android_preset_1": {
+    "android_name": "유니온로이드",
+    "android_nickname": "뚠뚠",
+    "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJFJI",
+    "android_description": "나의 유니온 캐릭터를 꼭 닮은 안드로이드다. 안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.\n\n헤어 변경 및 성형이 불가능하며, 캐시 아이템을 장착하여도 외형이 변경되지 않는 안드로이드이다.",
+    "android_gender": "기타",
+    "android_grade": "9",
+    "android_skin": null,
+    "android_hair": {
+      "hair_name": null,
+      "base_color": null,
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_face": {
+      "face_name": null,
+      "base_color": null,
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_ear_sensor_clip_flag": "미적용",
+    "android_non_humanoid_flag": "비인간형",
+    "android_shop_usable_flag": "가능"
+  },
+  "android_preset_2": null,
+  "android_preset_3": null,
+  "ocid": "e8d9ad67fcc4890395b6ab78e11df31f",
+  "character_name": "남한"
+}

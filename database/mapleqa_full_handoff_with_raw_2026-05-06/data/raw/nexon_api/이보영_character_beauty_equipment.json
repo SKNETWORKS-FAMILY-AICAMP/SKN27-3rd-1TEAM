@@ -1,0 +1,31 @@
+{
+  "date": null,
+  "character_gender": "여",
+  "character_class": "윈드브레이커",
+  "character_hair": {
+    "hair_name": "검은색 안개 셀린 헤어",
+    "base_color": "검은색",
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "character_face": {
+    "face_name": "순수 뮤트 얼굴",
+    "base_color": "파란색",
+    "mix_color": "검은색",
+    "mix_rate": "50",
+    "freestyle_flag": "0"
+  },
+  "character_skin": {
+    "skin_name": "뽀송 라벤더 피부",
+    "color_style": null,
+    "hue": null,
+    "saturation": null,
+    "brightness": null
+  },
+  "additional_character_hair": null,
+  "additional_character_face": null,
+  "additional_character_skin": null,
+  "ocid": "b978efa17ca24e90f7ddcd2f6c3c591d",
+  "character_name": "이보영"
+}

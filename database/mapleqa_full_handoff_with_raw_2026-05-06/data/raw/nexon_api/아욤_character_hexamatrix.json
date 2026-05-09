@@ -1,0 +1,167 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "홀리 어드밴트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "홀리 어드밴트"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "커맨드 오브 헤븐",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "커맨드 오브 헤븐"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "엔젤레이 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "엔젤레이 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "빅뱅 VI/트라이엄프 페더 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "빅뱅 VI"
+        },
+        {
+          "hexa_skill_id": "트라이엄프 페더 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "엔젤릭 터치 VI/파운틴 포 엔젤 VI/바하뮤트 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "엔젤릭 터치 VI"
+        },
+        {
+          "hexa_skill_id": "파운틴 포 엔젤 VI"
+        },
+        {
+          "hexa_skill_id": "바하뮤트 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "제네시스 VI/헤븐즈 도어 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "제네시스 VI"
+        },
+        {
+          "hexa_skill_id": "헤븐즈 도어 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "프레이",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "프레이 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "엔젤 오브 리브라",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "엔젤 오브 리브라 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "피스메이커",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "피스메이커 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "디바인 퍼니시먼트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "디바인 퍼니시먼트 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "아르카나 오버라이드 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "아르카나 오버라이드 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "40a35ddb55e4478e89e77fb51e7fb666",
+  "character_name": "아욤"
+}

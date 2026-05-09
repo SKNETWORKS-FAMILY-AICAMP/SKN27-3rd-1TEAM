@@ -1,0 +1,116 @@
+{
+  "date": null,
+  "android_name": "싱크로이드",
+  "android_nickname": "안드로이드",
+  "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJFPD",
+  "android_description": "나와 꼭 닮은 싱크로이드다. 안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.\n\n헤어 변경 및 성형이 불가능하며, 캐시 아이템을 장착하여도 외형이 변경되지 않는 싱크로이드이다.",
+  "android_hair": {
+    "hair_name": null,
+    "base_color": null,
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_face": {
+    "face_name": null,
+    "base_color": null,
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_skin": null,
+  "android_cash_item_equipment": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "말랑 오리 인형탈",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCNFGJ",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "레이든 날개",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCIBND",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "한벌옷",
+      "cash_item_equipment_slot": "상의",
+      "cash_item_name": "말랑 오리 인형옷",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPHPHME",
+      "cash_item_description": "주의! 한벌옷과 세트가 아닌 장비 아이템과 함께 착용 시 캐릭터 이미지가 어색해보일 수 있습니다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "장갑",
+      "cash_item_equipment_slot": "장갑",
+      "cash_item_name": "말랑 오리 장갑",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPKJAGH",
+      "cash_item_description": "주의! 장갑과 세트가 아닌 장비 아이템과 함께 착용 시 캐릭터 이미지가 어색해보일 수 있습니다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    }
+  ],
+  "android_ear_sensor_clip_flag": "미적용",
+  "android_gender": "기타",
+  "android_grade": "9",
+  "android_non_humanoid_flag": "비인간형",
+  "android_shop_usable_flag": "가능",
+  "preset_no": 3,
+  "android_preset_1": {
+    "android_name": "싱크로이드",
+    "android_nickname": "안드로이드",
+    "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJFPD",
+    "android_description": "나와 꼭 닮은 싱크로이드다. 안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.\n\n헤어 변경 및 성형이 불가능하며, 캐시 아이템을 장착하여도 외형이 변경되지 않는 싱크로이드이다.",
+    "android_gender": "기타",
+    "android_grade": "9",
+    "android_skin": null,
+    "android_hair": {
+      "hair_name": null,
+      "base_color": null,
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_face": {
+      "face_name": null,
+      "base_color": null,
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_ear_sensor_clip_flag": "미적용",
+    "android_non_humanoid_flag": "비인간형",
+    "android_shop_usable_flag": "가능"
+  },
+  "android_preset_2": null,
+  "android_preset_3": null,
+  "ocid": "2c18c32dd82b80d73a4094c17baa9a4d",
+  "character_name": "번개숑숑이"
+}

@@ -1,0 +1,170 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "인페르날 베놈",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "인페르날 베놈"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "토렌셜 플레임",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "토렌셜 플레임"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "플레임 스윕 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "플레임 스윕 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "플레임 헤이즈 VI/미스트 이럽션 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "플레임 헤이즈 VI"
+        },
+        {
+          "hexa_skill_id": "미스트 이럽션 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "이그나이트 VI/이프리트 VI/파이어 오라 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "이그나이트 VI"
+        },
+        {
+          "hexa_skill_id": "이프리트 VI"
+        },
+        {
+          "hexa_skill_id": "파이어 오라 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "포이즌 리젼 VI/메테오 VI/메기도 플레임 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "포이즌 리젼 VI"
+        },
+        {
+          "hexa_skill_id": "메테오 VI"
+        },
+        {
+          "hexa_skill_id": "메기도 플레임 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "도트 퍼니셔",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "도트 퍼니셔 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "포이즌 노바",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "포이즌 노바 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "퓨리 오브 이프리트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "퓨리 오브 이프리트 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "포이즌 체인",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "포이즌 체인 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "아르카나 오버라이드 VI",
+      "hexa_core_level": 28,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "아르카나 오버라이드 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "160ab5bb62dcd76b67d2942452fa0f8befe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "법행"
+}

@@ -1,0 +1,94 @@
+{
+  "date": null,
+  "pet_1_name": "쁘띠 초롱",
+  "pet_1_nickname": "예지니양",
+  "pet_1_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJGHI",
+  "pet_1_description": "나비 정원에서 태어난 쁘띠 초롱입니다. 언제나 밝게 빛납니다.\n쁘띠 초롱나비 펫을 장착하면 나비 정원의 빛 세트효과를 얻게 되며, 장착한 쁘띠 초롱나비 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 초롱나비 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_1_equipment": {
+    "item_name": "루나 크리스탈 키",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_description": "달빛의 힘을 받은 아름다운 열쇠이다. 모든 종류의 루나 쁘띠 펫이 착용할 수 있으며 착용한 루나 쁘띠 펫 전용 펫 장비의 외형이 적용된다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "31"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "10"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "루나 크리스탈 키",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_date_expire": null
+  },
+  "pet_1_auto_skill": {
+    "skill_1": "쓸만한 홀리 심볼",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBOA",
+    "skill_2": "쓸만한 샤프 아이즈",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBMC"
+  },
+  "pet_1_pet_type": "루나 쁘띠",
+  "pet_1_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "HP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_1_date_expire": "2026-07-24T08:00+09:00",
+  "pet_1_appearance": "쁘띠 초롱",
+  "pet_1_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJGHI",
+  "pet_2_name": "쁘띠 엔키",
+  "pet_2_nickname": "쁘띠 엔키",
+  "pet_2_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJBPG",
+  "pet_2_description": "고대의 힘이 느껴지는 쁘띠 엔키입니다.",
+  "pet_2_equipment": {
+    "item_name": "작은 조개",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIHPA",
+    "item_description": "쁘띠 엔키와 함께하는 작은 조개이다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "24"
+      }
+    ],
+    "scroll_upgrade": 10,
+    "scroll_upgradable": 0,
+    "item_shape": "작은 조개",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIHPA",
+    "item_date_expire": null
+  },
+  "pet_2_auto_skill": {
+    "skill_1": "오라 웨폰",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLGPBMA",
+    "skill_2": null,
+    "skill_2_icon": null
+  },
+  "pet_2_pet_type": null,
+  "pet_2_skill": [
+    "아이템 줍기",
+    "이동반경 확대",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_2_date_expire": "2026-08-06T01:00+09:00",
+  "pet_2_appearance": "쁘띠 엔키",
+  "pet_2_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJBPG",
+  "pet_3_name": null,
+  "pet_3_nickname": null,
+  "pet_3_icon": null,
+  "pet_3_description": null,
+  "pet_3_equipment": null,
+  "pet_3_auto_skill": null,
+  "pet_3_pet_type": null,
+  "pet_3_skill": [],
+  "pet_3_date_expire": null,
+  "pet_3_appearance": null,
+  "pet_3_appearance_icon": null,
+  "ocid": "2386fe0676135cc51f7e21102479e7d8efe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "포쏘는예지니"
+}

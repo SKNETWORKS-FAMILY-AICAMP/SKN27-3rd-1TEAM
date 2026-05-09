@@ -1,0 +1,161 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "마이트 오브 노바",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "마이트 오브 노바"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "파이로 인스팅트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "파이로 인스팅트"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "기가 슬래셔 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "기가 슬래셔 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "소드 스트라이크 VI/윌 오브 소드 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "소드 스트라이크 VI"
+        },
+        {
+          "hexa_skill_id": "윌 오브 소드 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "인퍼널 브레스 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "인퍼널 브레스 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "윙비트 VI/페트리파이드 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "윙비트 VI"
+        },
+        {
+          "hexa_skill_id": "페트리파이드 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "가디언 오브 노바",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "가디언 오브 노바 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "윌 오브 소드 : 스트라이크",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "윌 오브 소드 : 스트라이크 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "드라코 슬래셔",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "드라코 슬래셔 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "드래곤 블레이즈",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "드래곤 블레이즈 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "판테온 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "판테온 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "01133746618e52a77a3807ffa65710a6efe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "테룽이"
+}

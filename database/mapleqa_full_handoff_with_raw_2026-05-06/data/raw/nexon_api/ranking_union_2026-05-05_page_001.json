@@ -1,0 +1,2004 @@
+{
+  "ranking": [
+    {
+      "date": "2026-05-05",
+      "ranking": 1,
+      "character_name": "밥먹어친구야",
+      "world_name": "베라",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11648,
+      "union_power": 1755357989
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 2,
+      "character_name": "쓰는무기는활",
+      "world_name": "에오스",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터",
+      "union_level": 11596,
+      "union_power": 1561581680
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 3,
+      "character_name": "법조",
+      "world_name": "스카니아",
+      "class_name": "기사단",
+      "sub_class_name": "소울마스터",
+      "union_level": 11589,
+      "union_power": 1689606757
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 4,
+      "character_name": "송몰빵",
+      "world_name": "엘리시움",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터",
+      "union_level": 11558,
+      "union_power": 1594555793
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 5,
+      "character_name": "사냥잠딸똥밥",
+      "world_name": "이노시스",
+      "class_name": "은월",
+      "sub_class_name": "",
+      "union_level": 11514,
+      "union_power": 1479209601
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 6,
+      "character_name": "하시시야",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11460,
+      "union_power": 1424236555
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 7,
+      "character_name": "히니",
+      "world_name": "엘리시움",
+      "class_name": "기사단",
+      "sub_class_name": "미하일",
+      "union_level": 11450,
+      "union_power": 1511017453
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 8,
+      "character_name": "단오",
+      "world_name": "베라",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11438,
+      "union_power": 1659474955
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 9,
+      "character_name": "꽃잎흩날린자",
+      "world_name": "엘리시움",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11422,
+      "union_power": 1547849852
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 10,
+      "character_name": "좨림29",
+      "world_name": "스카니아",
+      "class_name": "기사단",
+      "sub_class_name": "나이트워커",
+      "union_level": 11420,
+      "union_power": 1383293383
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 11,
+      "character_name": "쫄배숍",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11417,
+      "union_power": 1501127229
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 12,
+      "character_name": "유이",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11358,
+      "union_power": 1600806060
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 13,
+      "character_name": "GBen",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11337,
+      "union_power": 1540089880
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 14,
+      "character_name": "컨컨",
+      "world_name": "루나",
+      "class_name": "에반",
+      "sub_class_name": "",
+      "union_level": 11336,
+      "union_power": 1698122812
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 15,
+      "character_name": "Witch",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11302,
+      "union_power": 1432177113
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 16,
+      "character_name": "민기",
+      "world_name": "레드",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11294,
+      "union_power": 1417393383
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 17,
+      "character_name": "개매",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11285,
+      "union_power": 1485054282
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 18,
+      "character_name": "펄이",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11279,
+      "union_power": 1495829537
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 19,
+      "character_name": "두시",
+      "world_name": "베라",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11275,
+      "union_power": 1621198074
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 20,
+      "character_name": "화면",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11271,
+      "union_power": 1613394349
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 21,
+      "character_name": "으찌",
+      "world_name": "베라",
+      "class_name": "초월자",
+      "sub_class_name": "제로",
+      "union_level": 11266,
+      "union_power": 1517698855
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 22,
+      "character_name": "자동기상",
+      "world_name": "루나",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11265,
+      "union_power": 1516183716
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 23,
+      "character_name": "멸화",
+      "world_name": "엘리시움",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11262,
+      "union_power": 1398223818
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 24,
+      "character_name": "히나",
+      "world_name": "베라",
+      "class_name": "초월자",
+      "sub_class_name": "제로",
+      "union_level": 11258,
+      "union_power": 1568726383
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 25,
+      "character_name": "포커",
+      "world_name": "오로라",
+      "class_name": "궁수",
+      "sub_class_name": "패스파인더",
+      "union_level": 11255,
+      "union_power": 1399414976
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 26,
+      "character_name": "쀼챠",
+      "world_name": "루나",
+      "class_name": "초월자",
+      "sub_class_name": "제로",
+      "union_level": 11240,
+      "union_power": 1376499618
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 27,
+      "character_name": "bitcoin",
+      "world_name": "제니스",
+      "class_name": "전사",
+      "sub_class_name": "히어로",
+      "union_level": 11236,
+      "union_power": 1510051510
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 28,
+      "character_name": "참피학대파",
+      "world_name": "베라",
+      "class_name": "일리움",
+      "sub_class_name": "",
+      "union_level": 11236,
+      "union_power": 1202027754
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 29,
+      "character_name": "독립",
+      "world_name": "베라",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터",
+      "union_level": 11233,
+      "union_power": 1342300019
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 30,
+      "character_name": "카벨",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어",
+      "union_level": 11229,
+      "union_power": 1555336633
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 31,
+      "character_name": "중앙의마족",
+      "world_name": "에오스",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어",
+      "union_level": 11228,
+      "union_power": 1379367242
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 32,
+      "character_name": "싼타42호",
+      "world_name": "에오스",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11223,
+      "union_power": 1687285006
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 33,
+      "character_name": "몬빵",
+      "world_name": "오로라",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11223,
+      "union_power": 1328155195
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 34,
+      "character_name": "Elimentall9",
+      "world_name": "유니온",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11212,
+      "union_power": 1357941369
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 35,
+      "character_name": "문꼬마",
+      "world_name": "에오스",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터",
+      "union_level": 11195,
+      "union_power": 1640734107
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 36,
+      "character_name": "슈탱",
+      "world_name": "크로아",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11195,
+      "union_power": 1504955075
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 37,
+      "character_name": "어썰트",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11192,
+      "union_power": 1408774151
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 38,
+      "character_name": "DippinDots",
+      "world_name": "엘리시움",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11179,
+      "union_power": 1350075660
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 39,
+      "character_name": "츠섕",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11175,
+      "union_power": 1506628062
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 40,
+      "character_name": "메아리",
+      "world_name": "루나",
+      "class_name": "아란",
+      "sub_class_name": "",
+      "union_level": 11170,
+      "union_power": 1533213414
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 41,
+      "character_name": "꺄삼",
+      "world_name": "오로라",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11169,
+      "union_power": 1316475230
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 42,
+      "character_name": "다크스웜",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11167,
+      "union_power": 1540844009
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 43,
+      "character_name": "가득",
+      "world_name": "제니스",
+      "class_name": "프렌즈 월드",
+      "sub_class_name": "키네시스",
+      "union_level": 11167,
+      "union_power": 1435566540
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 44,
+      "character_name": "에디공",
+      "world_name": "에오스",
+      "class_name": "전사",
+      "sub_class_name": "히어로",
+      "union_level": 11166,
+      "union_power": 1410579532
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 45,
+      "character_name": "부빵이",
+      "world_name": "스카니아",
+      "class_name": "은월",
+      "sub_class_name": "",
+      "union_level": 11161,
+      "union_power": 1284121262
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 46,
+      "character_name": "콘냐",
+      "world_name": "크로아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "배틀메이지",
+      "union_level": 11160,
+      "union_power": 1372011096
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 47,
+      "character_name": "쩡프",
+      "world_name": "스카니아",
+      "class_name": "아란",
+      "sub_class_name": "",
+      "union_level": 11157,
+      "union_power": 1386929505
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 48,
+      "character_name": "서울시",
+      "world_name": "크로아",
+      "class_name": "궁수",
+      "sub_class_name": "패스파인더",
+      "union_level": 11155,
+      "union_power": 1368693134
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 49,
+      "character_name": "꼬마묘랑",
+      "world_name": "이노시스",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11148,
+      "union_power": 1305289499
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 50,
+      "character_name": "피오라",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트",
+      "union_level": 11146,
+      "union_power": 1345630653
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 51,
+      "character_name": "허엥",
+      "world_name": "엘리시움",
+      "class_name": "호영",
+      "sub_class_name": "",
+      "union_level": 11144,
+      "union_power": 1402627495
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 52,
+      "character_name": "또쏠걸",
+      "world_name": "유니온",
+      "class_name": "궁수",
+      "sub_class_name": "패스파인더",
+      "union_level": 11144,
+      "union_power": 1398831259
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 53,
+      "character_name": "엉큼한엉덩",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11143,
+      "union_power": 1312910999
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 54,
+      "character_name": "꼬마돌과교배",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11141,
+      "union_power": 1414167662
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 55,
+      "character_name": "자쪼",
+      "world_name": "엘리시움",
+      "class_name": "궁수",
+      "sub_class_name": "패스파인더",
+      "union_level": 11140,
+      "union_power": 1488286047
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 56,
+      "character_name": "스플렌디다",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11140,
+      "union_power": 1333753813
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 57,
+      "character_name": "서린",
+      "world_name": "루나",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커",
+      "union_level": 11139,
+      "union_power": 1264406812
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 58,
+      "character_name": "괜좨",
+      "world_name": "크로아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11137,
+      "union_power": 1366580357
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 59,
+      "character_name": "성려",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11136,
+      "union_power": 1454874761
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 60,
+      "character_name": "궁하",
+      "world_name": "스카니아",
+      "class_name": "궁수",
+      "sub_class_name": "신궁",
+      "union_level": 11136,
+      "union_power": 1334637129
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 61,
+      "character_name": "하서다",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11134,
+      "union_power": 1464703938
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 62,
+      "character_name": "나실피드",
+      "world_name": "스카니아",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터",
+      "union_level": 11134,
+      "union_power": 1350919177
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 63,
+      "character_name": "새빛",
+      "world_name": "엘리시움",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11133,
+      "union_power": 1343358932
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 64,
+      "character_name": "그브는요우무",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11133,
+      "union_power": 1328865914
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 65,
+      "character_name": "규칙적백수",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11133,
+      "union_power": 1278692073
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 66,
+      "character_name": "니퍼",
+      "world_name": "엘리시움",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11132,
+      "union_power": 1289443819
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 67,
+      "character_name": "바퍼차키",
+      "world_name": "엘리시움",
+      "class_name": "해적",
+      "sub_class_name": "바이퍼",
+      "union_level": 11131,
+      "union_power": 1301058354
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 68,
+      "character_name": "vaha",
+      "world_name": "엘리시움",
+      "class_name": "카이저",
+      "sub_class_name": "",
+      "union_level": 11126,
+      "union_power": 1373829371
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 69,
+      "character_name": "마케팅",
+      "world_name": "스카니아",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11124,
+      "union_power": 1311175931
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 70,
+      "character_name": "탑쑨",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11120,
+      "union_power": 1373826346
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 71,
+      "character_name": "나어",
+      "world_name": "크로아",
+      "class_name": "기사단",
+      "sub_class_name": "나이트워커",
+      "union_level": 11119,
+      "union_power": 1390308759
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 72,
+      "character_name": "데아륀",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어",
+      "union_level": 11119,
+      "union_power": 1309378207
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 73,
+      "character_name": "마도사총사",
+      "world_name": "유니온",
+      "class_name": "기사단",
+      "sub_class_name": "소울마스터",
+      "union_level": 11118,
+      "union_power": 1313964485
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 74,
+      "character_name": "타카키",
+      "world_name": "베라",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11116,
+      "union_power": 1317401560
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 75,
+      "character_name": "수정과",
+      "world_name": "루나",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11115,
+      "union_power": 1469456063
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 76,
+      "character_name": "야행",
+      "world_name": "루나",
+      "class_name": "아크",
+      "sub_class_name": "",
+      "union_level": 11114,
+      "union_power": 1446340306
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 77,
+      "character_name": "파원e",
+      "world_name": "엘리시움",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커",
+      "union_level": 11114,
+      "union_power": 1431103487
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 78,
+      "character_name": "규니서펜트",
+      "world_name": "스카니아",
+      "class_name": "해적",
+      "sub_class_name": "바이퍼",
+      "union_level": 11114,
+      "union_power": 1327519418
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 79,
+      "character_name": "쇠날",
+      "world_name": "엘리시움",
+      "class_name": "전사",
+      "sub_class_name": "히어로",
+      "union_level": 11112,
+      "union_power": 1315219656
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 80,
+      "character_name": "타나카의렌",
+      "world_name": "스카니아",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11112,
+      "union_power": 1299109680
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 81,
+      "character_name": "신의지휘장",
+      "world_name": "이노시스",
+      "class_name": "궁수",
+      "sub_class_name": "신궁",
+      "union_level": 11111,
+      "union_power": 1375828510
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 82,
+      "character_name": "짜배",
+      "world_name": "오로라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11111,
+      "union_power": 1322945352
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 83,
+      "character_name": "움푹",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11110,
+      "union_power": 1352319693
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 84,
+      "character_name": "구희",
+      "world_name": "엘리시움",
+      "class_name": "전사",
+      "sub_class_name": "히어로",
+      "union_level": 11108,
+      "union_power": 1356859935
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 85,
+      "character_name": "TAMA",
+      "world_name": "루나",
+      "class_name": "은월",
+      "sub_class_name": "",
+      "union_level": 11107,
+      "union_power": 1407352254
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 86,
+      "character_name": "박토잉",
+      "world_name": "에오스",
+      "class_name": "전사",
+      "sub_class_name": "팔라딘",
+      "union_level": 11104,
+      "union_power": 1317271756
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 87,
+      "character_name": "먼갓",
+      "world_name": "스카니아",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터",
+      "union_level": 11101,
+      "union_power": 1452848182
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 88,
+      "character_name": "열나",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11101,
+      "union_power": 1367175040
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 89,
+      "character_name": "vlafndskvj",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11100,
+      "union_power": 1330535859
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 90,
+      "character_name": "날두",
+      "world_name": "크로아",
+      "class_name": "은월",
+      "sub_class_name": "",
+      "union_level": 11096,
+      "union_power": 1203162131
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 91,
+      "character_name": "멍꿀멍꿀컹컹",
+      "world_name": "스카니아",
+      "class_name": "아크",
+      "sub_class_name": "",
+      "union_level": 11095,
+      "union_power": 1401675419
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 92,
+      "character_name": "Tatttt",
+      "world_name": "엘리시움",
+      "class_name": "전사",
+      "sub_class_name": "팔라딘",
+      "union_level": 11095,
+      "union_power": 1396023707
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 93,
+      "character_name": "달코미아델",
+      "world_name": "엘리시움",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11095,
+      "union_power": 1371973344
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 94,
+      "character_name": "은솔빈",
+      "world_name": "엘리시움",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11094,
+      "union_power": 1336834583
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 95,
+      "character_name": "전사2579",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "히어로",
+      "union_level": 11091,
+      "union_power": 1307126646
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 96,
+      "character_name": "교과",
+      "world_name": "엘리시움",
+      "class_name": "초월자",
+      "sub_class_name": "제로",
+      "union_level": 11089,
+      "union_power": 1371253892
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 97,
+      "character_name": "아재",
+      "world_name": "베라",
+      "class_name": "궁수",
+      "sub_class_name": "신궁",
+      "union_level": 11084,
+      "union_power": 1481861261
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 98,
+      "character_name": "맑음",
+      "world_name": "크로아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11081,
+      "union_power": 1407917081
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 99,
+      "character_name": "남살프",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "와일드헌터",
+      "union_level": 11081,
+      "union_power": 1327218715
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 100,
+      "character_name": "은하성녀",
+      "world_name": "스카니아",
+      "class_name": "루미너스",
+      "sub_class_name": "",
+      "union_level": 11080,
+      "union_power": 1438684305
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 101,
+      "character_name": "쏭아",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11080,
+      "union_power": 1379155277
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 102,
+      "character_name": "지티Lumi",
+      "world_name": "루나",
+      "class_name": "루미너스",
+      "sub_class_name": "",
+      "union_level": 11080,
+      "union_power": 1336562973
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 103,
+      "character_name": "아침방울",
+      "world_name": "에오스",
+      "class_name": "라라",
+      "sub_class_name": "",
+      "union_level": 11079,
+      "union_power": 1252495377
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 104,
+      "character_name": "쭈뿌쮸쀼",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11075,
+      "union_power": 1360461815
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 105,
+      "character_name": "에슨",
+      "world_name": "엘리시움",
+      "class_name": "기사단",
+      "sub_class_name": "나이트워커",
+      "union_level": 11074,
+      "union_power": 1403164802
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 106,
+      "character_name": "벨치스",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "블래스터",
+      "union_level": 11073,
+      "union_power": 1346091524
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 107,
+      "character_name": "별빛처럼찬란",
+      "world_name": "엘리시움",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11073,
+      "union_power": 1302178491
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 108,
+      "character_name": "리트",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11072,
+      "union_power": 1397884397
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 109,
+      "character_name": "혹시야불즈님",
+      "world_name": "베라",
+      "class_name": "기사단",
+      "sub_class_name": "미하일",
+      "union_level": 11069,
+      "union_power": 1245828838
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 110,
+      "character_name": "돌켄",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11068,
+      "union_power": 1344723399
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 111,
+      "character_name": "EMD3",
+      "world_name": "엘리시움",
+      "class_name": "에반",
+      "sub_class_name": "",
+      "union_level": 11068,
+      "union_power": 1305060664
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 112,
+      "character_name": "백십칠떵영",
+      "world_name": "엘리시움",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11068,
+      "union_power": 1302147340
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 113,
+      "character_name": "Il나랑너랑",
+      "world_name": "베라",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11068,
+      "union_power": 1293207210
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 114,
+      "character_name": "성배",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11066,
+      "union_power": 1422934611
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 115,
+      "character_name": "루머",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11066,
+      "union_power": 1360567553
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 116,
+      "character_name": "고딩",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "팔라딘",
+      "union_level": 11065,
+      "union_power": 1489233828
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 117,
+      "character_name": "껑환",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11065,
+      "union_power": 1174648258
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 118,
+      "character_name": "군고구마",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11062,
+      "union_power": 1391215115
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 119,
+      "character_name": "은연화o",
+      "world_name": "엘리시움",
+      "class_name": "은월",
+      "sub_class_name": "",
+      "union_level": 11060,
+      "union_power": 1207803184
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 120,
+      "character_name": "연량",
+      "world_name": "베라",
+      "class_name": "아란",
+      "sub_class_name": "",
+      "union_level": 11058,
+      "union_power": 1330758959
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 121,
+      "character_name": "얼음ed",
+      "world_name": "이노시스",
+      "class_name": "루미너스",
+      "sub_class_name": "",
+      "union_level": 11058,
+      "union_power": 1236533580
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 122,
+      "character_name": "팅팅볼",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11055,
+      "union_power": 1343751014
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 123,
+      "character_name": "월홍영",
+      "world_name": "루나",
+      "class_name": "렌",
+      "sub_class_name": "",
+      "union_level": 11054,
+      "union_power": 1314825472
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 124,
+      "character_name": "맹쿠",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11053,
+      "union_power": 1462577432
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 125,
+      "character_name": "송류나",
+      "world_name": "크로아",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터",
+      "union_level": 11053,
+      "union_power": 1393638665
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 126,
+      "character_name": "키네시스3737",
+      "world_name": "유니온",
+      "class_name": "프렌즈 월드",
+      "sub_class_name": "키네시스",
+      "union_level": 11053,
+      "union_power": 1213804415
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 127,
+      "character_name": "뻗어",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11052,
+      "union_power": 1410765652
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 128,
+      "character_name": "이영권",
+      "world_name": "엘리시움",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트",
+      "union_level": 11052,
+      "union_power": 1283905661
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 129,
+      "character_name": "의무조사",
+      "world_name": "크로아",
+      "class_name": "아크",
+      "sub_class_name": "",
+      "union_level": 11051,
+      "union_power": 1361663131
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 130,
+      "character_name": "마루숲",
+      "world_name": "오로라",
+      "class_name": "기사단",
+      "sub_class_name": "플레임위자드",
+      "union_level": 11051,
+      "union_power": 1150778861
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 131,
+      "character_name": "스위퍼",
+      "world_name": "엘리시움",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11050,
+      "union_power": 1255863755
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 132,
+      "character_name": "벼락부자",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11049,
+      "union_power": 1190279804
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 133,
+      "character_name": "수소차정비사",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "팔라딘",
+      "union_level": 11048,
+      "union_power": 1171173943
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 134,
+      "character_name": "꼬윤졍",
+      "world_name": "엘리시움",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터",
+      "union_level": 11045,
+      "union_power": 1266058018
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 135,
+      "character_name": "SC0729",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11045,
+      "union_power": 1248960502
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 136,
+      "character_name": "불기붕불",
+      "world_name": "루나",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11044,
+      "union_power": 1326183824
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 137,
+      "character_name": "흰스머프",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬어벤져",
+      "union_level": 11043,
+      "union_power": 1392779382
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 138,
+      "character_name": "단칸방살이",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11042,
+      "union_power": 1221309857
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 139,
+      "character_name": "부성초일짱",
+      "world_name": "크로아",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11041,
+      "union_power": 1415323020
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 140,
+      "character_name": "정수공인",
+      "world_name": "베라",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11040,
+      "union_power": 1341629011
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 141,
+      "character_name": "갓제박",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11039,
+      "union_power": 1373196495
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 142,
+      "character_name": "맑음딘",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "팔라딘",
+      "union_level": 11039,
+      "union_power": 1312187109
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 143,
+      "character_name": "은은rnfma",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11039,
+      "union_power": 1214126732
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 144,
+      "character_name": "봉의산도사",
+      "world_name": "이노시스",
+      "class_name": "기사단",
+      "sub_class_name": "플레임위자드",
+      "union_level": 11038,
+      "union_power": 1647040922
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 145,
+      "character_name": "박청안",
+      "world_name": "루나",
+      "class_name": "루미너스",
+      "sub_class_name": "",
+      "union_level": 11037,
+      "union_power": 1282692868
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 146,
+      "character_name": "삼차원",
+      "world_name": "베라",
+      "class_name": "초월자",
+      "sub_class_name": "제로",
+      "union_level": 11036,
+      "union_power": 1332040166
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 147,
+      "character_name": "로보트태권V",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11035,
+      "union_power": 1323033410
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 148,
+      "character_name": "원상범",
+      "world_name": "스카니아",
+      "class_name": "아크",
+      "sub_class_name": "",
+      "union_level": 11033,
+      "union_power": 1343555903
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 149,
+      "character_name": "광선",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11033,
+      "union_power": 1309292385
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 150,
+      "character_name": "간곡",
+      "world_name": "베라",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11033,
+      "union_power": 1254141772
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 151,
+      "character_name": "신염",
+      "world_name": "베라",
+      "class_name": "호영",
+      "sub_class_name": "",
+      "union_level": 11031,
+      "union_power": 1391412740
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 152,
+      "character_name": "라밥",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "배틀메이지",
+      "union_level": 11031,
+      "union_power": 1313945469
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 153,
+      "character_name": "미래학과",
+      "world_name": "엘리시움",
+      "class_name": "메르세데스",
+      "sub_class_name": "",
+      "union_level": 11030,
+      "union_power": 1288753366
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 154,
+      "character_name": "란코",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11027,
+      "union_power": 1454777801
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 155,
+      "character_name": "고티카",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11027,
+      "union_power": 1296700007
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 156,
+      "character_name": "섀도어당3",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11027,
+      "union_power": 1098286709
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 157,
+      "character_name": "제논된자",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11026,
+      "union_power": 1318016213
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 158,
+      "character_name": "원장",
+      "world_name": "스카니아",
+      "class_name": "아크",
+      "sub_class_name": "",
+      "union_level": 11023,
+      "union_power": 1371697401
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 159,
+      "character_name": "달마중",
+      "world_name": "이노시스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11023,
+      "union_power": 1368308344
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 160,
+      "character_name": "Edee",
+      "world_name": "제니스",
+      "class_name": "해적",
+      "sub_class_name": "바이퍼",
+      "union_level": 11022,
+      "union_power": 1377401686
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 161,
+      "character_name": "공쭈",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "섀도어",
+      "union_level": 11022,
+      "union_power": 1330059667
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 162,
+      "character_name": "삼노",
+      "world_name": "핼리오스",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11022,
+      "union_power": 1326581705
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 163,
+      "character_name": "엉엉엉",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11022,
+      "union_power": 1273987256
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 164,
+      "character_name": "무리",
+      "world_name": "엘리시움",
+      "class_name": "전사",
+      "sub_class_name": "히어로",
+      "union_level": 11021,
+      "union_power": 1473137545
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 165,
+      "character_name": "추러스",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)",
+      "union_level": 11021,
+      "union_power": 1395779511
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 166,
+      "character_name": "엥서연",
+      "world_name": "유니온",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11021,
+      "union_power": 1294717444
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 167,
+      "character_name": "썬콜멍생",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11021,
+      "union_power": 1253030231
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 168,
+      "character_name": "람눈",
+      "world_name": "오로라",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11019,
+      "union_power": 1158069899
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 169,
+      "character_name": "유성마법",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11018,
+      "union_power": 1330125110
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 170,
+      "character_name": "미운우리마왕",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어",
+      "union_level": 11018,
+      "union_power": 1291454801
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 171,
+      "character_name": "스타신클아델",
+      "world_name": "스카니아",
+      "class_name": "아델",
+      "sub_class_name": "",
+      "union_level": 11018,
+      "union_power": 1287546520
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 172,
+      "character_name": "뮤슷",
+      "world_name": "유니온",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11017,
+      "union_power": 1412391964
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 173,
+      "character_name": "먹정",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "비숍",
+      "union_level": 11017,
+      "union_power": 1329302465
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 174,
+      "character_name": "이보영",
+      "world_name": "크로아",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커",
+      "union_level": 11017,
+      "union_power": 1198734754
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 175,
+      "character_name": "사요",
+      "world_name": "에오스",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11016,
+      "union_power": 1410826889
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 176,
+      "character_name": "NDC방울",
+      "world_name": "엘리시움",
+      "class_name": "라라",
+      "sub_class_name": "",
+      "union_level": 11016,
+      "union_power": 1350146066
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 177,
+      "character_name": "황멘",
+      "world_name": "스카니아",
+      "class_name": "기사단",
+      "sub_class_name": "소울마스터",
+      "union_level": 11016,
+      "union_power": 1321032519
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 178,
+      "character_name": "청년1번",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11015,
+      "union_power": 1264601214
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 179,
+      "character_name": "모기OvO",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더",
+      "union_level": 11015,
+      "union_power": 1260680044
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 180,
+      "character_name": "카사",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11014,
+      "union_power": 1347751423
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 181,
+      "character_name": "사냥꾼강",
+      "world_name": "스카니아",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트",
+      "union_level": 11014,
+      "union_power": 1259148376
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 182,
+      "character_name": "네장학금",
+      "world_name": "유니온",
+      "class_name": "레지스탕스",
+      "sub_class_name": "블래스터",
+      "union_level": 11013,
+      "union_power": 1410854471
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 183,
+      "character_name": "우숙",
+      "world_name": "루나",
+      "class_name": "에반",
+      "sub_class_name": "",
+      "union_level": 11013,
+      "union_power": 1366828022
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 184,
+      "character_name": "chaoswords",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11012,
+      "union_power": 1292661270
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 185,
+      "character_name": "땡초빗",
+      "world_name": "루나",
+      "class_name": "카인",
+      "sub_class_name": "",
+      "union_level": 11012,
+      "union_power": 1246885516
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 186,
+      "character_name": "메메닛",
+      "world_name": "크로아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "블래스터",
+      "union_level": 11012,
+      "union_power": 1225962438
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 187,
+      "character_name": "윤주",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어",
+      "union_level": 11011,
+      "union_power": 1274921487
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 188,
+      "character_name": "연해",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논",
+      "union_level": 11009,
+      "union_power": 1226691637
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 189,
+      "character_name": "고래연못",
+      "world_name": "엘리시움",
+      "class_name": "에반",
+      "sub_class_name": "",
+      "union_level": 11006,
+      "union_power": 1439138916
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 190,
+      "character_name": "햄썬이",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11006,
+      "union_power": 1430373741
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 191,
+      "character_name": "픗팬",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": "",
+      "union_level": 11006,
+      "union_power": 1316082980
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 192,
+      "character_name": "단임",
+      "world_name": "엘리시움",
+      "class_name": "에반",
+      "sub_class_name": "",
+      "union_level": 11006,
+      "union_power": 1223688235
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 193,
+      "character_name": "세리한나",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11005,
+      "union_power": 1385642102
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 194,
+      "character_name": "썬콜박보영",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)",
+      "union_level": 11005,
+      "union_power": 1364291547
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 195,
+      "character_name": "제이에스티나",
+      "world_name": "루나",
+      "class_name": "루미너스",
+      "sub_class_name": "",
+      "union_level": 11005,
+      "union_power": 1273462073
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 196,
+      "character_name": "오리안보여ab",
+      "world_name": "루나",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": "",
+      "union_level": 11005,
+      "union_power": 1213405874
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 197,
+      "character_name": "천성코믹스",
+      "world_name": "핼리오스",
+      "class_name": "아크",
+      "sub_class_name": "",
+      "union_level": 11004,
+      "union_power": 1316169883
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 198,
+      "character_name": "러다",
+      "world_name": "스카니아",
+      "class_name": "초월자",
+      "sub_class_name": "제로",
+      "union_level": 11003,
+      "union_power": 1410094599
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 199,
+      "character_name": "더협",
+      "world_name": "크로아",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터",
+      "union_level": 11003,
+      "union_power": 1323031258
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 200,
+      "character_name": "레벨",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드",
+      "union_level": 11002,
+      "union_power": 1386810686
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "date": null,
+  "pet_1_name": "코스모빗",
+  "pet_1_nickname": "아룽",
+  "pet_1_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLOIF",
+  "pet_1_description": "세레나와 함께 우주를 수호하는 귀염둥이 코스모빗입니다.",
+  "pet_1_equipment": {
+    "item_name": "이클립스 나잇",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBGD",
+    "item_description": "밤하늘의 정령 세레나, 코스모빗, 아메시스트의 예쁜 별구름",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "5"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "43"
+      }
+    ],
+    "scroll_upgrade": 9,
+    "scroll_upgradable": 0,
+    "item_shape": "이클립스 나잇",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBGD",
+    "item_date_expire": null
+  },
+  "pet_1_auto_skill": {
+    "skill_1": "ESP 부스터",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KELALHPBMC",
+    "skill_2": "쓸만한 샤프 아이즈",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBMC"
+  },
+  "pet_1_pet_type": "루나 드림",
+  "pet_1_skill": [
+    "아이템 줍기",
+    "이동반경 확대",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_1_date_expire": "2027-01-22T12:00+09:00",
+  "pet_1_appearance": "코스모빗",
+  "pet_1_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLOIF",
+  "pet_2_name": "빅토리",
+  "pet_2_nickname": "니키",
+  "pet_2_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJHJI",
+  "pet_2_description": "포니 라이더의 제왕 빅토리입니다. 시크한 성격이지만 종종 귀여운 모습도 반전으로 보여줍니다. \n쁘띠 포니 펫을 장착하면 포니 파워 세트효과를 얻게 되며, 장착한 쁘띠 포니 펫의 종류가 많을수록 해당 세트효과는 강화됩니다.\r\n쁘띠 포니 펫은 달빛의 힘으로 더욱 넓은 영역의 아이템을 획득할 수 있습니다.",
+  "pet_2_equipment": {
+    "item_name": "루나 크리스탈 키",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBLC",
+    "item_description": "달빛의 힘을 받은 아름다운 열쇠이다. 모든 종류의 루나 쁘띠 펫이 착용할 수 있으며 착용한 루나 쁘띠 펫 전용 펫 장비의 외형이 적용된다.",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "10"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "42"
+      }
+    ],
+    "scroll_upgrade": 8,
+    "scroll_upgradable": 0,
+    "item_shape": "핑크 리본 넥타이",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJOGB",
+    "item_date_expire": null
+  },
+  "pet_2_auto_skill": {
+    "skill_1": "쓸만한 컴뱃 오더스",
+    "skill_1_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBME",
+    "skill_2": "쓸만한 홀리 심볼",
+    "skill_2_icon": "https://open.api.nexon.com/static/maplestory/skill/icon/KBPCLHPBOA"
+  },
+  "pet_2_pet_type": "루나 쁘띠",
+  "pet_2_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "특정 아이템 줍지 않기",
+    "HP 물약충전",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_2_date_expire": "2027-04-19T22:00+09:00",
+  "pet_2_appearance": "초록테디",
+  "pet_2_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJCJE",
+  "pet_3_name": "아메시스트",
+  "pet_3_nickname": "카오스",
+  "pet_3_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCLOIE",
+  "pet_3_description": "속을 알 수 없지만 든든하게 곁을 지켜주는 아메시스트입니다.",
+  "pet_3_equipment": {
+    "item_name": "이클립스 나잇",
+    "item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCJBGD",
+    "item_description": "밤하늘의 정령 세레나, 코스모빗, 아메시스트의 예쁜 별구름",
+    "item_option": [
+      {
+        "option_type": "공격력",
+        "option_value": "5"
+      },
+      {
+        "option_type": "마력",
+        "option_value": "43"
+      }
+    ],
+    "scroll_upgrade": 9,
+    "scroll_upgradable": 0,
+    "item_shape": "작고 소중한 리본",
+    "item_shape_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEHCIGLG",
+    "item_date_expire": null
+  },
+  "pet_3_auto_skill": null,
+  "pet_3_pet_type": "루나 드림",
+  "pet_3_skill": [
+    "아이템 줍기",
+    "자동 줍기",
+    "버프 스킬 자동 사용",
+    "펫 훈련 스킬"
+  ],
+  "pet_3_date_expire": "2027-03-17T22:00+09:00",
+  "pet_3_appearance": "크림",
+  "pet_3_appearance_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KAPCJPKA",
+  "ocid": "3a84007dd5dbe02c65a731da2304372a",
+  "character_name": "Chaos"
+}

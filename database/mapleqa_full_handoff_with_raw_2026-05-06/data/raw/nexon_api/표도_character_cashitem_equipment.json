@@ -1,0 +1,565 @@
+{
+  "date": null,
+  "character_gender": "여",
+  "character_class": "나이트로드",
+  "character_look_mode": "0",
+  "preset_no": 1,
+  "cash_item_equipment_base": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "펌킨 위치스 리본밴드",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCNOJC",
+      "cash_item_description": null,
+      "cash_item_option": [
+        {
+          "option_type": "STR",
+          "option_value": "30"
+        },
+        {
+          "option_type": "DEX",
+          "option_value": "30"
+        },
+        {
+          "option_type": "INT",
+          "option_value": "30"
+        },
+        {
+          "option_type": "LUK",
+          "option_value": "30"
+        },
+        {
+          "option_type": "최대 HP",
+          "option_value": "1500"
+        },
+        {
+          "option_type": "최대 MP",
+          "option_value": "1500"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-06-21T00:11+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "얼굴장식",
+      "cash_item_equipment_slot": "얼굴장식",
+      "cash_item_name": "스타 글리터",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPDJOMG",
+      "cash_item_description": "메이플스토리 & 진",
+      "cash_item_option": [
+        {
+          "option_type": "STR",
+          "option_value": "35"
+        },
+        {
+          "option_type": "DEX",
+          "option_value": "35"
+        },
+        {
+          "option_type": "INT",
+          "option_value": "35"
+        },
+        {
+          "option_type": "LUK",
+          "option_value": "35"
+        },
+        {
+          "option_type": "최대 HP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "최대 MP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "공격력",
+          "option_value": "15"
+        },
+        {
+          "option_type": "마력",
+          "option_value": "15"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-07-01T19:38+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "눈장식",
+      "cash_item_equipment_slot": "눈장식",
+      "cash_item_name": "티어 스텔라",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPAJEGJ",
+      "cash_item_description": "메이플스토리 & 진\n\n표정을 짓는 중에는 출력되지 않는 아이템입니다.",
+      "cash_item_option": [
+        {
+          "option_type": "STR",
+          "option_value": "35"
+        },
+        {
+          "option_type": "DEX",
+          "option_value": "35"
+        },
+        {
+          "option_type": "INT",
+          "option_value": "35"
+        },
+        {
+          "option_type": "LUK",
+          "option_value": "35"
+        },
+        {
+          "option_type": "최대 HP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "최대 MP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "공격력",
+          "option_value": "15"
+        },
+        {
+          "option_type": "마력",
+          "option_value": "15"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-07-01T21:06+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "귀고리",
+      "cash_item_equipment_slot": "귀고리",
+      "cash_item_name": "셀레스티얼 인이어",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPBJEJA",
+      "cash_item_description": "메이플스토리 & 진",
+      "cash_item_option": [
+        {
+          "option_type": "STR",
+          "option_value": "35"
+        },
+        {
+          "option_type": "DEX",
+          "option_value": "35"
+        },
+        {
+          "option_type": "INT",
+          "option_value": "35"
+        },
+        {
+          "option_type": "LUK",
+          "option_value": "35"
+        },
+        {
+          "option_type": "최대 HP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "최대 MP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "공격력",
+          "option_value": "15"
+        },
+        {
+          "option_type": "마력",
+          "option_value": "15"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-07-01T21:06+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "한벌옷",
+      "cash_item_equipment_slot": "상의",
+      "cash_item_name": "펌킨 위치스 테일 드레스",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPHKOMJ",
+      "cash_item_description": null,
+      "cash_item_option": [
+        {
+          "option_type": "방어력",
+          "option_value": "300"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-06-21T00:11+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": "여",
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "신발",
+      "cash_item_equipment_slot": "신발",
+      "cash_item_name": "펌킨 위치스 펌프스",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPFKFPJ",
+      "cash_item_description": null,
+      "cash_item_option": [
+        {
+          "option_type": "이동속도",
+          "option_value": "50"
+        },
+        {
+          "option_type": "점프력",
+          "option_value": "50"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-06-21T00:11+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": "여",
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "장갑",
+      "cash_item_equipment_slot": "장갑",
+      "cash_item_name": "실버 스타 리슬릿",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPKJPHD",
+      "cash_item_description": "메이플스토리 & 진",
+      "cash_item_option": [
+        {
+          "option_type": "STR",
+          "option_value": "35"
+        },
+        {
+          "option_type": "DEX",
+          "option_value": "35"
+        },
+        {
+          "option_type": "INT",
+          "option_value": "35"
+        },
+        {
+          "option_type": "LUK",
+          "option_value": "35"
+        },
+        {
+          "option_type": "최대 HP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "최대 MP",
+          "option_value": "1750"
+        },
+        {
+          "option_type": "공격력",
+          "option_value": "15"
+        },
+        {
+          "option_type": "마력",
+          "option_value": "15"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-07-01T21:15+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "펌킨 위치스 스타더스트",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCIOKJ",
+      "cash_item_description": null,
+      "cash_item_option": [
+        {
+          "option_type": "STR",
+          "option_value": "30"
+        },
+        {
+          "option_type": "DEX",
+          "option_value": "30"
+        },
+        {
+          "option_type": "INT",
+          "option_value": "30"
+        },
+        {
+          "option_type": "LUK",
+          "option_value": "30"
+        },
+        {
+          "option_type": "최대 HP",
+          "option_value": "1500"
+        },
+        {
+          "option_type": "최대 MP",
+          "option_value": "1500"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-06-21T00:11+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "무기",
+      "cash_item_equipment_slot": "무기",
+      "cash_item_name": "펌킨 위치스 서번트 아이",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEICIAIA",
+      "cash_item_description": "모든 무기에 착용이 가능하다.",
+      "cash_item_option": [
+        {
+          "option_type": "공격력",
+          "option_value": "30"
+        },
+        {
+          "option_type": "마력",
+          "option_value": "30"
+        }
+      ],
+      "date_expire": null,
+      "date_option_expire": "2026-06-21T00:11+09:00",
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    }
+  ],
+  "cash_item_equipment_preset_1": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "페페 왕관",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCMGIJ",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "얼굴장식",
+      "cash_item_equipment_slot": "얼굴장식",
+      "cash_item_name": "오렌지 발그레",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPDJGJH",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "눈장식",
+      "cash_item_equipment_slot": "눈장식",
+      "cash_item_name": "매력만쩜",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPAJEKA",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "귀고리",
+      "cash_item_equipment_slot": "귀고리",
+      "cash_item_name": "투명 귀고리",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPBJHMF",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "한벌옷",
+      "cash_item_equipment_slot": "상의",
+      "cash_item_name": "페페 한벌옷",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPHPAMH",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "신발",
+      "cash_item_equipment_slot": "신발",
+      "cash_item_name": "투명 신발",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPFJGLC",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "장갑",
+      "cash_item_equipment_slot": "장갑",
+      "cash_item_name": "투명 장갑",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPKJGOD",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "페페 백팩",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCPHKA",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "무기",
+      "cash_item_equipment_slot": "무기",
+      "cash_item_name": "투명 아대",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEICJHHI",
+      "cash_item_description": "아대, ESP리미터에 착용이 가능한 투명한 아대다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    }
+  ],
+  "cash_item_equipment_preset_2": [
+    {
+      "cash_item_equipment_part": "귀고리",
+      "cash_item_equipment_slot": "귀고리",
+      "cash_item_name": "투명 귀고리",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPBJHMF",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    },
+    {
+      "cash_item_equipment_part": "반지",
+      "cash_item_equipment_slot": "반지1",
+      "cash_item_name": "V 명찰 반지",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEODOGPG",
+      "cash_item_description": "MapleStory V 사전 예약에 참여하신 용사님들에게 드리는 선물입니다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "cash_item_effect_prism": null,
+      "item_gender": null,
+      "skills": [],
+      "freestyle_flag": "0",
+      "emotion_name": null
+    }
+  ],
+  "cash_item_equipment_preset_3": [],
+  "additional_cash_item_equipment_base": [],
+  "additional_cash_item_equipment_preset_1": [],
+  "additional_cash_item_equipment_preset_2": [],
+  "additional_cash_item_equipment_preset_3": [],
+  "ocid": "3c487577e99d30af80806e7d48f4f244",
+  "character_name": "표도"
+}

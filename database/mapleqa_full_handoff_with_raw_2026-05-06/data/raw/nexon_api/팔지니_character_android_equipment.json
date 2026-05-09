@@ -1,0 +1,116 @@
+{
+  "date": null,
+  "android_name": "유니온로이드",
+  "android_nickname": "안드로이드",
+  "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJFJI",
+  "android_description": "나의 유니온 캐릭터를 꼭 닮은 안드로이드다. 안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.\n\n헤어 변경 및 성형이 불가능하며, 캐시 아이템을 장착하여도 외형이 변경되지 않는 안드로이드이다.",
+  "android_hair": {
+    "hair_name": null,
+    "base_color": null,
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_face": {
+    "face_name": null,
+    "base_color": null,
+    "mix_color": null,
+    "mix_rate": "0",
+    "freestyle_flag": "0"
+  },
+  "android_skin": null,
+  "android_cash_item_equipment": [
+    {
+      "cash_item_equipment_part": "모자",
+      "cash_item_equipment_slot": "모자",
+      "cash_item_name": "쑥쑥 새싹 모자",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPCOOKD",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "망토",
+      "cash_item_equipment_slot": "망토",
+      "cash_item_name": "핑크빈 꼬리",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEOCIFNF",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "한벌옷",
+      "cash_item_equipment_slot": "상의",
+      "cash_item_name": "레이싱걸 유니폼",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEPHKGPH",
+      "cash_item_description": null,
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": "여",
+      "freestyle_flag": "0"
+    },
+    {
+      "cash_item_equipment_part": "반지",
+      "cash_item_equipment_slot": "반지4",
+      "cash_item_name": "일루전 링 : 레이스캡 갈색고양이",
+      "cash_item_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEODNHOI",
+      "cash_item_description": "일루전 링이 가진 환상의 힘으로 레이스캡을 쓴 갈색고양이로 변신한다.\r\n주의! 특정 상황에서는 일루전 링 효과가 해제될 수 있습니다.",
+      "cash_item_option": [],
+      "date_expire": null,
+      "date_option_expire": null,
+      "cash_item_label": null,
+      "cash_item_coloring_prism": null,
+      "android_item_gender": null,
+      "freestyle_flag": "0"
+    }
+  ],
+  "android_ear_sensor_clip_flag": "미적용",
+  "android_gender": "기타",
+  "android_grade": "9",
+  "android_non_humanoid_flag": "비인간형",
+  "android_shop_usable_flag": "가능",
+  "preset_no": 1,
+  "android_preset_1": {
+    "android_name": "유니온로이드",
+    "android_nickname": "안드로이드",
+    "android_icon": "https://open.api.nexon.com/static/maplestory/item/icon/KEJEJFJI",
+    "android_description": "나의 유니온 캐릭터를 꼭 닮은 안드로이드다. 안드로이드 장비 창에서 상점가기 버튼을 누르면 잡화상점 기능을 이용할 수 있는 안드로이드다. 안드로이드 심장이 함께 장착되어야 작동한다.\n안드로이드 등급이 안드로이드 심장 등급과 같거나 높아야만 함께 장착할 수 있다.\n\n헤어 변경 및 성형이 불가능하며, 캐시 아이템을 장착하여도 외형이 변경되지 않는 안드로이드이다.",
+    "android_gender": "기타",
+    "android_grade": "9",
+    "android_skin": null,
+    "android_hair": {
+      "hair_name": null,
+      "base_color": null,
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_face": {
+      "face_name": null,
+      "base_color": null,
+      "mix_color": null,
+      "mix_rate": "0",
+      "freestyle_flag": "0"
+    },
+    "android_ear_sensor_clip_flag": "미적용",
+    "android_non_humanoid_flag": "비인간형",
+    "android_shop_usable_flag": "가능"
+  },
+  "android_preset_2": null,
+  "android_preset_3": null,
+  "ocid": "f2378a4082d6a9f7a3353ff5c42847c6efe8d04e6d233bd35cf2fabdeb93fb0d",
+  "character_name": "팔지니"
+}

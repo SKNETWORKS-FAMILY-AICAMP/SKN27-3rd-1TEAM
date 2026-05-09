@@ -1,0 +1,2014 @@
+{
+  "ranking": [
+    {
+      "date": "2026-05-05",
+      "ranking": 402,
+      "trophy_score": 32380,
+      "trophy_grade": "플래티넘",
+      "character_name": "안사",
+      "world_name": "크로아",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 402,
+      "trophy_score": 32380,
+      "trophy_grade": "플래티넘",
+      "character_name": "스간",
+      "world_name": "에오스",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 404,
+      "trophy_score": 32360,
+      "trophy_grade": "플래티넘",
+      "character_name": "꿈자몽",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 404,
+      "trophy_score": 32360,
+      "trophy_grade": "플래티넘",
+      "character_name": "패망",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 404,
+      "trophy_score": 32360,
+      "trophy_grade": "플래티넘",
+      "character_name": "체리빌",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 404,
+      "trophy_score": 32360,
+      "trophy_grade": "플래티넘",
+      "character_name": "키카",
+      "world_name": "에오스",
+      "class_name": "도적",
+      "sub_class_name": "섀도어"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 404,
+      "trophy_score": 32360,
+      "trophy_grade": "플래티넘",
+      "character_name": "크래욘",
+      "world_name": "에오스",
+      "class_name": "루미너스",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 404,
+      "trophy_score": 32360,
+      "trophy_grade": "플래티넘",
+      "character_name": "폭귀",
+      "world_name": "에오스",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬어벤져"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 410,
+      "trophy_score": 32340,
+      "trophy_grade": "플래티넘",
+      "character_name": "푸더링B",
+      "world_name": "오로라",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 411,
+      "trophy_score": 32330,
+      "trophy_grade": "플래티넘",
+      "character_name": "아마추어씨이",
+      "world_name": "베라",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 412,
+      "trophy_score": 32320,
+      "trophy_grade": "플래티넘",
+      "character_name": "배탈",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 412,
+      "trophy_score": 32320,
+      "trophy_grade": "플래티넘",
+      "character_name": "은월",
+      "world_name": "루나",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 412,
+      "trophy_score": 32320,
+      "trophy_grade": "플래티넘",
+      "character_name": "소라룸",
+      "world_name": "크로아",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 412,
+      "trophy_score": 32320,
+      "trophy_grade": "플래티넘",
+      "character_name": "깜스",
+      "world_name": "에오스",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 416,
+      "trophy_score": 32300,
+      "trophy_grade": "플래티넘",
+      "character_name": "잇퓨",
+      "world_name": "루나",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 416,
+      "trophy_score": 32300,
+      "trophy_grade": "플래티넘",
+      "character_name": "포델이",
+      "world_name": "엘리시움",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 416,
+      "trophy_score": 32300,
+      "trophy_grade": "플래티넘",
+      "character_name": "사곡복서",
+      "world_name": "이노시스",
+      "class_name": "기사단",
+      "sub_class_name": "스트라이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 419,
+      "trophy_score": 32290,
+      "trophy_grade": "플래티넘",
+      "character_name": "의기",
+      "world_name": "루나",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 419,
+      "trophy_score": 32290,
+      "trophy_grade": "플래티넘",
+      "character_name": "혜지개미",
+      "world_name": "레드",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 421,
+      "trophy_score": 32280,
+      "trophy_grade": "플래티넘",
+      "character_name": "잊는중",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 422,
+      "trophy_score": 32270,
+      "trophy_grade": "플래티넘",
+      "character_name": "잔고",
+      "world_name": "루나",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 422,
+      "trophy_score": 32270,
+      "trophy_grade": "플래티넘",
+      "character_name": "새로움",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 422,
+      "trophy_score": 32270,
+      "trophy_grade": "플래티넘",
+      "character_name": "곱하",
+      "world_name": "엘리시움",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 425,
+      "trophy_score": 32250,
+      "trophy_grade": "플래티넘",
+      "character_name": "번더스내치",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 425,
+      "trophy_score": 32250,
+      "trophy_grade": "플래티넘",
+      "character_name": "술책",
+      "world_name": "유니온",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 425,
+      "trophy_score": 32250,
+      "trophy_grade": "플래티넘",
+      "character_name": "작곰",
+      "world_name": "유니온",
+      "class_name": "아크",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 425,
+      "trophy_score": 32250,
+      "trophy_grade": "플래티넘",
+      "character_name": "아무",
+      "world_name": "에오스",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 425,
+      "trophy_score": 32250,
+      "trophy_grade": "플래티넘",
+      "character_name": "블렌차드",
+      "world_name": "에오스",
+      "class_name": "기사단",
+      "sub_class_name": "스트라이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 430,
+      "trophy_score": 32240,
+      "trophy_grade": "플래티넘",
+      "character_name": "황묜",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 430,
+      "trophy_score": 32240,
+      "trophy_grade": "플래티넘",
+      "character_name": "힐채은",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 430,
+      "trophy_score": 32240,
+      "trophy_grade": "플래티넘",
+      "character_name": "메톄오",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 433,
+      "trophy_score": 32230,
+      "trophy_grade": "플래티넘",
+      "character_name": "오동쟝",
+      "world_name": "루나",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 433,
+      "trophy_score": 32230,
+      "trophy_grade": "플래티넘",
+      "character_name": "어준",
+      "world_name": "크로아",
+      "class_name": "궁수",
+      "sub_class_name": "패스파인더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 433,
+      "trophy_score": 32230,
+      "trophy_grade": "플래티넘",
+      "character_name": "왕새우",
+      "world_name": "엘리시움",
+      "class_name": "메르세데스",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 436,
+      "trophy_score": 32220,
+      "trophy_grade": "플래티넘",
+      "character_name": "이스터",
+      "world_name": "루나",
+      "class_name": "카인",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 436,
+      "trophy_score": 32220,
+      "trophy_grade": "플래티넘",
+      "character_name": "선매리",
+      "world_name": "크로아",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 438,
+      "trophy_score": 32210,
+      "trophy_grade": "플래티넘",
+      "character_name": "팝이v",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 438,
+      "trophy_score": 32210,
+      "trophy_grade": "플래티넘",
+      "character_name": "Rapple",
+      "world_name": "루나",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 438,
+      "trophy_score": 32210,
+      "trophy_grade": "플래티넘",
+      "character_name": "점프묵묵",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "와일드헌터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 438,
+      "trophy_score": 32210,
+      "trophy_grade": "플래티넘",
+      "character_name": "평가",
+      "world_name": "에오스",
+      "class_name": "카인",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 442,
+      "trophy_score": 32200,
+      "trophy_grade": "플래티넘",
+      "character_name": "곰찬",
+      "world_name": "스카니아",
+      "class_name": "카인",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 442,
+      "trophy_score": 32200,
+      "trophy_grade": "플래티넘",
+      "character_name": "캬롱",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 442,
+      "trophy_score": 32200,
+      "trophy_grade": "플래티넘",
+      "character_name": "간큼",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 442,
+      "trophy_score": 32200,
+      "trophy_grade": "플래티넘",
+      "character_name": "데1스",
+      "world_name": "크로아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "배틀메이지"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 446,
+      "trophy_score": 32190,
+      "trophy_grade": "플래티넘",
+      "character_name": "잉낭네",
+      "world_name": "이노시스",
+      "class_name": "카데나",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 446,
+      "trophy_score": 32190,
+      "trophy_grade": "플래티넘",
+      "character_name": "비디디디",
+      "world_name": "오로라",
+      "class_name": "아크",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 448,
+      "trophy_score": 32180,
+      "trophy_grade": "플래티넘",
+      "character_name": "쀼챠",
+      "world_name": "루나",
+      "class_name": "초월자",
+      "sub_class_name": "제로"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 448,
+      "trophy_score": 32180,
+      "trophy_grade": "플래티넘",
+      "character_name": "서울시",
+      "world_name": "크로아",
+      "class_name": "궁수",
+      "sub_class_name": "패스파인더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 448,
+      "trophy_score": 32180,
+      "trophy_grade": "플래티넘",
+      "character_name": "듀이",
+      "world_name": "엘리시움",
+      "class_name": "메르세데스",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 448,
+      "trophy_score": 32180,
+      "trophy_grade": "플래티넘",
+      "character_name": "광선",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 452,
+      "trophy_score": 32170,
+      "trophy_grade": "플래티넘",
+      "character_name": "악몽마",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 452,
+      "trophy_score": 32170,
+      "trophy_grade": "플래티넘",
+      "character_name": "이렐은어렵다",
+      "world_name": "오로라",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 452,
+      "trophy_score": 32170,
+      "trophy_grade": "플래티넘",
+      "character_name": "반도체노예3",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 455,
+      "trophy_score": 32160,
+      "trophy_grade": "플래티넘",
+      "character_name": "청초롱비숍",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 455,
+      "trophy_score": 32160,
+      "trophy_grade": "플래티넘",
+      "character_name": "섈업",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "섀도어"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 455,
+      "trophy_score": 32160,
+      "trophy_grade": "플래티넘",
+      "character_name": "로니콜먼",
+      "world_name": "루나",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 455,
+      "trophy_score": 32160,
+      "trophy_grade": "플래티넘",
+      "character_name": "Robi",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 455,
+      "trophy_score": 32160,
+      "trophy_grade": "플래티넘",
+      "character_name": "김재담",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 460,
+      "trophy_score": 32150,
+      "trophy_grade": "플래티넘",
+      "character_name": "언남",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬어벤져"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 461,
+      "trophy_score": 32140,
+      "trophy_grade": "플래티넘",
+      "character_name": "몬츄",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 461,
+      "trophy_score": 32140,
+      "trophy_grade": "플래티넘",
+      "character_name": "Pawn",
+      "world_name": "크로아",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 461,
+      "trophy_score": 32140,
+      "trophy_grade": "플래티넘",
+      "character_name": "나꼬생각",
+      "world_name": "이노시스",
+      "class_name": "호영",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 461,
+      "trophy_score": 32140,
+      "trophy_grade": "플래티넘",
+      "character_name": "외형",
+      "world_name": "에오스",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 465,
+      "trophy_score": 32120,
+      "trophy_grade": "플래티넘",
+      "character_name": "프바",
+      "world_name": "스카니아",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 465,
+      "trophy_score": 32120,
+      "trophy_grade": "플래티넘",
+      "character_name": "아잉맛",
+      "world_name": "에오스",
+      "class_name": "전사",
+      "sub_class_name": "히어로"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 467,
+      "trophy_score": 32110,
+      "trophy_grade": "플래티넘",
+      "character_name": "갬뀨우",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 468,
+      "trophy_score": 32100,
+      "trophy_grade": "플래티넘",
+      "character_name": "미하일도몬컬",
+      "world_name": "오로라",
+      "class_name": "기사단",
+      "sub_class_name": "미하일"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 469,
+      "trophy_score": 32080,
+      "trophy_grade": "플래티넘",
+      "character_name": "송지훈",
+      "world_name": "베라",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 470,
+      "trophy_score": 32070,
+      "trophy_grade": "플래티넘",
+      "character_name": "랜튀",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 470,
+      "trophy_score": 32070,
+      "trophy_grade": "플래티넘",
+      "character_name": "새생명약국",
+      "world_name": "스카니아",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 472,
+      "trophy_score": 32060,
+      "trophy_grade": "플래티넘",
+      "character_name": "원쯔",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 472,
+      "trophy_score": 32060,
+      "trophy_grade": "플래티넘",
+      "character_name": "단규좌",
+      "world_name": "크로아",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 472,
+      "trophy_score": 32060,
+      "trophy_grade": "플래티넘",
+      "character_name": "우드득",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 472,
+      "trophy_score": 32060,
+      "trophy_grade": "플래티넘",
+      "character_name": "누구세여부릉",
+      "world_name": "에오스",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 476,
+      "trophy_score": 32040,
+      "trophy_grade": "플래티넘",
+      "character_name": "양주",
+      "world_name": "크로아",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 476,
+      "trophy_score": 32040,
+      "trophy_grade": "플래티넘",
+      "character_name": "맹인",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 476,
+      "trophy_score": 32040,
+      "trophy_grade": "플래티넘",
+      "character_name": "춘잉",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 479,
+      "trophy_score": 32030,
+      "trophy_grade": "플래티넘",
+      "character_name": "당미꼬",
+      "world_name": "스카니아",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 479,
+      "trophy_score": 32030,
+      "trophy_grade": "플래티넘",
+      "character_name": "닭뛰",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 479,
+      "trophy_score": 32030,
+      "trophy_grade": "플래티넘",
+      "character_name": "오비미어",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 479,
+      "trophy_score": 32030,
+      "trophy_grade": "플래티넘",
+      "character_name": "잠쟈리",
+      "world_name": "크로아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 479,
+      "trophy_score": 32030,
+      "trophy_grade": "플래티넘",
+      "character_name": "JuTaK2",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 479,
+      "trophy_score": 32030,
+      "trophy_grade": "플래티넘",
+      "character_name": "레드핫나로",
+      "world_name": "에오스",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 485,
+      "trophy_score": 32020,
+      "trophy_grade": "플래티넘",
+      "character_name": "뚜녀님",
+      "world_name": "베라",
+      "class_name": "카데나",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 485,
+      "trophy_score": 32020,
+      "trophy_grade": "플래티넘",
+      "character_name": "흙편지",
+      "world_name": "베라",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 485,
+      "trophy_score": 32020,
+      "trophy_grade": "플래티넘",
+      "character_name": "빡맹",
+      "world_name": "베라",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 488,
+      "trophy_score": 32010,
+      "trophy_grade": "플래티넘",
+      "character_name": "펑란",
+      "world_name": "에오스",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 489,
+      "trophy_score": 32000,
+      "trophy_grade": "플래티넘",
+      "character_name": "태평양",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "와일드헌터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 489,
+      "trophy_score": 32000,
+      "trophy_grade": "플래티넘",
+      "character_name": "세동강난머리",
+      "world_name": "엘리시움",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 489,
+      "trophy_score": 32000,
+      "trophy_grade": "플래티넘",
+      "character_name": "힌뚜",
+      "world_name": "오로라",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 489,
+      "trophy_score": 32000,
+      "trophy_grade": "플래티넘",
+      "character_name": "한가해연s",
+      "world_name": "핼리오스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 493,
+      "trophy_score": 31990,
+      "trophy_grade": "플래티넘",
+      "character_name": "자경단",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 493,
+      "trophy_score": 31990,
+      "trophy_grade": "플래티넘",
+      "character_name": "리토잉",
+      "world_name": "베라",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 493,
+      "trophy_score": 31990,
+      "trophy_grade": "플래티넘",
+      "character_name": "S22마법사2S",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 493,
+      "trophy_score": 31990,
+      "trophy_grade": "플래티넘",
+      "character_name": "모래시계",
+      "world_name": "루나",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 493,
+      "trophy_score": 31990,
+      "trophy_grade": "플래티넘",
+      "character_name": "류병우",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 493,
+      "trophy_score": 31990,
+      "trophy_grade": "플래티넘",
+      "character_name": "약캇",
+      "world_name": "엘리시움",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 499,
+      "trophy_score": 31980,
+      "trophy_grade": "플래티넘",
+      "character_name": "너클",
+      "world_name": "스카니아",
+      "class_name": "해적",
+      "sub_class_name": "바이퍼"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 499,
+      "trophy_score": 31980,
+      "trophy_grade": "플래티넘",
+      "character_name": "고양이클",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 499,
+      "trophy_score": 31980,
+      "trophy_grade": "플래티넘",
+      "character_name": "배린",
+      "world_name": "크로아",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 499,
+      "trophy_score": 31980,
+      "trophy_grade": "플래티넘",
+      "character_name": "냥파",
+      "world_name": "엘리시움",
+      "class_name": "전사",
+      "sub_class_name": "팔라딘"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 499,
+      "trophy_score": 31980,
+      "trophy_grade": "플래티넘",
+      "character_name": "투묘",
+      "world_name": "에오스",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 504,
+      "trophy_score": 31970,
+      "trophy_grade": "플래티넘",
+      "character_name": "가딩",
+      "world_name": "루나",
+      "class_name": "일리움",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 504,
+      "trophy_score": 31970,
+      "trophy_grade": "플래티넘",
+      "character_name": "키츠네",
+      "world_name": "크로아",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 506,
+      "trophy_score": 31960,
+      "trophy_grade": "플래티넘",
+      "character_name": "선서",
+      "world_name": "스카니아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 506,
+      "trophy_score": 31960,
+      "trophy_grade": "플래티넘",
+      "character_name": "메일스트롬",
+      "world_name": "스카니아",
+      "class_name": "카데나",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 506,
+      "trophy_score": 31960,
+      "trophy_grade": "플래티넘",
+      "character_name": "해류",
+      "world_name": "오로라",
+      "class_name": "전사",
+      "sub_class_name": "히어로"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 509,
+      "trophy_score": 31950,
+      "trophy_grade": "플래티넘",
+      "character_name": "신염",
+      "world_name": "베라",
+      "class_name": "호영",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 509,
+      "trophy_score": 31950,
+      "trophy_grade": "플래티넘",
+      "character_name": "Luckywomen",
+      "world_name": "에오스",
+      "class_name": "도적",
+      "sub_class_name": "섀도어"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 511,
+      "trophy_score": 31940,
+      "trophy_grade": "플래티넘",
+      "character_name": "랏낙",
+      "world_name": "오로라",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 511,
+      "trophy_score": 31940,
+      "trophy_grade": "플래티넘",
+      "character_name": "Actoala",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 513,
+      "trophy_score": 31930,
+      "trophy_grade": "플래티넘",
+      "character_name": "오티피",
+      "world_name": "에오스",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 513,
+      "trophy_score": 31930,
+      "trophy_grade": "플래티넘",
+      "character_name": "루링칼링",
+      "world_name": "에오스",
+      "class_name": "칼리",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 513,
+      "trophy_score": 31930,
+      "trophy_grade": "플래티넘",
+      "character_name": "삼노",
+      "world_name": "핼리오스",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 516,
+      "trophy_score": 31920,
+      "trophy_grade": "플래티넘",
+      "character_name": "쀼찡",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 516,
+      "trophy_score": 31920,
+      "trophy_grade": "플래티넘",
+      "character_name": "아랑곳",
+      "world_name": "엘리시움",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 516,
+      "trophy_score": 31920,
+      "trophy_grade": "플래티넘",
+      "character_name": "테룽이",
+      "world_name": "이노시스",
+      "class_name": "카이저",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 516,
+      "trophy_score": 31920,
+      "trophy_grade": "플래티넘",
+      "character_name": "장석준",
+      "world_name": "에오스",
+      "class_name": "아크",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 516,
+      "trophy_score": 31920,
+      "trophy_grade": "플래티넘",
+      "character_name": "레드아란띠",
+      "world_name": "에오스",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 521,
+      "trophy_score": 31910,
+      "trophy_grade": "플래티넘",
+      "character_name": "콜드빔",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 521,
+      "trophy_score": 31910,
+      "trophy_grade": "플래티넘",
+      "character_name": "거기정지행",
+      "world_name": "에오스",
+      "class_name": "기사단",
+      "sub_class_name": "소울마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 521,
+      "trophy_score": 31910,
+      "trophy_grade": "플래티넘",
+      "character_name": "말캉7",
+      "world_name": "에오스",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 524,
+      "trophy_score": 31900,
+      "trophy_grade": "플래티넘",
+      "character_name": "로사",
+      "world_name": "크로아",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 525,
+      "trophy_score": 31890,
+      "trophy_grade": "플래티넘",
+      "character_name": "아이코쿠마",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 525,
+      "trophy_score": 31890,
+      "trophy_grade": "플래티넘",
+      "character_name": "뀨챘",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 525,
+      "trophy_score": 31890,
+      "trophy_grade": "플래티넘",
+      "character_name": "몽글",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 528,
+      "trophy_score": 31880,
+      "trophy_grade": "플래티넘",
+      "character_name": "지멈",
+      "world_name": "스카니아",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 528,
+      "trophy_score": 31880,
+      "trophy_grade": "플래티넘",
+      "character_name": "민휘",
+      "world_name": "루나",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 528,
+      "trophy_score": 31880,
+      "trophy_grade": "플래티넘",
+      "character_name": "정론",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(썬,콜)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 528,
+      "trophy_score": 31880,
+      "trophy_grade": "플래티넘",
+      "character_name": "호진호",
+      "world_name": "핼리오스",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬어벤져"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 528,
+      "trophy_score": 31880,
+      "trophy_grade": "플래티넘",
+      "character_name": "김못자",
+      "world_name": "핼리오스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "라즐z",
+      "world_name": "스카니아",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "진스텝",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "박세웅",
+      "world_name": "루나",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "대세지",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬어벤져"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "초심팬텀",
+      "world_name": "크로아",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "도둑놈",
+      "world_name": "이노시스",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 533,
+      "trophy_score": 31870,
+      "trophy_grade": "플래티넘",
+      "character_name": "가류",
+      "world_name": "에오스",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 540,
+      "trophy_score": 31860,
+      "trophy_grade": "플래티넘",
+      "character_name": "Joly",
+      "world_name": "스카니아",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 540,
+      "trophy_score": 31860,
+      "trophy_grade": "플래티넘",
+      "character_name": "최민성",
+      "world_name": "엘리시움",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 540,
+      "trophy_score": 31860,
+      "trophy_grade": "플래티넘",
+      "character_name": "밀념",
+      "world_name": "아케인",
+      "class_name": "전사",
+      "sub_class_name": "다크나이트"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 543,
+      "trophy_score": 31850,
+      "trophy_grade": "플래티넘",
+      "character_name": "베이비복술",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 543,
+      "trophy_score": 31850,
+      "trophy_grade": "플래티넘",
+      "character_name": "천막",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 543,
+      "trophy_score": 31850,
+      "trophy_grade": "플래티넘",
+      "character_name": "사칠",
+      "world_name": "에오스",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 546,
+      "trophy_score": 31840,
+      "trophy_grade": "플래티넘",
+      "character_name": "건방",
+      "world_name": "크로아",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 546,
+      "trophy_score": 31840,
+      "trophy_grade": "플래티넘",
+      "character_name": "이류개그",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 546,
+      "trophy_score": 31840,
+      "trophy_grade": "플래티넘",
+      "character_name": "엇쭈",
+      "world_name": "에오스",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 546,
+      "trophy_score": 31840,
+      "trophy_grade": "플래티넘",
+      "character_name": "방패방패허네",
+      "world_name": "에오스",
+      "class_name": "기사단",
+      "sub_class_name": "미하일"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 550,
+      "trophy_score": 31830,
+      "trophy_grade": "플래티넘",
+      "character_name": "하퀄",
+      "world_name": "오로라",
+      "class_name": "레지스탕스",
+      "sub_class_name": "데몬슬레이어"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 550,
+      "trophy_score": 31830,
+      "trophy_grade": "플래티넘",
+      "character_name": "영삼쓰",
+      "world_name": "에오스",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 552,
+      "trophy_score": 31820,
+      "trophy_grade": "플래티넘",
+      "character_name": "먹어봐야알지",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 552,
+      "trophy_score": 31820,
+      "trophy_grade": "플래티넘",
+      "character_name": "새침부끄",
+      "world_name": "크로아",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 552,
+      "trophy_score": 31820,
+      "trophy_grade": "플래티넘",
+      "character_name": "튜치",
+      "world_name": "에오스",
+      "class_name": "기사단",
+      "sub_class_name": "소울마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 555,
+      "trophy_score": 31810,
+      "trophy_grade": "플래티넘",
+      "character_name": "n유리box",
+      "world_name": "레드",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 556,
+      "trophy_score": 31800,
+      "trophy_grade": "플래티넘",
+      "character_name": "윈포",
+      "world_name": "루나",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 556,
+      "trophy_score": 31800,
+      "trophy_grade": "플래티넘",
+      "character_name": "나유",
+      "world_name": "엘리시움",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 556,
+      "trophy_score": 31800,
+      "trophy_grade": "플래티넘",
+      "character_name": "귀요미도영",
+      "world_name": "에오스",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 556,
+      "trophy_score": 31800,
+      "trophy_grade": "플래티넘",
+      "character_name": "우샤로",
+      "world_name": "에오스",
+      "class_name": "기사단",
+      "sub_class_name": "윈드브레이커"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "진어밍",
+      "world_name": "스카니아",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "동화속의풍경",
+      "world_name": "베라",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "테러비터",
+      "world_name": "크로아",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "돌리몽",
+      "world_name": "크로아",
+      "class_name": "엔젤릭버스터",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "무사꾼",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "잔빛",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 560,
+      "trophy_score": 31790,
+      "trophy_grade": "플래티넘",
+      "character_name": "다텔",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 567,
+      "trophy_score": 31780,
+      "trophy_grade": "플래티넘",
+      "character_name": "누인정",
+      "world_name": "크로아",
+      "class_name": "호영",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 567,
+      "trophy_score": 31780,
+      "trophy_grade": "플래티넘",
+      "character_name": "벤츠화랑",
+      "world_name": "엘리시움",
+      "class_name": "메르세데스",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 567,
+      "trophy_score": 31780,
+      "trophy_grade": "플래티넘",
+      "character_name": "석이",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "나이트로드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 570,
+      "trophy_score": 31770,
+      "trophy_grade": "플래티넘",
+      "character_name": "대만",
+      "world_name": "루나",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 570,
+      "trophy_score": 31770,
+      "trophy_grade": "플래티넘",
+      "character_name": "포장",
+      "world_name": "에오스",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 572,
+      "trophy_score": 31760,
+      "trophy_grade": "플래티넘",
+      "character_name": "해링",
+      "world_name": "베라",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 572,
+      "trophy_score": 31760,
+      "trophy_grade": "플래티넘",
+      "character_name": "김나랭",
+      "world_name": "루나",
+      "class_name": "메르세데스",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 572,
+      "trophy_score": 31760,
+      "trophy_grade": "플래티넘",
+      "character_name": "동듀블준",
+      "world_name": "엘리시움",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 572,
+      "trophy_score": 31760,
+      "trophy_grade": "플래티넘",
+      "character_name": "라스트쇼다운",
+      "world_name": "에오스",
+      "class_name": "프렌즈 월드",
+      "sub_class_name": "키네시스"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 576,
+      "trophy_score": 31750,
+      "trophy_grade": "플래티넘",
+      "character_name": "크어",
+      "world_name": "스카니아",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 576,
+      "trophy_score": 31750,
+      "trophy_grade": "플래티넘",
+      "character_name": "쏭진사",
+      "world_name": "베라",
+      "class_name": "마법사",
+      "sub_class_name": "아크메이지(불,독)"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 576,
+      "trophy_score": 31750,
+      "trophy_grade": "플래티넘",
+      "character_name": "구보",
+      "world_name": "루나",
+      "class_name": "아크",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 579,
+      "trophy_score": 31740,
+      "trophy_grade": "플래티넘",
+      "character_name": "간취",
+      "world_name": "스카니아",
+      "class_name": "기사단",
+      "sub_class_name": "플레임위자드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 579,
+      "trophy_score": 31740,
+      "trophy_grade": "플래티넘",
+      "character_name": "mood",
+      "world_name": "엘리시움",
+      "class_name": "아란",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 579,
+      "trophy_score": 31740,
+      "trophy_grade": "플래티넘",
+      "character_name": "토니",
+      "world_name": "엘리시움",
+      "class_name": "은월",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 582,
+      "trophy_score": 31720,
+      "trophy_grade": "플래티넘",
+      "character_name": "캐슈",
+      "world_name": "루나",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 582,
+      "trophy_score": 31720,
+      "trophy_grade": "플래티넘",
+      "character_name": "별뱌",
+      "world_name": "엘리시움",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 582,
+      "trophy_score": 31720,
+      "trophy_grade": "플래티넘",
+      "character_name": "혜황",
+      "world_name": "에오스",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 585,
+      "trophy_score": 31710,
+      "trophy_grade": "플래티넘",
+      "character_name": "이스",
+      "world_name": "베라",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 585,
+      "trophy_score": 31710,
+      "trophy_grade": "플래티넘",
+      "character_name": "햄마",
+      "world_name": "크로아",
+      "class_name": "에반",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 587,
+      "trophy_score": 31700,
+      "trophy_grade": "플래티넘",
+      "character_name": "Makylia",
+      "world_name": "베라",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 587,
+      "trophy_score": 31700,
+      "trophy_grade": "플래티넘",
+      "character_name": "천주교",
+      "world_name": "루나",
+      "class_name": "마법사",
+      "sub_class_name": "비숍"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 587,
+      "trophy_score": 31700,
+      "trophy_grade": "플래티넘",
+      "character_name": "영댕",
+      "world_name": "루나",
+      "class_name": "도적",
+      "sub_class_name": "듀얼블레이더"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 587,
+      "trophy_score": 31700,
+      "trophy_grade": "플래티넘",
+      "character_name": "자리스틸의왕",
+      "world_name": "크로아",
+      "class_name": "전사",
+      "sub_class_name": "히어로"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 587,
+      "trophy_score": 31700,
+      "trophy_grade": "플래티넘",
+      "character_name": "곰뎅",
+      "world_name": "엘리시움",
+      "class_name": "팬텀",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 587,
+      "trophy_score": 31700,
+      "trophy_grade": "플래티넘",
+      "character_name": "혀니카롱",
+      "world_name": "이노시스",
+      "class_name": "궁수",
+      "sub_class_name": "보우마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 593,
+      "trophy_score": 31690,
+      "trophy_grade": "플래티넘",
+      "character_name": "몽심",
+      "world_name": "크로아",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 593,
+      "trophy_score": 31690,
+      "trophy_grade": "플래티넘",
+      "character_name": "와헌1",
+      "world_name": "엘리시움",
+      "class_name": "레지스탕스",
+      "sub_class_name": "와일드헌터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 593,
+      "trophy_score": 31690,
+      "trophy_grade": "플래티넘",
+      "character_name": "앞뜰막걸리",
+      "world_name": "이노시스",
+      "class_name": "기사단",
+      "sub_class_name": "플레임위자드"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 593,
+      "trophy_score": 31690,
+      "trophy_grade": "플래티넘",
+      "character_name": "모내님",
+      "world_name": "에오스",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 593,
+      "trophy_score": 31690,
+      "trophy_grade": "플래티넘",
+      "character_name": "아넴",
+      "world_name": "에오스",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 598,
+      "trophy_score": 31680,
+      "trophy_grade": "플래티넘",
+      "character_name": "장영",
+      "world_name": "스카니아",
+      "class_name": "레지스탕스",
+      "sub_class_name": "제논"
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 598,
+      "trophy_score": 31680,
+      "trophy_grade": "플래티넘",
+      "character_name": "희라나래",
+      "world_name": "크로아",
+      "class_name": "카이저",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 600,
+      "trophy_score": 31670,
+      "trophy_grade": "플래티넘",
+      "character_name": "독호남유튜브",
+      "world_name": "엘리시움",
+      "class_name": "호영",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 600,
+      "trophy_score": 31670,
+      "trophy_grade": "플래티넘",
+      "character_name": "머딕",
+      "world_name": "에오스",
+      "class_name": "아델",
+      "sub_class_name": ""
+    },
+    {
+      "date": "2026-05-05",
+      "ranking": 600,
+      "trophy_score": 31670,
+      "trophy_grade": "플래티넘",
+      "character_name": "하이젠",
+      "world_name": "에오스",
+      "class_name": "해적",
+      "sub_class_name": "캐논마스터"
+    }
+  ]
+}

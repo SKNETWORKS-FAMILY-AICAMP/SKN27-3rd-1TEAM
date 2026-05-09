@@ -1,0 +1,890 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="새로운 개념의 멀티유저 온라인게임 maplestory">
+    <meta name="keywords" content="maple, maplestory, 메이플, 메이플스토리, wizet, 위젯, 2d, 횡스크롤, 사이드스크롤, rpg, mmorpg, 온라인게임,이벤트,신규직업">
+    <meta name="author" content="NEXON Korea" />
+    <meta property="og:image" content="https://lwi.nexon.com/maplestory/common/meta.png" />
+    <title>업데이트 | 뉴스 | 메이플스토리</title>
+    <link rel="stylesheet" href="https://lwres.nexon.com/css/maplestory/frontCommon.css" type="text/css" />
+    <link rel="stylesheet" href="https://lwres.nexon.com/css/maplestory/sub_renew.css" type="text/css" />
+    <link rel="stylesheet" href="https://lwres.nexon.com/css/maplestory/jquery.mCustomScrollbar.css" type="text/css" />
+    <script src="https://ssl.nexon.com/s1/p2/ps.min.js" charset="utf-8" data-name="PS" data-ngm="true" data-nxlogin="true"></script>
+    <script src="https://ssl.nexon.com/s1/global/ngb_head.js"></script>
+    <script src="https://lwres.nexon.com/js/maplestory/jquery-1.12.4.min.js" type="text/javascript"></script>
+    <script src="https://lwres.nexon.com/js/maplestory/jquery-ui.js"></script>
+    <script defer src="https://lwres.nexon.com/js/maplestory/frontCommon.js" type="text/javascript"></script>
+    <script src="https://lwres.nexon.com/js/maplestory/sub_renew.js" type="text/javascript"></script>
+    <script src="https://lwres.nexon.com/js/maplestory/jquery.mCustomScrollbar.concat.min.js" type="text/javascript"></script>
+
+<script src="/Scripts/Common/common.js?v=202605030655"></script>
+<script src="/Scripts/Common/webboard.js?v=202605030655"></script>
+<script src="https://lwres.nexon.com/js/maplestory/common_modal.js" type="text/javascript"></script>
+
+<script>
+
+    var COMMON = (function () {
+        var instance;
+
+        function initiate() {
+            return {
+                site: 'nope',
+                domain: 'maplestory.nexon.com',
+                url: 'https://maplestory.nexon.com/testworld/news/update/150?p=108',
+                oid: '0',
+                isLogin: false,
+                isMembership: false,
+                isParentLogin: false,
+                isParentMembershipLogin: false,
+                isChannelingNotAgree: false,
+                articleSearchDescriptor: {},
+                maxTitleLength: 35,
+                maxCommentLength: 0,
+                isMac: navigator.platform.toUpperCase().indexOf('MAC') >= 0
+            };
+        }
+
+        if (!instance) instance = initiate();
+        return instance;
+    }());
+
+    $(window).load(function () {
+        var commonMessage = '';
+        if (commonMessage !== '')
+            alert(commonMessage);
+    });
+
+    window.addEventListener('load', () => $h.a2s.sendContentsLog(location.pathname.toLowerCase(), `{"url":"${location.href}", "lwf":"${location.href}"}`));
+    window.addEventListener('hashchange', () => $h.a2s.sendContentsLog(location.pathname.toLowerCase(), `{"url":"${location.href}", "lwf":"${location.href}"}`));
+
+</script>
+<link rel="stylesheet" href="/Scripts/Common/font_NanumBarunGothic.css" type="text/css" />
+<link rel="stylesheet" href="https://lwres.nexon.com/css/maplestory/common_modal.css" type="text/css" />
+<!-- Google Tag Manager -->
+<script>
+(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+
+})(window,document,'script','dataLayer','GTM-TCFXSKXP');</script>
+<!-- End Google Tag Manager --><!-- Facebook Pixel Code -->
+<script type="text/javascript">    
+    !function (f, b, e, v, n, t, s) {
+        if (f.fbq) return; n = f.fbq = function () {
+            n.callMethod ?
+            n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+        }; if (!f._fbq) f._fbq = n;
+        n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+        t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+    }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+
+     fbq('init', '268046720223120');
+    fbq('track', "PageView");
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=268046720223120&ev=PageView&noscript=1" /></noscript>
+<!-- End Facebook Pixel Code -->
+<!-- Twitter single-event website tag code -->
+<script src="//platform.twitter.com/oct.js" type="text/javascript"></script>
+<script type="text/javascript">twttr.conversion.trackPid('nx5i7', { tw_sale_amount: 0, tw_order_quantity: 0 });</script>
+<noscript>
+    <img height="1" width="1" style="display:none;" alt="" src="https://analytics.twitter.com/i/adsct?txn_id=nx5i7&p_id=Twitter&tw_sale_amount=0&tw_order_quantity=0" />
+    <img height="1" width="1" style="display:none;" alt="" src="//t.co/i/adsct?txn_id=nx5i7&p_id=Twitter&tw_sale_amount=0&tw_order_quantity=0" />
+</noscript>
+<!-- End Twitter single-event website tag code -->
+<script type="text/javascript">
+    (function (m, o, n, r, t, g) {
+        t = t + '?l=' + n + '&t=' + r + '&ref=' + encodeURIComponent(o.referrer) + '&loc=' + encodeURIComponent(o.location) + '&r=' + Math.floor(Math.random() * 99999999999);
+        o.write("<" + g + " src='" + t + "' style='display:none;'></" + g + ">");
+    })(window, document, 'CM_M_1042938', 'brand', 'https://rtb.clickmon.co.kr/RT_GATE/rt_gate.php', 'iframe');
+</script>
+
+        <!-- Google Analytics -->
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src=https://www.googletagmanager.com/gtag/js?id=AW-947932633></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-12M3M6FCC2', { 'cookie_domain': 'maplestory.nexon.com' })
+            gtag('event', 'oid', { 'oid': 0 })
+            gtag('config', 'AW-947932633', { 'cookie_domain': 'maplestory.nexon.com' })
+            gtag('event', 'conversion', { 'send_to': 'AW-947932633/0AANCOGi_IkCENmbgcQD' });
+            function gtag_report_conversion(url) {
+                var callback = function () {
+                    if (typeof (url) != 'undefined') {
+                        window.location = url;
+                    }
+                };
+                gtag('event', 'conversion', {
+                    'send_to': 'AW-947932633/DKSpCOK-_IkCENmbgcQD',
+                    'event_callback': callback
+                });
+                return false;
+            }
+        </script>
+        <!-- End Google Analytics -->
+<!-- Kakao Pixel Code -->
+<script type="text/javascript" charset="UTF-8" src="//t1.daumcdn.net/adfit/static/kp.js"></script>
+<script type="text/javascript">
+    kakaoPixel('2830029952607077079').pageView();
+</script>
+<!-- End Kakao Pixel Code -->
+<!-- Criteo 홈페이지 태그 -->
+<script type="text/javascript" src="//dynamic.criteo.com/js/ld/ld.js?a=94120" async="true"></script>
+<script type="text/javascript">
+    window.criteo_q = window.criteo_q || [];
+    var deviceType = /iPad/.test(navigator.userAgent) ? "t" : /Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Silk/.test(navigator.userAgent) ? "m" : "d";
+    window.criteo_q.push({ event: "setAccount", account: [94120, 95207] }, { event: "setSiteType", type: deviceType }, { event: "viewHome" });
+
+    function gameStart_Criteo() {
+        window.criteo_q.push(
+            { event: "setAccount", account: [94120, 95207] },
+            { event: "setSiteType", type: deviceType },            
+            {
+                event: "trackTransaction", id: Math.floor(Math.random() * 99999999999), item: [
+                    { id: "gameStart", price: 1, quantity: 1 }                    
+                ]
+            }
+        );
+    }
+</script>
+<!-- END Criteo 홈페이지 태그 -->
+<!-- Enliple Tracker Start (모비온 MOBON)-->
+<script defer async src="https://cdn.megadata.co.kr/dist/prod/v2/mtm.js?adverId=Maplestory_P&device=W">
+</script>
+<!-- Enliple Tracker End -->
+
+
+    
+    
+
+    
+
+
+</head>
+<body>
+
+
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TCFXSKXP" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+<script type="text/javascript" src="https://rs.nxfs.nexon.com/common/js/gnb.min.js" data-gamecode="589824" data-ispublicbanner="false"></script>
+<script>
+    $(document).ready(function () {
+        $('.sel_login_btn a:eq(0)').bind('click', function (e) {
+            e.preventDefault();
+            LOGIN.changeID();
+        });
+        $('.sel_login_btn a:eq(1)').bind('click', function (e) {
+            e.preventDefault();
+            close_login_pop();
+        });
+    });
+</script>
+<div class="login_popup_wrap">
+    <div class="login_popup2">
+        <h1><span><a href="javascript:void(0)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/login_pop_h1.png" alt="다른 메이플ID로 로그인" /></a></span></h1>
+        <div class="login_popup_con">
+            <p>다른 메이플ID로 로그인 하시려면 아래의 ID중 하나를 선택하시기 바랍니다.</p>
+            <div class="sel_login_id">
+            </div>
+            <div class="bnarea">
+                <p class="icoinfo">
+                    <input type="checkbox" name="chkMaster" /> <label for="che">앞으로 이 메이플ID로 로그인 하겠습니다.</label>
+                </p>
+            </div>
+            <div class="sel_login_btn">
+                <a href="#a"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/sel_login_btn.png" alt="선택한 메이플ID로 로그인" /></a>
+                <a href="#a"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/rank_pop_close_btn.png" alt="닫기" /></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+ 
+    <div id="wrap">
+
+
+<script>
+    function GameStart() {
+        NXMember.GoLogin();
+    }
+</script>
+<!-- gnb공통 start -->
+<div class="global_gnb">
+    <div class="gnb_outer">
+        <div class="gnb_inner">
+            <h1 class="mainLogo">
+                <a href="https://maplestory.nexon.com/Home/Main">
+                    <svg width="119" height="59" viewBox="0 0 119 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_850_21984)">
+                            <path d="M37.3458 44.7419C37.2598 45.0737 37.1861 45.4177 37.1247 45.7556C37.0448 46.2348 36.9834 46.6955 37.18 47.1563C37.3336 47.5065 37.5977 47.7829 37.9479 47.9365V50.3324C37.9479 51.3523 38.7711 52.1755 39.7909 52.1755H50.2409C51.2607 52.1755 52.0839 51.3523 52.0839 50.3324V48.6553C52.0839 48.0348 51.7583 47.5126 51.2853 47.1747C51.3344 47.015 51.3835 46.8553 51.3835 46.6771V46.0443C51.7214 46.4437 52.2191 46.7017 52.7842 46.7017H68.1797C69.1995 46.7017 70.0227 45.8785 70.0227 44.8587V43.3965H84.2508C84.3553 43.3965 84.4597 43.3842 84.5641 43.3658V43.544C84.5641 44.5638 85.3874 45.387 86.4072 45.387H90.4065L93.4967 45.2457L95.3581 45.0614V47.4266C95.3581 48.4464 96.1814 49.2696 97.2012 49.2696H99.7015C100.721 49.2696 101.545 48.4464 101.545 47.4266V31.9022C101.545 31.0421 100.955 30.2988 100.119 30.1083L96.0953 29.1745C95.2783 28.9841 94.4366 29.3711 94.0496 30.1145L93.5212 31.1158C93.38 31.3861 93.3062 31.681 93.3062 31.9698C93.3062 31.9882 93.3124 32.0066 93.3124 32.0312H85.9587C84.9389 32.0312 84.1157 32.8544 84.1157 33.8742V35.5514C84.1157 35.834 84.1894 36.092 84.3061 36.3316C84.128 36.4606 83.9805 36.6203 83.8577 36.7985V36.3869C83.8577 35.8217 83.5873 35.3364 83.188 34.9985C83.2249 34.8449 83.2802 34.7036 83.2802 34.5377V32.8851C83.2802 32.5903 83.1942 32.3261 83.0713 32.0742C83.2617 31.7855 83.403 31.4537 83.403 31.079V29.4264C83.403 28.4066 82.5798 27.5834 81.56 27.5834H70.8705C69.9428 27.5834 69.1626 28.2714 69.0459 29.1868L68.8739 30.5138C68.8616 30.5936 68.8554 30.6735 68.8554 30.7534C68.8554 31.509 69.3346 32.1602 70.0288 32.4367V38.0088H68.8616C68.5667 38.0088 68.2902 38.0825 68.0445 38.2053C67.9769 38.1501 67.9032 38.0948 67.8295 38.0518C67.8295 38.0518 65.4643 36.7125 63.8117 35.7787C63.8363 35.7295 63.8731 35.6865 63.8977 35.6374C64.2233 34.9616 64.4506 34.2797 64.5858 33.6039C64.6103 33.4872 64.6226 33.3643 64.6226 33.2476C64.6226 32.4182 64.0574 31.6687 63.2219 31.4599L59.2717 30.4831C58.4915 30.2926 57.6744 30.6305 57.2567 31.3186L56.759 32.1418C56.5809 32.4367 56.4949 32.7684 56.4949 33.094C56.4949 33.5978 56.7037 34.1015 57.0969 34.4579C57.0969 34.4579 57.2689 34.6114 57.3672 34.7036C57.1338 35.2565 56.7345 35.8708 56.157 36.522C55.4136 37.3637 54.8361 37.9289 53.8409 38.6292V37.8552C53.8409 36.8968 53.1098 36.1227 52.176 36.0306C52.176 35.9937 52.1883 35.963 52.1883 35.9261V34.2981C52.1883 33.2783 51.3651 32.4551 50.3453 32.4551H50.1856V31.9206C51.1562 31.8715 51.9365 31.079 51.9365 30.096V28.468C51.9365 27.4482 51.1132 26.625 50.0934 26.625H38.7281C37.7083 26.625 36.8851 27.4482 36.8851 28.468V30.096C36.8851 31.1158 37.7083 31.9391 38.7281 31.9391H38.7588V32.4551H38.4762C37.4564 32.4551 36.6332 33.2783 36.6332 34.2981V34.7466C36.6332 34.7466 36.6393 34.7097 36.6393 34.7343H36.6025V34.7773C36.6025 33.9172 36.0127 33.1739 35.1772 32.9834L31.1533 32.0496C30.3362 31.8592 29.4946 32.2462 29.1075 32.9896L28.5792 33.991C28.4379 34.2613 28.3703 34.5562 28.3703 34.8449C28.3703 35.1029 28.4379 35.3487 28.5362 35.5821C27.5655 35.0845 26.4904 34.8265 25.3047 34.8265C23.4679 34.8265 21.8706 35.4347 20.5559 36.6388C20.4637 36.7186 20.39 36.8046 20.304 36.8906V29.408C20.304 28.5479 19.7142 27.8045 18.8787 27.6141L15.0022 26.7172C14.1852 26.5267 13.3435 26.9137 12.9565 27.6571L12.4589 28.6093L11.6111 28.3882C10.8186 28.1793 9.98305 28.5172 9.55916 29.2175L9.03082 30.096C8.94482 30.2373 8.95096 30.3971 8.90181 30.5506H2.07033C1.18568 30.5506 0.423896 31.1834 0.258024 32.0496L0.0307171 33.2476C0.00614342 33.3643 0 33.4749 0 33.5916C0 34.3596 0.491473 35.0353 1.22868 35.3056V41.1972C1.22868 42.217 2.0519 43.0402 3.07171 43.0402H10.3332V45.2088C10.3332 46.2286 11.1564 47.0519 12.1763 47.0519H14.6275C14.6582 47.0519 14.6889 47.0457 14.7258 47.0396C15.0514 47.3222 15.4691 47.5003 15.9299 47.5003H18.4548C19.4746 47.5003 20.2979 46.6771 20.2979 45.6573V45.5406C20.3839 45.6266 20.4576 45.7126 20.5497 45.7925C21.8644 46.9904 23.4617 47.5986 25.2986 47.5986C27.1355 47.5986 28.7328 46.9904 30.0352 45.7863C30.1703 45.6634 30.2871 45.5344 30.4099 45.4054V49.6874C30.4099 50.7072 31.2331 51.5304 32.2529 51.5304H34.7533C35.7731 51.5304 36.5963 50.7072 36.5963 49.6874V45.0737V44.7296H37.352L37.3458 44.7419Z" fill="black" />
+                            <path d="M68.1859 43.1621H52.7905V44.8638H68.1859V43.1621Z" fill="white" />
+                            <path d="M51.9857 37.873H36.5903V39.5748H51.9857V37.873Z" fill="white" />
+                            <path d="M118.2 7.54235C118.2 7.54235 116.227 11.4803 112.29 13.9376C112.29 13.9376 114.71 13.44 116.701 16.1493C116.701 16.1493 114.636 15.4489 113.543 16.4442C113.543 16.4442 117.014 18.4838 117.296 23.5705C117.481 26.931 117.45 28.0061 117.935 31.514C117.843 30.8812 115.367 28.9214 114.022 27.6805C112.603 26.3596 111.835 24.9282 111.19 22.9255C111.19 22.9255 112.111 24.7931 111.417 28.3071C110.797 31.4218 108.769 34.2539 106.797 36.3857C105.292 38.0137 103.836 39.5618 102.964 40.2683C103.474 38.1919 104.236 36.8895 103.898 32.8225C103.646 29.8307 103.234 26.3904 105.157 23.1036C105.157 23.1036 102.356 29.0259 90.6033 27.9385C89.1411 27.8033 86.2353 27.6498 84.3984 27.6068C84.3984 27.6068 87.8265 26.5869 92.1084 21.5555C92.1084 21.5555 95.8129 16.9848 101.969 17.5193C101.969 17.5193 96.5378 17.1629 92.4525 12.4264C92.4525 12.4264 89.4299 9.13349 85.3568 7.8618C85.3568 7.8618 92.3972 7.99696 93.9453 7.97239C96.1016 7.93553 101.336 8.21812 104.389 11.3636C104.389 11.3636 102.159 9.55739 101.317 4.63037C101.072 3.18052 100.341 2.00713 99.4621 0.796875C99.4621 0.796875 100.697 1.57095 102.263 2.35116C104.973 3.70271 109.058 5.50273 109.74 10.8291C109.74 10.8291 111.079 10.0059 110.858 7.36419C110.858 7.36419 113.445 9.30551 111.829 13.0407C111.829 13.0407 113.709 12.1253 116.338 7.62221C116.338 7.62221 117.198 5.77919 118.2 7.54849V7.54235Z" fill="#C03525" />
+                            <path d="M39.7969 50.3258V46.523L38.6973 46.2773L38.9184 45.0732H47.0707V43.1995H39.3177V41.5469H49.5465V46.6766H42.2727V48.6548H50.2469V50.3258H39.7969Z" fill="white" />
+                            <path d="M57.705 39.9175C56.7344 40.5749 55.3582 41.3366 54.492 41.6377L53.7671 40.8882C55.5548 39.7701 56.378 39.0513 57.5269 37.755C58.6757 36.4526 59.3146 35.2362 59.4313 34.1058L58.3316 33.1045L58.8293 32.2812L62.7795 33.2581C62.6812 33.7741 62.4969 34.3086 62.2389 34.8492C61.9808 35.3898 61.6614 35.9304 61.2743 36.4649L66.9263 39.6656L65.372 41.5947L60.273 37.6936C59.5235 38.5291 58.6634 39.2725 57.6989 39.9298L57.705 39.9175Z" fill="white" />
+                            <path d="M74.3847 36.3743H82.0209V38.0514H78.0584V39.8514H84.2633V41.5532H68.874V39.8514H75.5581V38.0514H71.8782V30.9742L70.7048 30.7469L70.8829 29.4199H81.5725V31.0725H74.3847V32.8725H81.4496V34.5251H74.3847V36.3743Z" fill="white" />
+                            <path d="M14.5781 28.5352L14.0559 29.5365L15.9296 30.7345V45.6753H18.4546V29.4321L14.5781 28.5352ZM10.5971 31.0662L12.176 32.1905V35.9503H10.4988V32.4178H2.07008L1.84277 33.6158L3.07146 33.9168V41.2213H10.4988V37.652H12.176V45.233H14.6272V31.1154L11.1255 30.1939L10.5971 31.0724V31.0662ZM8.02305 39.538H5.57183V34.0581H8.02305V39.538Z" fill="white" />
+                            <path d="M48.3302 34.3223V30.1202H50.0811V28.4922H38.7157V30.1202H40.5895V34.3223H38.4639V35.9503H50.3268V34.3223H48.3241H48.3302ZM45.879 34.3223H43.0407V30.1202H45.879V34.3223Z" fill="white" />
+                            <path d="M25.2924 36.6934C23.9224 36.6934 22.7552 37.1357 21.7907 38.0203C20.8262 38.905 20.3408 39.9739 20.3408 41.2211C20.3408 42.4682 20.8262 43.5617 21.7907 44.4464C22.7552 45.331 23.9224 45.7733 25.2924 45.7733C26.6624 45.7733 27.8235 45.331 28.7819 44.4464C29.7402 43.5617 30.2194 42.4866 30.2194 41.2211C30.2194 39.9555 29.7402 38.905 28.7819 38.0203C27.8235 37.1357 26.6624 36.6934 25.2924 36.6934ZM26.8221 43.2975C26.3675 43.8627 25.8638 44.1453 25.2986 44.1453C24.7334 44.1453 24.2173 43.8627 23.7627 43.2975C23.3019 42.7323 23.0746 42.0381 23.0746 41.2211C23.0746 40.404 23.3081 39.7159 23.7627 39.1569C24.2235 38.5978 24.7334 38.3214 25.2986 38.3214C25.8638 38.3214 26.3737 38.604 26.8221 39.1569C27.2706 39.7159 27.4979 40.404 27.4979 41.2211C27.4979 42.0381 27.2706 42.7323 26.8221 43.2975Z" fill="white" />
+                            <path d="M30.7232 33.8672L30.1948 34.8686L32.2467 36.1218V49.7049H34.7532V48.0523V36.7177V34.801L30.7232 33.8672Z" fill="white" />
+                            <path d="M90.4677 41.8416H88.8889V39.3904H94.719V33.8613H85.9646V35.5385H92.2432V37.787H85.3871L85.209 38.9849L86.4131 39.286V43.5372H90.4125C91.2295 43.5372 92.2125 43.4942 93.349 43.4021C94.4917 43.3099 95.0999 43.2608 95.9538 43.144V41.5406C95.1675 41.6266 94.6268 41.6512 93.5517 41.7249C92.4766 41.7986 91.4446 41.8355 90.4616 41.8355L90.4677 41.8416Z" fill="white" />
+                            <path d="M95.6836 30.9609L95.1553 31.9623L97.2072 33.2094V47.4192H99.7137V44.544V33.8115V31.8886L95.6836 30.9609Z" fill="white" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_850_21984">
+                                <rect width="118.199" height="58" fill="white" transform="translate(0 0.791016)" />
+                            </clipPath>
+                        </defs>
+                    </svg> 
+                </a>
+            </h1>
+            <div class="gnb_group" id="main-menu">
+                <ul>
+                    <li>
+                        <a href="/News/Notice">
+                            <span>뉴스</span>
+                        </a>
+                        <ul>
+                            <li data-id="notice">
+                                <a href="/News/Notice">
+                                    <span>공지사항</span>
+                                </a>
+                            </li>
+                            <li data-id="update">
+                                <a href="/News/Update">
+                                    <span>업데이트</span>
+                                </a>
+                            </li>
+                            <li data-id="event">
+                                <a href="/News/Event">
+                                    <span>이벤트</span>
+                                </a>
+                            </li>
+                            <li data-id="cashshop">
+                                <a href="/News/CashShop">
+                                    <span>캐시샵 공지</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/News/NoticeMapleBoard">
+                                    <span>메이플 알림판</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/withmaple" target="_blank">
+                                    <span>with maple</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="/Guide/N23GameInformation">
+                            <span>가이드</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="/Guide/N23GameInformation">
+                                    <span>게임정보</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Guide/N23Job">
+                                    <span>직업소개</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Guide/CashShop/Probability/RoyalStyle">
+                                    <span>확률형 아이템</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://now.nexon.com/service/maplestory" target="_blank">
+                                    <span>NEXON NOW</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="/N23Ranking/World">
+                            <span>랭킹</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="/N23Ranking/World">
+                                    <span>월드 랭킹</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/N23Ranking/Contents">
+                                    <span>컨텐츠 랭킹</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="/Community/N23Free">
+                            <span>커뮤니티</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="/Community/N23Free">
+                                    <span>자유게시판</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Community/Art">
+                                    <span>메이플 아트</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Community/N23Coordination">
+                                    <span>메이플 코디</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://partners.maplestory.nexon.com" target="_blank">
+                                    <span>메이플스토리 파트너스</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://style-finder.nexon.com" target="_blank">
+                                    <span>AI Style Finder</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://maplestory.nexon.com/Community/MiniGame">
+                                    <span>미니게임</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Community/CommunityArchive">
+                                    <span>커뮤니티 아카이브</span>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="/Media/N23VideoMusic/C1">
+                            <span>미디어</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="/Media/N23VideoMusic/C1">
+                                    <span>영상</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Media/N23VideoMusic/C2">
+                                    <span>음악</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Media/ArtWork">
+                                    <span>아트웍</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Media/WebToon">
+                                    <span>웹툰</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="/Support/BugReport">
+                            <span>고객지원</span>
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="/Common/PDS/Download" target="_blank">
+                                    <span>다운로드</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://cs.nexon.com/HelpBoard/Nexon?gamecode=18" target="_blank">
+                                    <span>도움말/1:1문의</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Support/BugReport">
+                                    <span>버그악용/불법프로그램 신고</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/Support/GameAccessibility">
+                                    <span>게임 접근성</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="gnb_btnWrap">
+                <div class="btn_mode" data-a2s-code2="Main_DarkMode_r">
+                    <button type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                  d="M12.0001 8.31243C11.2125 8.6682 10.3384 8.86623 9.41797 8.86623C5.95037 8.86623 3.13932 6.05535 3.13932 2.58796C3.13932 1.66472 3.33862 0.788019 3.69653 -0.00146484C1.51684 0.983143 0 3.17595 0 5.723C0 9.1904 2.81105 12.0013 6.27865 12.0013C8.82295 12.0013 11.0138 10.488 12.0001 8.31243Z"
+                                  fill="inherit" />
+                        </svg>
+                    </button>
+                    <button type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M5.33333 0.666667C5.33333 0.298477 5.63181 0 6 0C6.36819 0 6.66667 0.298477 6.66667 0.666667V1.33333C6.66667 1.70152 6.36819 2 6 2C5.63181 2 5.33333 1.70152 5.33333 1.33333V0.666667Z"
+                                  fill="inherit" />
+                            <path d="M5.33333 10.6667C5.33333 10.2985 5.63181 10 6 10C6.36819 10 6.66667 10.2985 6.66667 10.6667V11.3333C6.66667 11.7015 6.36819 12 6 12C5.63181 12 5.33333 11.7015 5.33333 11.3333V10.6667Z"
+                                  fill="inherit" />
+                            <path d="M11.3333 5.33333C11.7015 5.33333 12 5.63181 12 6C12 6.36819 11.7015 6.66667 11.3333 6.66667H10.6667C10.2985 6.66667 10 6.36819 10 6C10 5.63181 10.2985 5.33333 10.6667 5.33333H11.3333Z"
+                                  fill="inherit" />
+                            <path d="M1.33333 5.33333C1.70152 5.33333 2 5.63181 2 6C2 6.36819 1.70152 6.66667 1.33333 6.66667H0.666667C0.298477 6.66667 -1.60941e-08 6.36819 0 6C1.60941e-08 5.63181 0.298477 5.33333 0.666667 5.33333H1.33333Z"
+                                  fill="inherit" />
+                            <path d="M2.70017 10.2426C2.43982 10.503 2.01771 10.503 1.75736 10.2426C1.49701 9.98229 1.49701 9.56018 1.75736 9.29983L2.22877 8.82843C2.48911 8.56808 2.91122 8.56808 3.17157 8.82843C3.43192 9.08878 3.43192 9.51089 3.17157 9.77124L2.70017 10.2426Z"
+                                  fill="inherit" />
+                            <path d="M9.77124 3.17157C9.51089 3.43192 9.08878 3.43192 8.82843 3.17157C8.56808 2.91122 8.56808 2.48911 8.82843 2.22876L9.29983 1.75736C9.56018 1.49701 9.98229 1.49701 10.2426 1.75736C10.503 2.01771 10.503 2.43982 10.2426 2.70017L9.77124 3.17157Z"
+                                  fill="inherit" />
+                            <path d="M1.75801 2.70017C1.49766 2.43982 1.49766 2.01771 1.75801 1.75736C2.01836 1.49701 2.44047 1.49701 2.70082 1.75736L3.17222 2.22876C3.43257 2.48911 3.43257 2.91122 3.17222 3.17157C2.91187 3.43192 2.48976 3.43192 2.22941 3.17157L1.75801 2.70017Z"
+                                  fill="inherit" />
+                            <path d="M8.82908 9.77124C8.56873 9.51089 8.56873 9.08878 8.82908 8.82843C9.08943 8.56808 9.51154 8.56808 9.77189 8.82843L10.2433 9.29983C10.5036 9.56018 10.5036 9.98229 10.2433 10.2426C9.98294 10.503 9.56083 10.503 9.30048 10.2426L8.82908 9.77124Z"
+                                  fill="inherit" />
+                            <path d="M9 6C9 7.65685 7.65685 9 6 9C4.34315 9 3 7.65685 3 6C3 4.34315 4.34315 3 6 3C7.65685 3 9 4.34315 9 6Z"
+                                  fill="inherit" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="gnb_btn_login">
+                    <a href="javascript:;" onclick="GameStart();" class="login_btn">game start</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+
+<div id="header_testworld">
+    
+    <div class="div_inner">
+<div class="board_name">
+    <span class="sub_logo"><img src="https://lwi.nexon.com/maplestory/common/titleIcon/category_icon_testworld.png" alt=""></span> 
+    <h2>테스트월드</h2>
+</div>
+
+ 
+
+<div class="sub_login_wrap">
+    <div class="sub_login_con">
+        <span class="sub_login_btn"><a href="#" onmouseover="ch_png_on(this)" onmouseout="ch_png_off(this)"><img src="https://lwi.nexon.com/maplestory/common/sub_login_btn_off.png" alt="메이플 스토리 로그인"></a></span>
+    </div> 
+    <script>
+        (function (win, doc) {
+
+            doc.addEventListener('DOMContentLoaded', function () {
+                var loginBtn = doc.querySelector(".sub_login_wrap .sub_login_con .sub_login_btn");
+                if (loginBtn) {
+                    loginBtn.addEventListener("click", function () {
+                        win.location.href = "https://nxlogin.nexon.com/auth/login?redirect=" + encodeURIComponent(win.location.href);
+                    });
+                }
+
+                //if (doc.querySelector('.sub_login_befor_char')) {
+                //    setInterval(befor_login_char, 100);
+                //}
+            });
+        })(window, document);
+    </script>
+
+     
+</div>
+
+ 
+    <span class="game_start">
+        <div class="gm_str_main_wrap">
+            <a href="javascript:void(0)" onmouseover="ch_png_on(this)" onmouseout="ch_png_off(this)" onclick="GameStart();">
+                <img class="main_str_btn" src="https://lwi.nexon.com/maplestory/common/icon_gameStart_off.png" alt="" />
+            </a>
+            <span class="download">
+                <a href="/Common/PDS/Download" target="_blank">다운로드</a>
+            </span>
+        </div>
+    </span>
+
+
+
+ 
+
+<!-- event_bg str -->
+<div class="event_bg">
+    <!-- div_inner str -->
+    <div class="div_inner">
+        <h2 class="event_all_title">이벤트 전체보기</h2>
+        <div class="event_all_bannerwrap">
+            <ul class="event_all_banner">
+
+                    <li>
+                        <a href="/News/Event/1316"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5701649607486867263" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1316">[어린이날] - 메이플 몬스터즈</a></dt>
+                            <dd><a href="/News/Event/1316">2026.04.30 (목) ~ 2026.05.06 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1315"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5341361800505983848" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1315">썬데이 메이플</a></dt>
+                            <dd><a href="/News/Event/1315">2026.05.03 (일) ~ 2026.05.03 (일) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1309"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=4909016090249528552" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1309">[사냥 이벤트] - 악몽의 메아리</a></dt>
+                            <dd><a href="/News/Event/1309">2026.04.16 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1308"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5197246492171043930" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1308">프리미엄PC방 접속보상 이벤트</a></dt>
+                            <dd><a href="/News/Event/1308">2026.04.17 (금) ~ 2026.05.14 (목) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1306"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5701649774990590731" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1306">HAPPY MAPLE DAY in LotteWorld</a></dt>
+                            <dd><a href="/News/Event/1306">2026.04.09 (목) ~ 2026.04.30 (목) 오전 12시00분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1301"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=4692843462754566943" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1301">진의 신비한 정원</a></dt>
+                            <dd><a href="/News/Event/1301">2026.03.23 (월) ~ 2026.05.13 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1299"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5629592090758350391" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1299">[체인지 버닝] - 루시드</a></dt>
+                            <dd><a href="/News/Event/1299">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1298"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5125188936787821793" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1298">[출석 이벤트] - 마스코트 퍼레이드</a></dt>
+                            <dd><a href="/News/Event/1298">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1297"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=4620785692622980782" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1297">[체인지 버닝] - 루시드 드림</a></dt>
+                            <dd><a href="/News/Event/1297">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1296"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5629592034923775079" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1296">[체인지 버닝] - 몽환의 장비 &amp; 몽환의 결정</a></dt>
+                            <dd><a href="/News/Event/1296">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1295"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5341361727491539966" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1295">[체인지 버닝] - 악몽의 숲</a></dt>
+                            <dd><a href="/News/Event/1295">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1294"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5197246526530782413" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1294">[체인지 버닝] - 몽환의 시련</a></dt>
+                            <dd><a href="/News/Event/1294">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1293"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=4909016180443841540" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1293">[체인지 버닝] - 드림 샤드샵</a></dt>
+                            <dd><a href="/News/Event/1293">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1292"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5629592026333840493" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1292">[이벤트 스킬] - 메이플 스위츠</a></dt>
+                            <dd><a href="/News/Event/1292">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1291"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5413419300054631749" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1291">[이벤트 샵] - 기프트 티켓 상점</a></dt>
+                            <dd><a href="/News/Event/1291">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1290"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5125188838003574317" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1290">하이퍼 버닝 부스터를 드려요!</a></dt>
+                            <dd><a href="/News/Event/1290">2026.03.19 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1254"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5557481775996867963" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1254">하이퍼 버닝 MAX</a></dt>
+                            <dd><a href="/News/Event/1254">2025.12.18 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1253"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5485424078879725097" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1253">버닝 BEYOND</a></dt>
+                            <dd><a href="/News/Event/1253">2025.12.18 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                    <li>
+                        <a href="/News/Event/1237"><img src="https://file.nexon.com/NxFile/download/FileDownloader.aspx?oidFile=5629592086463382816" alt="" /></a>
+                        <dl>
+                            <dt><a href="/News/Event/1237">VIP 사우나</a></dt>
+                            <dd><a href="/News/Event/1237">2025.12.18 (목) ~ 2026.06.17 (수) 오후 11시59분</a></dd>
+                        </dl>
+                    </li>
+                                    <li>
+                        <img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/zzzzzzzz.png" alt="">
+                        <dl>
+                            <dt></dt>
+                            <dd></dd>
+                        </dl>
+                    </li>
+            </ul>
+        </div>
+        <ul class="event_all_pos">
+                    <li><a href="#a" onclick="img_click(this)" onmouseover="img_on(this)" onmouseout="img_out(this)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/pos_event_on.png" alt="" class=click_img /></a></li>
+                    <li><a href="#a" onclick="img_click(this)" onmouseover="img_on(this)" onmouseout="img_out(this)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/pos_event_off.png" alt=""  /></a></li>
+                    <li><a href="#a" onclick="img_click(this)" onmouseover="img_on(this)" onmouseout="img_out(this)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/pos_event_off.png" alt=""  /></a></li>
+                    <li><a href="#a" onclick="img_click(this)" onmouseover="img_on(this)" onmouseout="img_out(this)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/pos_event_off.png" alt=""  /></a></li>
+                    <li><a href="#a" onclick="img_click(this)" onmouseover="img_on(this)" onmouseout="img_out(this)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/pos_event_off.png" alt=""  /></a></li>
+
+        </ul>
+        <span class="event_close"><a href="#a" onclick="event_onoff()"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/event_close.png" alt="" /></a></span>
+    </div>
+    <!-- div_inner end -->
+</div>
+<!-- event_bg end -->
+
+    </div>
+</div>
+<div class="mnb_wrap">
+    <div class="div_inner2">
+        <ul class="mnb_list">
+            <li ><a href="/Testworld/Main">테스트월드 메인</a></li>
+            <li class=active><a href="/Testworld/News/All">테스트월드 뉴스</a></li>
+            <li ><a href="/Testworld/N23BugReport/Create">버그리포트</a></li>
+                <li ><a href="/Testworld/Download">다운로드</a></li>
+        </ul>
+        <span class="mnb_line"></span>
+
+                    <span class="test_wrold_btn"><a class="btn02_b" href="javascript:void(0)" onclick="alert('메이플ID가 연동된 넥슨ID로 로그인이 필요합니다.')">테스트월드 이용신청</a></span>
+
+    </div>
+</div>
+<div class="mnb_blank"></div> 
+        
+<div id="container">
+    <!-- div_inner str -->
+    <div class="div_inner">
+        <!-- notice_wrap str -->
+        <div class="contents_wrap">
+            <h1 class="con_title">
+                업데이트
+                <span class="con_title_btn"><a href="/testworld/news/update?p=108" class="back_btn" style="width:56px; text-align:center;">목록</a></span>
+            </h1>
+
+            <!--이미지 파일명 넘버링에 따라 공지 점검 01/02-->
+            <p class="qs_title" style="margin-top:30px"><em class="notice_icon"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/notice_icon04.png" alt="" /></em><span>클라이언트 1.2.197 릴리즈(솔 헤카테, 스킬 조정)</span></p>
+            <div class="qs_info_wrap">
+                <div class="qs_info">
+                    <p><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/eye_new.png" alt="본 유저수" />151,383</p>
+                    <p class="last"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/sub_date_new.png" alt="작성 시간" />2026.01.08</p>
+
+                    <span class="shortcut">
+                        <a href="https://maplestory.nexon.com/testworld/news/update/150?p=108"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/link_copy_btn.png" alt=""></a>
+                    </span>
+
+                </div>
+            </div>
+            <div class="qs_text">
+                <div class="new_board_con">
+                    <div class="se-contents" role="textbox" style="box-sizing: content-box; font-family: &quot;맑은 고딕&quot;; font-size: 10pt; color: rgb(0, 0, 0); line-height: 1.2; max-width: 904px;" data-document-fixed-width="false" data-document-width="1000" data-document-padding-top="48" data-document-padding-bottom="48" data-document-padding-left="48" data-document-padding-right="48"><div class="se-div se-table-of-contents" style="text-align: left; padding: 5px; width: calc(100% - 10px); overflow: auto;"><ul class="se-list"><li class="se-list-item" style="list-style: none; margin-left: -2.75px;" data-format="decimal" data-level="0" data-level-margin-left="0px" data-level-number-position="left" data-list-position="outside" data-margin-left="0px" data-multi="false" data-startval="1" data-text="%1."><p style="margin: 0px;"><span class="se-list-type" style="pointer-events: none; left: -10px; display: inline-block; position: relative; margin-left: -10.25px; padding-left: 10.25px; text-indent: -10.25px;">1.</span><a style="text-decoration: underline; color: rgb(22, 63, 199);" data-href="#toc_6aa07ee3-ed02-470e-802d-dc833ff68729" data-hyperlink-id="se_b66d2cb3-e0ca-4183-80ec-72fecb48ae66" target="_self" href="#toc_6aa07ee3-ed02-470e-802d-dc833ff68729"><span>HEXA 스킬 - 공용 코어</span></a></p></li><li class="se-list-item" style="list-style: none; margin-left: -2.75px;" data-format="decimal" data-level="0" data-level-margin-left="0px" data-level-number-position="left" data-list-position="outside" data-margin-left="0px" data-multi="false" data-startval="1" data-text="%1."><p style="margin: 0px;"><span class="se-list-type" style="pointer-events: none; left: -10px; display: inline-block; position: relative; margin-left: -10.25px; padding-left: 10.25px; text-indent: -10.25px;">2.</span><a style="text-decoration: underline; color: rgb(22, 63, 199);" data-href="#toc_fab25992-15fb-49b1-a770-331f308b2dca" data-hyperlink-id="se_c975fa2b-93ad-4a94-bea9-79a3bb3427c8" target="_self" href="#toc_fab25992-15fb-49b1-a770-331f308b2dca"><span>스킬 수정 사항</span></a></p></li></ul></div><p style="font-size: 6pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word; word-break: keep-all;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 6pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word; word-break: keep-all;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">안녕하세요 용사님</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">메이플스토리 테스트월드 업데이트가 1월 8일(목) 진행되었습니다.</span></p><p style="font-size: 6pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 10pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 6pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word; word-break: keep-all;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 22pt; color: rgb(0, 0, 0); font-weight: 700; letter-spacing: -0.466667px; border-color: rgb(0, 0, 0); border-style: none; border-width: 0px;">목차</span></p><p style="font-size: 14pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 14pt; color: rgb(51, 51, 51); font-weight: 700;">■ HEXA 스킬 - 공용 코어</span></p><p style="font-size: 14pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 14pt; color: rgb(51, 51, 51); font-weight: 700;">■ 스킬 수정 사항</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0); font-weight: 700;" class="se-zws-run"><br></span></p><h1 id="toc_6aa07ee3-ed02-470e-802d-dc833ff68729" style="margin: 16px 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0); background-color: rgb(0, 255, 0);">HEXA 스킬 - 공용 코어</span></h1><p style="font-size: 22pt; background-color: rgb(113, 116, 139); text-align: left; line-height: 1.72; text-indent: 0px; margin: 8px 66.6667px 0px 0px; display: block; overflow-wrap: break-word;"><span style="font-size: 22pt; color: rgb(255, 255, 255); font-weight: 700;">&nbsp;&nbsp;HEXA 스킬 - 공용 코어</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51);">전직업이 공용으로 사용할 수 있는 신규 공용 코어가 추가되었습니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 솔 헤카테</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 대적자의 결의에 이끌린 솔 에르다가 모여 패밀리어로 탄생하는 신규 스킬입니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 솔 헤카테는 레벨에 따라 성장하며, 일정 레벨 도달 시 사용할 수 있는 전용 스킬이 추가로 활성화됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 솔 헤카테 : 스틱스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 짙게 농축된 솔 에르다의 파도를 방출해 적을 죽음으로 인도하는 신규 스킬입니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 솔 헤카테 : 카론</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 계약자가 사망에 이르는 공격을 받았을 때 죽음의 운명으로부터 계약자를 보호하는 신규 스킬입니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 솔 헤카테 : 플레게톤</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 세계를 이루는 솔 에르다의 질서를 무너뜨려 잠시 동안 이승과 명계의 경계를 허무는 신규 스킬입니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 솔 헤카테 : 팩텀</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 대적자와 솔 헤카테의 의지를 조율하여 솔 헤카테의 전용 스킬이 발현하는 방식을 규정하는 신규 스킬입니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 솔 헤카테, 솔 헤카테 : 스틱스, 솔 헤카테 : 플레게톤은 직업 별로 다른 데미지가 적용됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;" class="se-zws-run"><br></span></p><h1 id="toc_fab25992-15fb-49b1-a770-331f308b2dca" style="margin: 16px 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0); font-weight: 700; background-color: rgb(0, 255, 0);">스킬 수정 사항</span></h1><p style="font-size: 22pt; background-color: rgb(113, 116, 139); text-align: left; line-height: 1.72; text-indent: 0px; margin: 8px 66.6667px 0px 0px; display: block; overflow-wrap: break-word;"><span style="font-size: 22pt; color: rgb(255, 255, 255); font-weight: 700;">&nbsp;&nbsp;스킬 수정 사항</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 공통</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 리스트레인트 링</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 시전 시 바로 효과가 적용이 되도록 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 베놈 버스트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 타격 이펙트가 출력되는 시간이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 히어로</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 레이징 블로우</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 강화 레이징 블로우의 데미지가 마스터 레벨 기준 344%에서 387%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 레이징 블로우 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 강화 레이징 블로우의 데미지가 마스터 레벨 기준 700%에서 721%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 레이징 업라이징 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 패시브 효과로 증가하는 레이징 블로우 VI의 데미지가 마스터 레벨 기준 148%p에서 157%p로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 파이널 어택 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 266%에서 276%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; font-weight: 700;">■ 팔라딘</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; font-weight: 700;">-&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">팔라딘 엑스퍼트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 최종 데미지 증가량이 마스터 레벨 기준 40%에서 35%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 크리티컬 데미지 증가량이 마스터 레벨 기준 20%에서 17%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">- 디바인 저지먼트&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 신성 낙인의 폭발 데미지가 마스터 레벨 기준 700%에서 622%로 감소됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">- 디바인 저지먼트 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 신성 낙인의 폭발 데미지가 마스터 레벨 기준 1160%에서 1009%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">- 생츄어리 VI&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 패시브 효과로 증가하는 디바인 저지먼트 VI의 데미지가 마스터 레벨 기준 410%p에서 357%p으로 감소됩니다. &nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">- 도미누스 오브리온&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 충격의 데미지가 마스터 레벨 기준 9963%에서 10924%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 빛의 심판의 데미지가 마스터 레벨 기준 10368%에서 10908%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">- 마이티 묠니르</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt;">· 타격 이펙트가 어색한 위치에 출력되는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 다크나이트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 리인카네이션 액셉트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 아래 방향키를 통해 리인카네이션 알터 타입을 선택할 수 있는 기능이 추가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 리인카네이션 알터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 어둠과의 계약으로 모든 공격을 무효화하는 신규 스킬입니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 피어스 사이클론</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 데미지가 마스터 레벨 기준 530%에서 583%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 마무리 공격의 데미지가 마스터 레벨 기준 1140%에서 1254%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 다크 신서시스 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 데미지가 마스터 레벨 기준 750%에서 775%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 비홀더 쇼크 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 데미지가 마스터 레벨 기준 1280%에서 1344%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 아크메이지(불,독)</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 익스트림 매직(불,독)</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 도트 데미지, 기절, 빙결, 암흑, 마비 상태의 적 공격 시 최종 데미지 증가량이 마스터 레벨 기준 13%에서 15%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 메기도 플레임 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 불꽃의 데미지가 마스터 레벨 기준 630%에서 688%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 도트 데미지가 마스터 레벨 기준 980%에서 1038%으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 폭발 모드의 폭발 데미지가 마스터 레벨 기준 470%에서 528%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 메테오 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 데미지가 마스터 레벨 기준 700%에서 758%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 패시브 효과로 증가하는 메테오의 데미지가 마스터 레벨 기준 383%p에서 441%p으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 토렌셜 플레임</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 데미지가 마스터 레벨 기준 3885%에서 3920%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 아크메이지(썬,콜)</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 스펠 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 마력 증가량이 마스터 레벨 기준 10에서 30으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 익스트림 매직(썬,콜)</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 도트 데미지, 기절, 빙결, 암흑, 마비 상태의 적 공격 시 최종 데미지 증가량이 마스터 레벨 기준 18%에서 20%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 매직 크리티컬</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 크리티컬 데미지 증가량이 마스터 레벨 기준 13%에서 15%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 파라볼릭 볼트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 전류 방출의 데미지가 마스터 레벨 기준 4760%에서 4712%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 신속의 번개의 데미지가 마스터 레벨 기준 2100%에서 2079%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 비숍</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 트라이엄프 페더 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 데미지가 마스터 레벨 기준 570%에서 684%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 제네시스 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 데미지가 마스터 레벨 기준 825%에서 990%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 커맨드 오브 헤븐</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 빛의 데미지가 마스터 레벨 기준 3770%에서 3996%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 보우마스터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 아머 피어싱</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 13%에서 16%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 언카운터블 애로우 VI&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 패시브 효과로 증가하는 어드밴스드 파이널 어택의 데미지가 320%p에서 378%p로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 포인트 제로</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 화살 충격의 데미지가 마스터 레벨 기준 7910%에서 7590%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 일점 폭발의 데미지가 마스터 레벨 기준 8260%에서 7905%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 신궁</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 마크맨쉽</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지 증가량이 마스터 레벨 기준 15%에서 21%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크로스보우 엑스퍼트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공격력 증가량이 마스터 레벨 기준 30에서 40으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 라스트맨 스탠딩</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 10%에서 13%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 차지드 애로우</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1870%에서 1925%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 페이탈 트리거</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 파열의 데미지가 마스터 레벨 기준 8353%에서 7953%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 일격의 데미지가 마스터 레벨 기준 8543%에서 8134%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 나이트로드</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 다크 세레니티</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·최종 데미지 증가량이 마스터 레벨 기준 14%에서 15%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크루셜 어썰트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 파동의 데미지가 마스터 레벨 기준 7429%에서 7325%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 폭발의 데미지가 마스터 레벨 기준 8283%에서 8167%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 섀도어</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 대거 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 6%에서 9%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 실드 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공격력이 마스터 레벨 기준 15에서 20으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크리티컬 엣지</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리티컬 데미지 증가량이 마스터 레벨 기준 4%에서 5%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 플립 더 코인</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지 증가량이 20%에서 24%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 어센틱 다크니스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 참격의 데미지가 마스터 레벨 기준 7606%에서 7165%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 폭발의 데미지가 마스터 레벨 기준 8821%에서 8295%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 듀얼블레이드</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 섀도우 이베이젼</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 7%에서 8%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리티컬 데미지가 증가하는 기능이 추가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 야마즈 디크리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 힘의 해방의 데미지가 마스터 레벨 기준 6020%에서 5779%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 참격의 데미지가 마스터 레벨 기준 7840%에서 7683%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 필연의 심판의 데미지가 마스터 레벨 기준 10710%에서 10495%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 바이퍼</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 서펜트 스크류</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 에픽 던전 : 악몽선경에서 스킬 이펙트가 출력되지 않는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 피스트 인레이지 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">데미지가 마스터 레벨 기준 420%에서 450%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 캡틴</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 노틸러스 어썰트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 선체 공격의 데미지가 마스터 레벨 기준 1630%에서 1776%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 일제 사격의 데미지가 마스터 레벨 기준 600%에서 654%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 데스 트리거</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 520%에서 580%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 파이어크래커</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공중사격의 데미지가 마스터 레벨 기준 6191%에서 6159%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 탄폭의 데미지가 마스터 레벨 기준 6191%에서 6159%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 캐논슈터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 오버버닝 캐논</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 30%에서 32%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 미니 캐논볼 VI&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1680%에서 1738%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 배럴 오브 몽키스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 여폭의 데미지가 마스터 레벨 기준 5950%에서 5810%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 산개 폭격의 데미지가 마스터 레벨 기준 6230%에서 6090%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 미하일</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 소울 레이지</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 23%에서 25%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 어드밴스드 소드 마스터리&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리티컬 데미지 증가량이 마스터 레벨 기준 20%에서 22%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 나이트 임모탈스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 극광의 데미지가 6827%에서 6243%로 감소됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 적중 시 적에게 암흑 효과가 적용되지 않는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 소울마스터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 소울 블레싱 III</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 16%에서 17%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 토탈리티</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 합일의 풍압 데미지가 마스터 레벨 기준 5065%에서 4942%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 혼참의 맹참 데미지가 마스터 레벨 기준 5726%에서 5440%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 플레임위자드</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 오비탈 플레임 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 데미지가 마스터 레벨 기준 760%에서 768%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 윈드브레이커&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 알바트로스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 최종 데미지 증가량이 마스터 레벨 기준 9%에서 12%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 보우 엑스퍼트&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 크리티컬 데미지 증가량이 마스터 레벨 기준 20%에서 21%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 엘리멘트 템페스트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 파동의 데미지가 마스터 레벨 기준 8177%에서 8027%로 감소됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 화살 세례의 데미지가 마스터 레벨 기준 8537%에서 8204%로 감소됩니다. &nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 나이트워커</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 다크니스 블레싱</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 최종 데미지 증가량이 마스터 레벨 기준 10%에서 12%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 래버너스 배트 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 980%에서 1013%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 스티지언 커맨드</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 칠흑의 장막의 데미지가 마스터 레벨 기준 6527%에서 6380%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 암흑의 지배의 데미지가 마스터 레벨 기준 5811%에서 5680%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 스트라이커</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 너클 엑스퍼트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp; &nbsp;· 최종 데미지 증가량이 마스터 레벨 기준 17%에서 18%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 질도섬멸</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">맹공의 데미지가 마스터 레벨 기준 6240%에서 6160%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 격류의 데미지가 마스터 레벨 기준 6618%에서 6510%으로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 아란</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 하이 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">크리티컬 데미지 증가량이 마스터 레벨 기준 7%에서 11%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 20%에서 21%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 아드레날린 맥시멈 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">얼음 폭풍의 데미지가 마스터 레벨 기준 1560%에서 1705%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 얼음 파동의 데미지가 마스터 레벨 기준 897%에서 927%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 프로스트 블러스터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">폭풍의 데미지가 마스터 레벨 기준 8892%에서 8610%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 빙결참의 데미지가 마스터 레벨 기준 8084%에서 7805%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 에반</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 엘리멘탈 리셋</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 17%에서 18%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 유니온 드라이브</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">·&nbsp;</span><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">마력 공격의 데미지가 마스터 레벨 기준 7737%에서 7621%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공명의 파동의 데미지가 마스터 레벨 기준 8424%에서 8298%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 루미너스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 메모라이즈</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 1000%에서 950%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 리버레이션 오브</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 820%에서 770%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 앱솔루트 킬 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 695%에서 675%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 트와일라잇 노바 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 선파이어의 데미지가 마스터 레벨 기준 1630%에서 1530%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 이클립스의 데미지가 마스터 레벨 기준 1630%에서 1530%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 이퀄리브리엄의 데미지가 마스터 레벨 기준 1125%에서 1055%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 메르세데스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 유니콘 스파이크</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 유니콘 스파이크 VI와 재사용 대기시간을 공유하지 않는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 이그니스 로어</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 최종 데미지 증가량이 마스터 레벨 기준 20%에서 17%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 디펜스 브레이크</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리티컬 데미지 증가량이 마스터 레벨 기준 16%에서 15%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 엘리멘탈 고스트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 잔상의 최종 데미지 반영률이 마스터 레벨 기준 50%에서 45%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 이슈타르의 링과 이르칼라의 숨결에 적용되는 잔상의 최종 데미지 반영률이 마스터 레벨 기준 50%에서 45%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· HEXA 강화 코어 활성화 시 잔상의 최종 데미지 반영률이 마스터 레벨 기준 65%에서 60%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· HEXA 강화 코어 활성화 시 이슈타르의 링과 이르칼라의 숨결에 적용되는 잔상의 최종 데미지 반영률이 마스터 레벨 기준 33%에서 30%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 엘리멘탈 스피릿</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 8610%에서 8785%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 팬텀</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 케인 엑스퍼트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 32%에서 31%로 감소됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 블랙잭</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 카드의 데미지가 마스터 레벨 기준 1375%에서 1210%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 봉인이 풀린 카드의 데미지가 마스터 레벨 기준 1815%에서 1540%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 해방된 카드의 데미지가 마스터 레벨 기준 1430%에서 1265%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 문리트 세레나데</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 참격의 데미지가 마스터 레벨 기준 6445%에서 6765%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 은월</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 일치단결</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리티컬 데미지 증가량이 마스터 레벨 기준 10%에서 14%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 호기서림</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 11%에서 14%로 증가됩니다.&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 환혼요호진</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 여우볕의 데미지가 마스터 레벨 기준 385%에서 440%로 증가됩니다</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 영월</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 영압의 데미지가 마스터 레벨 기준 2419%에서 2219%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 데몬 슬레이어</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 컨센트레이션</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 31%에서 32%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 아메시스틴 인트루젼</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 데미지가 마스터 레벨 기준 10885%에서 10815%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 블래스터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 건틀렛 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공격력 증가량이 마스터 레벨 기준 20에서 28로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 콤비네이션 트레이닝 II</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 68%에서 70%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 뱅가드 임팩트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 충격의 데미지가 마스터 레벨 기준 3150%에서 3045%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 에너지의 잔재의 데미지가 마스터 레벨 기준 4410%에서 4375%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 와일드헌터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 프라이멀 센스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 10%에서 14%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 익스텐드 매거진</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공격력이 증가하는 기능이 추가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 와일드 발칸 : 에이펙스 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 지속 공격의 데미지가 마스터 레벨 기준 742%에서 862%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 유탄의 폭발 데미지가 마스터 레벨 기준 612%에서 702%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 기어 스톰</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 강타의 데미지가 마스터 레벨 기준 3330%에서 3290%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 무차별 폭격 데미지가 마스터 레벨 기준 7810%에서 7735%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 제논</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 오파츠 코드</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 30%에서 32%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 멀티래터럴 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 15%에서 17%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 멜트다운 익스플로젼</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 시전 중 홀로그램 그래피티 : 융합 재설치 시 시전 동작이 취소되는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 멜트다운 익스플로젼 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 시전 중 홀로그램 그래피티 : 융합 재설치 시 시전 동작이 취소되는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 네오테릭 트라이스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 파동의 데미지가 마스터 레벨 기준 7070%에서 7000%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 에너지 분출의 데미지가 마스터 레벨 기준 4375%에서 4331%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 메카닉</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 메카닉 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 크리티컬 데미지 증가량이 마스터 레벨 기준 5%에서 8%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 로봇 트랜지션 : CB-P1</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 로봇 런처 : RM7 VI, 마그네틱 필드 VI, 로봇 팩토리 : RM1 VI를 사용하여 코어봇을 강화하는 기능이 제거되고, 활성화 시 코어봇에 로봇 런처 : RM7 VI, 마그네틱 필드 VI, 로봇 팩토리 : RM1 VI이 상시 장착된 상태로 소환되게 변경됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 스킬 설명이 변경됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 로봇 팩토리 : RM1 VI이 설치된 상태에서 로봇 트랜지션 : CB-P1 활성화 시 토이 로봇이 제거되지 않는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 메탈아머 : 익스터미네이션</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 8435%에서 8331%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 카이저</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 카탈라이즈</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 30%에서 33%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 언플리칭 커리지</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 크리티컬 데미지 증가량이 마스터 레벨 기준 6%에서 8%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 파이로 인스팅트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 10640%에서 10325%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 카데나</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 베이직 디텍션</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지가 증가하는 기능이 추가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 프로페셔널 에이전트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 255%에서 220%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 체인아츠:퓨리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 990%에서 1045%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 프로페셔널 에이전트 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">&nbsp;&nbsp;· 데미지가 마스터 레벨 기준 425%에서 360%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 브루탈 래비지</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 비격의 데미지가 마스터 레벨 기준 11900%에서 11620%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 분쇄의 데미지가 마스터 레벨 기준 12460%에서 11830%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 엔젤릭버스터</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 콜 오브 에인션트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공격력 증가량이 마스터 레벨 기준 40에서 45로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 어피니티 III</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 10%에서 12%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 샤이닝 로터스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 민첩성 증가량이 마스터 레벨 기준 20에서 40으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 트리니티 퓨전</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 360%에서 395%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 제뉴인 앙코르</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 파동의 데미지가 마스터 레벨 기준 7491%에서 7313%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 매력 발산의 데미지가 마스터 레벨 기준 7341%에서 7167%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 제로</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 대검 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 23%에서 26%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 태도 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 23%에서 26%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 아머 스플릿</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 보스 체력 표시 UI에서 디버프 아이콘이 가끔 깜빡이는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 에고 웨폰</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 알파의 데미지가 마스터 레벨 기준 500%에서 550%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 베타의 데미지가 마스터 레벨 기준 500%에서 550%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 바이템포리스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 각성의 데미지가 마스터 레벨 기준 5670%에서 5460%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 붕괴의 데미지가 마스터 레벨 기준 6125%에서 5880%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 중첩의 데미지가 마스터 레벨 기준 6335%에서 6160%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 키네시스</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 얼티메이트:갬빗</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 가끔 공격이 전부 발생하지 않는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 싸이킥 불릿</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 스킬 이펙트가 변경됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 얼티메이트:갬빗 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 가끔 공격이 전부 발생하지 않는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 텔레키네시스 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 에너지탄의 데미지가 마스터 레벨 기준 187%에서 208%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 싸이킥 스매싱 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 727%에서 785%로 증가됩니다.</span><span class="se-tab" style="padding-left: 32px;">&nbsp;</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 프렉탈 호라이즌</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1554%에서 1540%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 아델</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 마스터리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리티컬 데미지 증가량이 마스터 레벨 기준 6%에서 11%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 어테인</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지 증가량이 마스터 레벨 기준 10%에서 13%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 게더링 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1035%에서 1190%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 블로섬 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1100%에서 1270%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 아인하이트</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 참격의 데미지가 마스터 레벨 기준 8120%에서 7910%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 일리움</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크리스탈 스킬:글로리 윙</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 사용 시 비행하지 않는 랜딩 모드가 추가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크래프트:자벨린 II</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 크리스탈 스킬:글로리 윙을 20레벨 이상 습득 시 사용할 수 있도록 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 매직 미사일의 데미지가 잘못 안내되는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 그람홀더</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1320%에서 1220%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크래프트:자벨린 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 580%에서 551%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 파편의 데미지가 마스터 레벨 기준 200%에서 190%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크래프트:인챈트 자벨린 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 580%에서 551%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 파편의 데미지가 마스터 레벨 기준 200%에서 190%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 글로리 윙:자벨린 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 925%에서 879%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 매직 미사일의 데미지가 마스터 레벨 기준 375%에서 356%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 글로리 윙:인챈트 자벨린 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 925%에서 879%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 매직 미사일의 데미지가 마스터 레벨 기준 375%에서 356%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크리스탈 스킬:데우스 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 2050%에서 1890%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 위성의 데미지가 마스터 레벨 기준 545%에서 500%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 크래프트:롱기누스 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 시전 후 맵 이동 시 가끔 게임 서버와 연결이 끊어지는 현상이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 칼리</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 인투이션</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 25%에서 28%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 보이드 블리츠 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 370%에서 399%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 보이드 어웨이크</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 질주의 데미지가 마스터 레벨 기준 5915%에서 5800%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 초월 차크리의 데미지가 마스터 레벨 기준 6310%에서 6185%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 아크</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 융합 완성</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 보스 몬스터 공격 시 데미지 증가량이 마스터 레벨 기준 30%에서 12%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 절대 심연의 속삭임</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 심연의 기운의 데미지가 마스터 레벨 기준 5355%에서 5565%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 심연의 칼날의 데미지가 마스터 레벨 기준 6710%에서 6965%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 렌</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 고급 장검 숙련</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 9%에서 11%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 망혼검 절기 : 무량겁</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 타격 이펙트가 출력되는 시간이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 망혼검 절기 : 무량겁 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 타격 이펙트가 출력되는 시간이 수정됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 창룡파천검 : 일매낙화 천비인적</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 낙화의 데미지가 마스터 레벨 기준 3190%에서 3075%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 진천의 데미지가 마스터 레벨 기준 5655%에서 5450%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 천강의 데미지가 마스터 레벨 기준 3815%에서 3678%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 라라</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 용맥 흡수 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 용맥 분출 VI 스킬의 최종 데미지 증가량이 마스터 레벨 기준 20%에서 26%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(51, 51, 51); font-weight: 700;">■ 호영</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 고급 부채 숙련</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 공격력 증가량이 마스터 레벨 기준 40에서 50으로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 최종 데미지 증가량이 마스터 레벨 기준 31%에서 33%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 추적 귀화부 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 410%에서 440%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 권술 : 호접지몽 VI</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 826%에서 884%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 선기 : 천지인 환영</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 데미지가 마스터 레벨 기준 1375%에서 1540%로 증가됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">- 천세휘령</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 기운의 데미지가 마스터 레벨 기준 4504%에서 4410%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; text-indent: 16px; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);">· 휘령의 데미지가 마스터 레벨 기준 4322%에서 4270%로 감소됩니다.</span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 12pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 0, 0);" class="se-zws-run"><br></span></p><p style="font-size: 6pt; text-align: left; line-height: 3.44; margin: 0px; display: block; overflow-wrap: break-word; word-break: keep-all;"><span style="font-family: &quot;맑은 고딕&quot;; font-size: 12pt; color: rgb(0, 112, 192); font-weight: 700;">GM소리 올림</span></p></div>
+                </div>
+            </div>
+
+            <div class="page_move">
+                <ul>
+                        <li>
+                            <span class="page_move_btn"><a href="/testworld/news/update/151?p=108"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/page_up.png" alt="이전글">이전글</a></span>
+                            <p class="notice_title">
+                                <a href="/testworld/news/update/151?p=108">클라이언트 1.2.197 릴리즈(아스트라 보조무기)</a>
+                            </p>
+                            <ul class="page_move_info">
+                                <li><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/sub_date_new.png" alt="시간"><span>2026.01.08</span></li>
+                            </ul>
+                        </li>
+                                            <li>
+                            <span class="page_move_btn"><a href="/testworld/news/update/146?p=108"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/page_down.png" alt="다음글">다음글</a></span>
+                            <p class="notice_title">
+                                <a href="/testworld/news/update/146?p=108"> 클라이언트 1.2.196 릴리즈(키네시스 리마스터)</a>
+                            </p>
+                            <ul class="page_move_info">
+                                <li><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/sub_date_new.png" alt="시간"><span>2025.12.13</span></li>
+                            </ul>
+                        </li>
+                </ul>
+            </div>
+        </div>
+        <!--Rnb 수정 : 2018.11.19 : Str-->
+        <div class="right_aside_new">
+            <div class="test_wrold_side">
+
+    <span class="test_icon"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/test_world_icon_off.png" alt="테스트월드 아이콘" /></span>
+            <h1>테스트월드 운영기간이 아닙니다.</h1>
+            <p>다음 운영공지를 기다려주세요.</p>
+        <span class="test_world_btn"><a href="#"  onclick="NXMember.GoLogin();">로그인</a></span>
+
+<span class="test_gm_str">
+
+
+        <a href="javascript:void(0)" onclick="NXMember.GoLogin();"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/test_world_gmstr_off.png" alt="테스트월드 게임시작" /></a>
+ 
+</span>
+            </div>
+            <span class="test_guide"><a href="javascript:;" onclick="window.open('/Testworld/Guide?id=1', 'HomeGuide', 'scrollbars=no, resizable=no, width=902, height=660');" onmouseover="ch_png_on(this)" onmouseout="ch_png_off(this)"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/test_guide_off.png" alt="테스트월드 이용가이드" /></a></span>
+        </div>
+        <!--Rnb 수정 : 2018.11.19 : End-->
+    </div>
+    <!-- div_inner end -->
+</div>
+
+
+
+<div id="footer">
+    <div class="footer_inner">
+        <div class="footerSelect">
+            <button type="button" class="selectTitle" onclick="$h.a2s.sendClickLog('FamilySite_r', null);">Family Site</button>
+            <div class="fs_2depath">
+                <ul>
+                    <li><a href="http://www.maplestory.com/" target="_blank">Global</a></li>
+                    <li><a href="https://maplestory.nexon.co.jp" target="_blank">Japan</a></li>
+                    <li><a href="http://mxd.sdo.com/web5/home/home.asp" target="_blank">China</a></li>
+                    <li><a href="https://maplestory.beanfun.com/main" target="_blank">Taiwan</a></li>
+                    <li><a href="http://www.maplesea.com/" target="_blank">S.E.A</a></li>
+                    <li><a href="http://maplestory.nexon.net/" target="_blank">North America</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="sns_group">
+            <ul>
+                <li>
+                    <a href="https://www.facebook.com/MapleStoryKR" target="_blank" onclick="$h.a2s.sendClickLog('Facebook_bt_r', null);">facebook</a>
+                </li>
+                <li>
+                    <a href="https://x.com/MapleStory_KR" target="_blank" onclick="$h.a2s.sendClickLog('X_bt_r', null);">X</a>
+                </li>
+                <li>
+                    <a href="https://www.instagram.com/pink_pinkbean/" target="_blank" onclick="$h.a2s.sendClickLog('Instagram_bt_r', null);">instagram</a>
+                </li>
+                <li>
+                    <a href="https://www.youtube.com/@MapleStoryKR" target="_blank" onclick="$h.a2s.sendClickLog('Youtube_bt_r', null);">youtube</a>
+                </li>
+            </ul>
+        </div>
+        <div class="link_group">
+            <ul>
+                <li>
+                    <a href="http://company.nexon.com/?ST=nexon&PS=footer" target="_blank">회사소개</a>
+                </li>
+                <li>
+                    <a href="https://careers.nexon.com/" target="_blank">채용안내</a>
+                </li>
+                <li>
+                    <a href="https://member.nexon.com/policy/stipulation.aspx" target="_blank">이용약관</a>
+                </li>
+                <li class="gradeInfo">
+                    <a href="https://maplestory.nexon.com/Common/Footer/GameGrade">게임이용등급안내</a>
+                </li>
+                <li>
+                    <a href="https://member.nexon.com/policy/privacy.aspx" target="_blank"><b>개인정보처리방침</b></a>
+                </li>
+                <li>
+                    <a href="https://member.nexon.com/policy/youthprotection.aspx" target="_blank">청소년보호정책</a>
+                </li>
+                <li>
+                    <a href="/Common/Footer/OperationPolicy" target="_blank">운영정책</a>
+                </li>
+                <li>
+                    <a href="http://pcbang.nexon.com/?ST=nexon&PS=footer" target="_blank">넥슨PC방</a>
+                </li>
+                <li>
+                    <a href="/Common/Footer/SiteMap" target="_blank">사이트맵</a>
+                </li>
+            </ul>
+        </div>
+        <div class="footerInfo">
+            <p>
+                <span>(주)넥슨코리아 대표이사 강대현·김정욱</span>
+                <span>경기도 성남시 분당구 판교로 256번길 7</span>
+                <span>전화 : 1588-7701</span>
+                <span>팩스 : 0502-258-8322</span>
+            </p>
+            <p>
+                <span>E-mail : contact-us@nexon.co.kr</span>
+                <span>사업자등록번호 : 220-87-17483호</span>
+                <span>통신판매업 신고번호 : 제2013-경기성남-1659호</span>
+                <span class="licensee"><a href="http://www.ftc.go.kr/info/bizinfo/communicationViewPopup.jsp?wrkr_no=2208717483">사업자정보확인</a></span>
+            </p>
+            <p>
+                <span>ⓒ NEXON Korea Corporation All Rights Reserved.</span>
+            </p>
+            <div class="footerLogo">
+                <a href="https://www.nexon.com" target="_blank">NEXON</a>
+            </div>
+
+        </div>
+    </div>
+    <div id="modal-container"></div>
+</div>
+
+    <div class="fix_toon_control">
+        <ul>
+            <li class="top_btn"><a href="#a" onclick="top_move();"><img src="https://ssl.nexon.com/s2/game/maplestory/renewal/common/media/top_toon_btn.png" alt="TOP"></a></li>
+        </ul>
+    </div>
+
+    </div>
+    
+
+
+    <script src="/Scripts/Common/new_icon.js" type="text/javascript"></script>
+</body>
+</html>

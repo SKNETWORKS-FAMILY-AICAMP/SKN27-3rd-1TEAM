@@ -1,0 +1,164 @@
+{
+  "date": null,
+  "character_hexa_core_equipment": [
+    {
+      "hexa_core_name": "프로즌 라이트닝",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "프로즌 라이트닝"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "파라볼릭 볼트",
+      "hexa_core_level": 30,
+      "hexa_core_type": "스킬 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "파라볼릭 볼트"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "체인 라이트닝 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "체인 라이트닝 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "프로즌 오브 VI/블리자드 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "프로즌 오브 VI"
+        },
+        {
+          "hexa_skill_id": "블리자드 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "라이트닝 스피어 VI/크라이오 쇼크",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "라이트닝 스피어 VI"
+        },
+        {
+          "hexa_skill_id": "크라이오 쇼크"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "썬더 스피어 VI/엘퀴네스 VI",
+      "hexa_core_level": 30,
+      "hexa_core_type": "마스터리 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "썬더 스피어 VI"
+        },
+        {
+          "hexa_skill_id": "엘퀴네스 VI"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "프로스트 아크",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "프로스트 아크 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "썬더 브레이크",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "썬더 브레이크 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "스피릿 오브 스노우",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "스피릿 오브 스노우 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "주피터 썬더",
+      "hexa_core_level": 30,
+      "hexa_core_type": "강화 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "주피터 썬더 강화"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 야누스",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 야누스"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 새벽"
+        },
+        {
+          "hexa_skill_id": "솔 야누스 : 황혼"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "솔 헤카테",
+      "hexa_core_level": 30,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "솔 헤카테"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 스틱스"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 카론"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 플레게톤"
+        },
+        {
+          "hexa_skill_id": "솔 헤카테 : 팩텀"
+        }
+      ]
+    },
+    {
+      "hexa_core_name": "아르카나 오버라이드 VI",
+      "hexa_core_level": 25,
+      "hexa_core_type": "공용 코어",
+      "linked_skill": [
+        {
+          "hexa_skill_id": "아르카나 오버라이드 VI"
+        }
+      ]
+    }
+  ],
+  "ocid": "19bd0610fe2fc268fadf8ef5452f7631",
+  "character_name": "루나썬콜"
+}
