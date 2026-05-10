@@ -2,6 +2,7 @@ from __future__ import annotations
 import sys
 import os
 import re
+import json
 from datetime import datetime, timedelta
 
 # 현재 파일(main.py)의 부모의 부모의 부모 폴더를 path에 추가 (project_root 경로)
@@ -1436,7 +1437,10 @@ def _hydrate_state_from_nexon_if_needed(state: AgentState) -> AgentState:
         "raw_api_results": raw_api_results,
     }
     if target_boss:
-        hydrated_state["target_boss"] = str(target_boss)
+        hydrated_state["raw_api_results"] = {
+            **(_value(hydrated_state, "raw_api_results", {}) or {}),
+            "target_boss": str(target_boss),
+        }
     return hydrated_state
 
 
@@ -1871,6 +1875,98 @@ def _extract_character_input(state: AgentState) -> Dict[str, Any]:
     }
 
 
+def _normalise_action_plan(action: Any, *, fallback_category: str = "BOSS_READINESS") -> Dict[str, Any]:
+    category = str(_value(action, "category", fallback_category) or fallback_category)
+    target = _value(action, "target", None) or _value(action, "stat", None) or _value(action, "boss_name", None)
+    target = str(target or "unknown")
+    priority = int(_number(action, "priority", 3))
+    priority = min(5, max(1, priority))
+    expected_cp_gain = int(max(0, _number(action, "expected_cp_gain", _number(action, "gap", 0))))
+    description = _value(action, "description", "")
+    if not description:
+        if category == "BOSS_CHALLENGE":
+            description = f"{target} is a candidate boss target for the current character."
+        else:
+            description = f"{target} is a bottleneck for the current boss readiness analysis."
+
+    return {
+        "category": category,
+        "target": target,
+        "priority": priority,
+        "expected_cp_gain": expected_cp_gain,
+        "description": str(description),
+    }
+
+
+def _normalise_action_plans(result: Dict[str, Any]) -> List[Dict[str, Any]]:
+    raw_actions = result.get("recommended_actions") or []
+    if raw_actions:
+        return [_normalise_action_plan(action) for action in raw_actions]
+
+    if "available_bosses" in result:
+        return [
+            _normalise_action_plan(
+                {
+                    "category": "BOSS_CHALLENGE",
+                    "target": item.get("boss_name"),
+                    "priority": 2,
+                    "expected_cp_gain": 0,
+                    "description": f"{item.get('boss_name', 'unknown')} is included in the available boss list.",
+                },
+                fallback_category="BOSS_CHALLENGE",
+            )
+            for item in (result.get("available_bosses") or [])[:5]
+        ]
+
+    return []
+
+
+def _boss_prediction_from_result(result: Dict[str, Any]) -> Dict[str, bool]:
+    prediction = result.get("boss_clear_prediction")
+    if isinstance(prediction, dict):
+        return {str(key): bool(value) for key, value in prediction.items()}
+
+    boss_groups = result.get("boss_groups") or {}
+    if not isinstance(boss_groups, dict):
+        return {}
+
+    derived: Dict[str, bool] = {}
+    for status in ("recommended", "challengeable"):
+        for item in boss_groups.get(status, []) or []:
+            boss_name = _value(item, "boss_name")
+            if boss_name:
+                derived[str(boss_name)] = True
+    for status in ("risky", "difficult"):
+        for item in boss_groups.get(status, []) or []:
+            boss_name = _value(item, "boss_name")
+            if boss_name and boss_name not in derived:
+                derived[str(boss_name)] = False
+    return derived
+
+
+def _build_growth_report(
+    state: AgentState,
+    tool_input: Dict[str, Any],
+    result: Dict[str, Any],
+    recommended_actions: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    return {
+        "character_id": _value(state, "ocid", tool_input.get("character_name", "")),
+        "current_combat_power": int(tool_input.get("combat_power", 0)),
+        "attack": int(max(tool_input.get("attack_power", 0), tool_input.get("magic_power", 0))),
+        "boss_damage": float(tool_input.get("boss_damage", 0.0)),
+        "ignore_def": float(tool_input.get("ignore_def", 0.0)),
+        "crit_rate": float(tool_input.get("crit_rate", 0.0)),
+        "crit_damage": float(tool_input.get("crit_damage", 0.0)),
+        "damage": _first_number(_state_stat_sources(state), ["damage"], 0),
+        "bottleneck_analysis": result.get("bottleneck_analysis", {}),
+        "recommended_actions": recommended_actions,
+        "boss_clear_prediction": _boss_prediction_from_result(result),
+        "data_reliability": result.get("data_reliability", "unknown"),
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+    }
+
+
 def run_analystic(
     state: AgentState,
     *,
@@ -1916,48 +2012,24 @@ def run_analystic(
             "crit_rate": 0.0,
             "crit_damage": 0.0,
         }
+        recommended_actions = _normalise_action_plans(result)
         new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
         new_state["bottleneck_analysis"] = {}
-        new_state["growth_report"] = {
-            "character_id": _value(new_state, "ocid", tool_input["character_name"]),
-            "current_combat_power": 0,
-            "attack": 0,
-            "boss_damage": 0.0,
-            "ignore_def": 0.0,
-            "crit_rate": 0.0,
-            "crit_damage": 0.0,
-            "damage": 0.0,
-            "bottleneck_analysis": {},
-            "recommended_actions": [],
-            "boss_clear_prediction": {},
-            "data_reliability": result["data_reliability"],
-            "timestamp": "",
-        }
-        new_state["recommended_actions"] = []
+        new_state["growth_report"] = _build_growth_report(new_state, tool_input, result, recommended_actions)
+        new_state["recommended_actions"] = recommended_actions
         new_state["confidence_score"] = 0.0
+        if validate_agent_outputs is not None:
+            validate_agent_outputs("analystic", new_state)
         return new_state
 
-    growth_report = {
-        "character_id": _value(state, "ocid", tool_input["character_name"]),
-        "current_combat_power": tool_input["combat_power"],
-        "attack": max(tool_input["attack_power"], tool_input["magic_power"]),
-        "boss_damage": tool_input["boss_damage"],
-        "ignore_def": tool_input["ignore_def"],
-        "crit_rate": tool_input["crit_rate"],
-        "crit_damage": tool_input["crit_damage"],
-        "damage": _first_number(_state_stat_sources(state), ["damage"], 0),
-        "bottleneck_analysis": result.get("bottleneck_analysis", {}),
-        "recommended_actions": result.get("recommended_actions", result.get("available_bosses", [])),
-        "boss_clear_prediction": result.get("boss_clear_prediction", {}),
-        "data_reliability": result["data_reliability"],
-        "timestamp": "",
-    }
+    recommended_actions = _normalise_action_plans(result)
+    growth_report = _build_growth_report(state, tool_input, result, recommended_actions)
 
     new_state = dict(state)
     new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
     new_state["bottleneck_analysis"] = result.get("bottleneck_analysis", {})
     new_state["growth_report"] = growth_report
-    new_state["recommended_actions"] = growth_report["recommended_actions"]
+    new_state["recommended_actions"] = recommended_actions
     new_state["confidence_score"] = result.get("challenge_fit_score", 0.0)
 
     if validate_agent_outputs is not None:
@@ -2019,6 +2091,133 @@ def _compact_analytics_context(state: AgentState) -> Dict[str, Any]:
     return context
 
 
+def _compact_research_context(state: AgentState) -> Dict[str, Any]:
+    docs = []
+    for doc in (_value(state, "retrieved_docs", []) or [])[:4]:
+        content = str(_value(doc, "page_content", ""))[:700]
+        metadata = _value(doc, "metadata", {}) or {}
+        docs.append(
+            {
+                "page_content": content,
+                "source": _value(doc, "source", _value(metadata, "source", "")),
+                "score": _value(doc, "score", None),
+            }
+        )
+
+    return {
+        "context": str(_value(state, "context", ""))[:2500],
+        "retrieved_docs": docs,
+    }
+
+
+def _has_research_context(state: AgentState) -> bool:
+    return bool(str(_value(state, "context", "")).strip() or (_value(state, "retrieved_docs", []) or []))
+
+
+def _parse_action_plan_json(content: str) -> List[Dict[str, Any]]:
+    text = content.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\[[\s\S]*\]", text)
+        if not match:
+            return []
+        try:
+            parsed = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return []
+
+    if isinstance(parsed, dict):
+        parsed = parsed.get("recommended_actions", [])
+    if not isinstance(parsed, list):
+        return []
+    return [_normalise_action_plan(item, fallback_category="BOSS_READINESS") for item in parsed[:5]]
+
+
+def _parse_json_object(content: str) -> Dict[str, Any]:
+    text = content.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{[\s\S]*\}", text)
+        if not match:
+            return {}
+        try:
+            parsed = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return {}
+
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _merge_action_plans(base_actions: List[Dict[str, Any]], llm_actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    merged: List[Dict[str, Any]] = []
+    seen = set()
+    for action in [*llm_actions, *base_actions]:
+        normalised = _normalise_action_plan(action)
+        key = (normalised["category"], normalised["target"])
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(normalised)
+    return merged[:8]
+
+
+def _agent_state_payload(state: AgentState) -> Dict[str, Any]:
+    return {
+        "user_query": _value(state, "user_query", ""),
+        "analytics": _compact_analytics_context(state),
+        "research_context": _compact_research_context(state),
+        "current_recommended_actions": _value(state, "recommended_actions", []),
+    }
+
+
+def _generate_agent_state_update(
+    state: AgentState,
+    model: str | BaseChatModel | None,
+) -> Dict[str, Any]:
+    if model is None:
+        if get_llm is None:
+            raise RuntimeError("common.get_model.get_llm is required for analystic agent state generation.")
+        _load_project_env()
+        model = get_llm()
+
+    analytic_agent = create_agent(
+        model=model,
+        tools=ANALYTICS_TOOLS,
+        system_prompt=ANALYTICS_STATE_SYSTEM_PROMPT,
+    )
+    result = analytic_agent.invoke(
+        {
+            "messages": [
+                HumanMessage(
+                    content=(
+                        "Return only a JSON object for AgentState update. "
+                        f"Input: {json.dumps(_agent_state_payload(state), ensure_ascii=False)}"
+                    )
+                )
+            ]
+        }
+    )
+    parsed = _parse_json_object(result["messages"][-1].content)
+    parsed["recommended_actions"] = [
+        _normalise_action_plan(action)
+        for action in (parsed.get("recommended_actions") or [])[:5]
+        if isinstance(action, dict)
+    ]
+    interpretation = parsed.get("llm_interpretation")
+    parsed["llm_interpretation"] = interpretation if isinstance(interpretation, dict) else {}
+    return parsed
+
+
 ANALYTICS_TOOLS = [fetch_nexon_character_state, analyze_boss_readiness, find_available_bosses]
 
 ANALYTICS_SYSTEM_PROMPT = f"""
@@ -2046,13 +2245,33 @@ Rules:
 - Never call get_state.
 """.strip()
 
-ANALYTICS_ANSWER_SYSTEM_PROMPT = f"""
+ANALYTICS_STATE_SYSTEM_PROMPT = f"""
 {master_prompt}
 
-You are the MapleStory analystic final response writer.
-Answer in Korean using only the provided compact analysis context.
-Do not call tools. Do not request raw API data.
-Keep the answer concise and mention the strongest boss recommendations first.
+You are the MapleStory analystic agent node.
+Use the provided @tool functions, LLM reasoning, and prompt instructions to derive AgentState-compatible analystic outputs.
+Do not write the final user-facing answer.
+Return only one JSON object with these keys:
+- llm_interpretation: object with status_comment, priority_adjustment, reasoning, confidence_note
+- recommended_actions: array of common.domain.ActionPlan objects
+
+Each recommended_actions item must match common.domain.ActionPlan:
+- category: short string such as BOSS_READINESS, BOSS_CHALLENGE, STAT_GROWTH, EQUIPMENT, UNION, LINK_SKILL
+- target: the boss, stat, or growth area
+- priority: integer from 1 to 5 where 1 is most urgent
+- expected_cp_gain: integer, use 0 when the research context does not support a numeric estimate
+- description: concise Korean recommendation grounded in the provided context
+
+Use these tools when useful:
+- analyze_boss_readiness for one target boss.
+- find_available_bosses when the user asks for possible or recommended bosses.
+- fetch_nexon_character_state only when AgentState lacks character data and the query contains a character name.
+
+The numeric status from existing analystic results is the primary judgment. You may interpret, explain, and reorder bottlenecks, but do not invent unsupported stats.
+Research Agent context may be used only if it is already present in state.context or state.retrieved_docs.
+Do not invent boss requirements, character stats, or unsupported numeric gains.
+Prefer recommendations that explain practical bottlenecks and next actions.
+Never call or imply direct retrieval from analystic; consume only state.context and state.retrieved_docs.
 """.strip()
 
 
@@ -2063,7 +2282,7 @@ def analytics_agent(
     boss_db_connection: Any = None,
     state: AgentState,
 ) -> AgentState:
-    """Create the analystic agent with common.get_model and Neo4j-backed tools."""
+    """Run analystic node with create_agent tools and return AgentState-compatible fields."""
 
     user_query = state["user_query"]
     if boss_graph_connection is not None:
@@ -2075,36 +2294,50 @@ def analytics_agent(
         boss_graph_connection=boss_graph_connection,
         boss_db_connection=boss_db_connection,
     )
-    if model is None:
-        if get_llm is None:
-            raise RuntimeError("common.get_model.get_llm is required for the analystic agent.")
-        _load_project_env()
-        model = get_llm()
+    try:
+        agent_update = _generate_agent_state_update(state, model)
+    except Exception as exc:
+        state = _append_state_error(state, f"analystic create_agent state generation failed: {exc}")
+        agent_update = {}
 
-    analytics_agent = create_agent(
-        model=model,
-        tools=[],
-        system_prompt=ANALYTICS_SYSTEM_PROMPT
-    )
+    llm_actions = agent_update.get("recommended_actions") or []
+    llm_interpretation = agent_update.get("llm_interpretation") or {}
+    if llm_actions or llm_interpretation:
+        base_actions = [_normalise_action_plan(action) for action in (_value(state, "recommended_actions", []) or [])]
+        recommended_actions = _merge_action_plans(base_actions, llm_actions)
+        growth_report = dict(_value(state, "growth_report", {}) or {})
+        growth_report["recommended_actions"] = recommended_actions
+        if _has_research_context(state):
+            growth_report["data_reliability"] = "boss_requirements_from_neo4j_with_research_context"
 
-    analysis_context = _compact_analytics_context(state)
+        tool_results = dict(_value(state, "tool_results", {}) or {})
+        analystic_result = dict(_value(tool_results, "analystic", {}) or {})
+        analystic_result["llm_interpretation"] = llm_interpretation
+        analystic_result["agent_recommended_actions"] = llm_actions
+        analystic_result["recommended_actions"] = recommended_actions
+        analystic_result["data_reliability"] = growth_report.get(
+            "data_reliability",
+            analystic_result.get("data_reliability", "boss_requirements_from_neo4j"),
+        )
+        tool_results["analystic"] = analystic_result
 
-    result = analytics_agent.invoke({"messages": [HumanMessage(content=f'''질문:{user_query}
+        state = {
+            **state,
+            "tool_results": tool_results,
+            "growth_report": growth_report,
+            "recommended_actions": recommended_actions,
+        }
 
-    분석 요약:{analysis_context}
-    
-    위 분석 요약만 사용해서 답변하라''')]})
-    analysis = result["messages"][-1].content
-
+    if validate_agent_outputs is not None:
+        validate_agent_outputs("analystic", state)
     return {
         **state,
         "user_query": user_query,
-        "analysis": analysis,
     }
 
 
-# if __name__ == "__main__":
-#     state = analytics_agent(
-#         state={"user_query": "내 캐릭터는 음표인데 노멀 발드릭스 가능해?"}
-#     )
-#     print(state["analysis"])
+if __name__ == "__main__":
+    state = analytics_agent(
+        state={"user_query": "내 캐릭터는 음표인데 하드 검 가능해?"}
+    )
+    print(state['recommended_actions'])
