@@ -193,9 +193,9 @@ def generate_final_answer(state: AgentState, draft_answer: str) -> str:
     if not should_use_llm():
         return finalize_answer(draft_answer)
 
-    prompt = build_final_answer_prompt(state, draft_answer)
     try:
-        response = get_llm().invoke(prompt)
+        messages = build_final_answer_messages(state, draft_answer)
+        response = get_llm().invoke(messages)
     except Exception as exc:
         errors = list(state.get("errors") or [])
         errors.append(f"final_answer LLM call failed: {exc}")
@@ -213,8 +213,19 @@ def should_use_llm() -> bool:
     return has_llm_config()
 
 
-def build_final_answer_prompt(state: AgentState, draft_answer: str = "") -> str:
-    evaluation = get_evaluation_result(state)
+def build_final_answer_messages(
+    state: AgentState,
+    draft_answer: str = "",
+) -> list[Any]:
+    from langchain_core.messages import HumanMessage, SystemMessage
+
+    return [
+        SystemMessage(content=build_final_answer_system_prompt()),
+        HumanMessage(content=build_final_answer_user_prompt(state, draft_answer)),
+    ]
+
+
+def build_final_answer_system_prompt() -> str:
     return "\n".join(
         [
             master_prompt.strip(),
@@ -222,7 +233,14 @@ def build_final_answer_prompt(state: AgentState, draft_answer: str = "") -> str:
             "당신은 메이플스토리 RAG 멀티 에이전트 챗봇의 Final Answer Agent입니다.",
             "제공된 AgentState와 근거 context만 사용하여 한국어로 답변하세요.",
             "state에 없는 정보는 추측하지 말고, 근거가 부족하면 한계를 명시하세요.",
-            "",
+        ]
+    ).strip()
+
+
+def build_final_answer_user_prompt(state: AgentState, draft_answer: str = "") -> str:
+    evaluation = get_evaluation_result(state)
+    return "\n".join(
+        [
             f"사용자 질문: {state.get('user_query', '')}",
             f"근거 context: {state.get('context', '')}",
             f"추천 액션: {format_recommendations(state)}",
