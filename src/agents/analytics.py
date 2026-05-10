@@ -2456,8 +2456,8 @@ def analytics_agent(
     }
 
 
-if __name__ == "__main__":
-    state = analytics_agent(
-        state={"user_query": "내 캐릭터는 음표인데 하드 루시드 가능해?"}
-    )
-    print(state['growth_report'])
+# if __name__ == "__main__":
+#     state = analytics_agent(
+#         state={"user_query": "나 음표인데 하드 루시드 가능해?"}
+#     )
+#     print(state['growth_report'])
