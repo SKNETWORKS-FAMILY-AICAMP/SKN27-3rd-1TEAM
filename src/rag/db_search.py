@@ -1,215 +1,238 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
-from typing import Iterable, Literal, Sequence
+from typing import Any, Sequence
 
-import psycopg2
-from dotenv import load_dotenv
-from psycopg2.extras import RealDictCursor
-from pgvector.psycopg2 import register_vector
+from common.state import AgentState, RetrievedDocument
+from common.validator import validate_agent_inputs, validate_agent_outputs
 
-from common.state import RetrievedDocument
-
-
-ReliabilityFilter = Literal["ALL", "HIGH_ONLY"]
+from src.rag.retriever import (
+    DBSearchResult,
+    DEFAULT_EMBEDDING_MODEL,
+    GraphReliabilityFilter,
+    GraphSearchResult,
+    Neo4jGraphRetriever,
+    PGVectorDBRetriever,
+    ReliabilityFilter,
+    SearchMode,
+    graph_result_to_db_result,
+    merge_db_and_graph_results,
+    search_db,
+    search_db_state,
+    search_graph,
+)
 
 
 @dataclass(frozen=True)
-class DBSearchResult:
-    chunk_id: str
-    document_id: str
-    title: str
-    content: str
-    source_url: str | None
-    reliability: str | None
-    score: float
-
-    def to_source(self) -> dict[str, str | float | None]:
-        return {
-            "title": self.title,
-            "url": self.source_url,
-            "reliability": self.reliability,
-            "score": self.score,
-        }
-
-    def to_retrieved_document(self) -> RetrievedDocument:
-        return {
-            "page_content": self.content,
-            "metadata": {
-                "chunk_id": self.chunk_id,
-                "document_id": self.document_id,
-                "title": self.title,
-                "source_url": self.source_url,
-                "reliability": self.reliability,
-            },
-            "score": self.score,
-            "source": self.source_url or self.document_id,
-        }
+class DBSearchRAGResponse:
+    query: str
+    context: str
+    retrieved_docs: list[RetrievedDocument]
+    sources: list[dict[str, str | float | None]]
 
 
-def _database_url() -> str:
-    load_dotenv()
-    return os.getenv("POSTGRES_URI") or os.getenv("DATABASE_URL") or (
-        "postgresql://"
-        f"{os.getenv('POSTGRES_USER', 'admin')}:"
-        f"{os.getenv('POSTGRES_PASSWORD', 'admin123')}@"
-        f"{os.getenv('POSTGRES_HOST', 'localhost')}:"
-        f"{os.getenv('POSTGRES_PORT', '5432')}/"
-        f"{os.getenv('POSTGRES_DB', 'mapledb')}"
-    )
+class DBSearchRAG:
+    """DB Search RAG adapter that only fills research state outputs."""
 
-
-def get_connection(dsn: str | None = None):
-    conn = psycopg2.connect(dsn or _database_url(), cursor_factory=RealDictCursor)
-    register_vector(conn)
-    return conn
-
-
-def _trust_clause(reliability_filter: ReliabilityFilter) -> tuple[str, list[str]]:
-    if reliability_filter == "HIGH_ONLY":
-        return "AND d.trust_level = ANY(%s)", [["S", "A"]]
-    return "", []
-
-
-class PGVectorDBRetriever:
-    def __init__(self, dsn: str | None = None) -> None:
-        self.dsn = dsn
-
-    def search(
+    def __init__(
         self,
-        query: str,
-        query_embedding: Sequence[float] | None = None,
-        top_k: int = 5,
-        reliability_filter: ReliabilityFilter = "ALL",
-    ) -> list[DBSearchResult]:
-        if query_embedding:
-            return self.vector_search(query_embedding, top_k, reliability_filter)
-        return self.text_search(query, top_k, reliability_filter)
+        retriever: PGVectorDBRetriever | None = None,
+        embedding_fn: Any | None = None,
+        dsn: str | None = None,
+        embedding_model: str | None = DEFAULT_EMBEDDING_MODEL,
+        auto_create_embedding: bool = False,
+        graph_retriever: Any | None = None,
+        include_graph: bool = False,
+    ) -> None:
+        self.retriever = retriever or PGVectorDBRetriever(
+            dsn=dsn,
+            embedding_model=embedding_model,
+        )
+        self.embedding_fn = embedding_fn
+        self.embedding_model = embedding_model or DEFAULT_EMBEDDING_MODEL
+        self.auto_create_embedding = auto_create_embedding
+        self.graph_retriever = graph_retriever
+        self.include_graph = include_graph
 
-    def vector_search(
-        self,
-        query_embedding: Sequence[float],
-        top_k: int = 5,
-        reliability_filter: ReliabilityFilter = "ALL",
-    ) -> list[DBSearchResult]:
-        trust_sql, trust_params = _trust_clause(reliability_filter)
-        sql = f"""
-            SELECT
-                dc.chunk_id,
-                d.doc_id AS document_id,
-                d.title,
-                dc.content,
-                d.source_url,
-                d.trust_level AS reliability,
-                1 - (de.embedding <=> %s::vector) AS score
-            FROM document_embeddings de
-            JOIN document_chunks dc ON dc.id = de.chunk_id
-            JOIN documents d ON d.id = dc.document_id
-            WHERE d.rag_ready = true
-              {trust_sql}
-            ORDER BY de.embedding <=> %s::vector
-            LIMIT %s
-        """
-        params = [list(query_embedding), *trust_params, list(query_embedding), top_k]
-        return self._fetch(sql, params)
-
-    def text_search(
+    def retrieve(
         self,
         query: str,
         top_k: int = 5,
         reliability_filter: ReliabilityFilter = "ALL",
+        mode: SearchMode = "hybrid",
     ) -> list[DBSearchResult]:
-        trust_sql, trust_params = _trust_clause(reliability_filter)
-        sql = f"""
-            SELECT
-                dc.chunk_id,
-                d.doc_id AS document_id,
-                d.title,
-                dc.content,
-                d.source_url,
-                d.trust_level AS reliability,
-                ts_rank_cd(to_tsvector('simple', dc.content), plainto_tsquery('simple', %s)) AS score
-            FROM document_chunks dc
-            JOIN documents d ON d.id = dc.document_id
-            WHERE d.rag_ready = true
-              {trust_sql}
-              AND (
-                  to_tsvector('simple', dc.content) @@ plainto_tsquery('simple', %s)
-                  OR dc.content ILIKE %s
-                  OR d.title ILIKE %s
-              )
-            ORDER BY score DESC,
-                CASE d.trust_level
-                    WHEN 'S' THEN 1
-                    WHEN 'A' THEN 2
-                    WHEN 'B' THEN 3
-                    WHEN 'C' THEN 4
-                    ELSE 5
-                END,
-                dc.chunk_index ASC
-            LIMIT %s
-        """
-        like_query = f"%{query}%"
-        params = [query, *trust_params, query, like_query, like_query, top_k]
-        return self._fetch(sql, params)
-
-    def build_context(self, results: Iterable[DBSearchResult]) -> str:
-        blocks = []
-        for index, result in enumerate(results, start=1):
-            source = result.source_url or result.document_id
-            blocks.append(f"[{index}] {result.title}\nsource: {source}\n{result.content}")
-        return "\n\n".join(blocks)
-
-    def _fetch(self, sql: str, params: Sequence[object]) -> list[DBSearchResult]:
-        with get_connection(self.dsn) as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql, params)
-                rows = cur.fetchall()
-
-        return [
-            DBSearchResult(
-                chunk_id=row["chunk_id"],
-                document_id=row["document_id"],
-                title=row["title"],
-                content=row["content"],
-                source_url=row["source_url"],
-                reliability=row["reliability"],
-                score=float(row["score"] or 0),
-            )
-            for row in rows
-        ]
-
-
-def search_db(
-    query: str,
-    query_embedding: Sequence[float] | None = None,
-    top_k: int = 5,
-    reliability_filter: ReliabilityFilter = "ALL",
-    dsn: str | None = None,
-) -> list[DBSearchResult]:
-    return PGVectorDBRetriever(dsn=dsn).search(
-        query=query,
-        query_embedding=query_embedding,
-        top_k=top_k,
-        reliability_filter=reliability_filter,
-    )
-
-
-def search_db_state(
-    query: str,
-    query_embedding: Sequence[float] | None = None,
-    top_k: int = 5,
-    reliability_filter: ReliabilityFilter = "ALL",
-    dsn: str | None = None,
-) -> list[RetrievedDocument]:
-    return [
-        result.to_retrieved_document()
-        for result in search_db(
+        query_embedding = (
+            self._embed_query(query)
+            if mode in {"auto", "vector", "hybrid"}
+            else None
+        )
+        return self.retriever.search(
             query=query,
             query_embedding=query_embedding,
             top_k=top_k,
             reliability_filter=reliability_filter,
-            dsn=dsn,
+            mode=mode,
         )
-    ]
+
+    def search_context(
+        self,
+        query: str,
+        top_k: int = 5,
+        reliability_filter: ReliabilityFilter = "ALL",
+        mode: SearchMode = "hybrid",
+        graph_top_k: int | None = None,
+    ) -> DBSearchRAGResponse:
+        results = self.retrieve(
+            query=query,
+            top_k=top_k,
+            reliability_filter=reliability_filter,
+            mode=mode,
+        )
+        if self.include_graph:
+            graph_results = self.retrieve_graph(
+                query=query,
+                top_k=graph_top_k or top_k,
+                reliability_filter=reliability_filter,
+            )
+            results = merge_db_and_graph_results(results, graph_results, top_k)
+
+        return DBSearchRAGResponse(
+            query=query,
+            context=self.retriever.build_context(results),
+            retrieved_docs=[result.to_retrieved_document() for result in results],
+            sources=[result.to_source() for result in results],
+        )
+
+    def retrieve_graph(
+        self,
+        query: str,
+        top_k: int = 5,
+        reliability_filter: ReliabilityFilter = "ALL",
+    ) -> list[DBSearchResult]:
+        graph_retriever = self.graph_retriever or Neo4jGraphRetriever()
+        return [
+            graph_result_to_db_result(result)
+            for result in graph_retriever.search(
+                query=query,
+                top_k=top_k,
+                reliability_filter=reliability_filter,
+            )
+        ]
+
+    def update_state(
+        self,
+        state: AgentState,
+        top_k: int = 5,
+        reliability_filter: ReliabilityFilter = "ALL",
+        mode: SearchMode = "hybrid",
+        graph_top_k: int | None = None,
+    ) -> AgentState:
+        validate_agent_inputs("research", state)
+        response = self.search_context(
+            query=state["user_query"],
+            top_k=top_k,
+            reliability_filter=reliability_filter,
+            mode=mode,
+            graph_top_k=graph_top_k,
+        )
+        next_state: AgentState = {
+            **state,
+            "retrieved_docs": response.retrieved_docs,
+            "context": response.context,
+        }
+        validate_agent_outputs("research", next_state)
+        return next_state
+
+    def invoke(self, query: str) -> DBSearchRAGResponse:
+        return self.search_context(query)
+
+    def _embed_query(self, query: str) -> Sequence[float] | None:
+        if self.embedding_fn is None:
+            if not self.auto_create_embedding:
+                return None
+            self.embedding_fn = create_default_embedding_fn(self.embedding_model)
+        return self.embedding_fn.embed_query(query)
+
+
+def create_default_embedding_fn(model_name: str = DEFAULT_EMBEDDING_MODEL) -> Any:
+    from database.postgres.embed_document_chunks import SentenceTransformerEmbeddings
+
+    return SentenceTransformerEmbeddings(model_name)
+
+
+def run_db_search_rag(
+    query: str,
+    embedding_fn: Any | None = None,
+    top_k: int = 5,
+    reliability_filter: ReliabilityFilter = "ALL",
+    mode: SearchMode = "hybrid",
+    dsn: str | None = None,
+    embedding_model: str | None = DEFAULT_EMBEDDING_MODEL,
+    auto_create_embedding: bool = True,
+    include_graph: bool = False,
+    graph_retriever: Any | None = None,
+    graph_top_k: int | None = None,
+) -> DBSearchRAGResponse:
+    return DBSearchRAG(
+        embedding_fn=embedding_fn,
+        dsn=dsn,
+        embedding_model=embedding_model,
+        auto_create_embedding=auto_create_embedding,
+        include_graph=include_graph,
+        graph_retriever=graph_retriever,
+    ).search_context(
+        query=query,
+        top_k=top_k,
+        reliability_filter=reliability_filter,
+        mode=mode,
+        graph_top_k=graph_top_k,
+    )
+
+
+def db_search_rag_node(
+    state: AgentState,
+    embedding_fn: Any | None = None,
+    top_k: int = 5,
+    reliability_filter: ReliabilityFilter = "ALL",
+    mode: SearchMode = "hybrid",
+    dsn: str | None = None,
+    embedding_model: str | None = DEFAULT_EMBEDDING_MODEL,
+    auto_create_embedding: bool = True,
+    include_graph: bool = False,
+    graph_retriever: Any | None = None,
+    graph_top_k: int | None = None,
+) -> AgentState:
+    return DBSearchRAG(
+        embedding_fn=embedding_fn,
+        dsn=dsn,
+        embedding_model=embedding_model,
+        auto_create_embedding=auto_create_embedding,
+        include_graph=include_graph,
+        graph_retriever=graph_retriever,
+    ).update_state(
+        state=state,
+        top_k=top_k,
+        reliability_filter=reliability_filter,
+        mode=mode,
+        graph_top_k=graph_top_k,
+    )
+
+
+__all__ = [
+    "DBSearchRAG",
+    "DBSearchRAGResponse",
+    "DBSearchResult",
+    "DEFAULT_EMBEDDING_MODEL",
+    "GraphReliabilityFilter",
+    "GraphSearchResult",
+    "Neo4jGraphRetriever",
+    "PGVectorDBRetriever",
+    "ReliabilityFilter",
+    "SearchMode",
+    "create_default_embedding_fn",
+    "db_search_rag_node",
+    "run_db_search_rag",
+    "search_db",
+    "search_db_state",
+    "search_graph",
+]
