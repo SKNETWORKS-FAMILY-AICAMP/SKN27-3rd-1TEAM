@@ -20,6 +20,7 @@ NextAgent = Literal[
     "analystic",
     "research",
     "final_answer",
+    "evaluation",
     "supervisor",
     "FINISH",
 ]
@@ -98,6 +99,7 @@ AgentName = Literal[
     "analystic",
     "research",
     "final_answer",
+    "evaluation",
 ]
 
 AgentStateField = Literal[
@@ -165,6 +167,15 @@ AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
         "required_outputs": (
             "draft_answer",
             "final_answer",
+        ),
+    },
+    "evaluation": {
+        "required_inputs": ("user_query",),
+        "required_outputs": (
+            "validation_passed",
+            "confidence_score",
+            "feedback",
+            "retry_target",
         ),
     },
 }
