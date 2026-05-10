@@ -2283,6 +2283,21 @@ def _agent_state_payload(state: AgentState) -> Dict[str, Any]:
         "current_recommended_actions": _value(state, "recommended_actions", []),
     }
 
+ANALYTICS_TOOLS = [fetch_nexon_character_state, analyze_boss_readiness, find_available_bosses]
+
+
+ANALYTICS_STATE_SYSTEM_PROMPT = f"""
+{master_prompt}
+
+너는 메이플스토리 분석 전문가이다.\
+다음의 룰은 꼭지켜야한다.
+- 툴을 사용하여 분석 결과를 제시하여야한다.
+- 절대로 문장으로 답변을 제시하면 안된다.
+- 절대로 너가 임의로 답변을 만들면 안된다. 
+- 너는 어디까지나 API로 가져온 유저 캐릭터의 스탯과 DB를 통해 가져온 보스 필요스탯을 비교하여 정의된 규칙에 따라서 적절성을 판단한후 그걸 정해진 state에 넣는것을 수행하는 절차의 일부이다.
+
+
+""".strip()
 
 def _generate_agent_state_update(
     state: AgentState,
@@ -2324,65 +2339,7 @@ def _generate_agent_state_update(
     return parsed
 
 
-ANALYTICS_TOOLS = [fetch_nexon_character_state, analyze_boss_readiness, find_available_bosses]
 
-ANALYTICS_SYSTEM_PROMPT = f"""
-{master_prompt}
-
-You are the MapleStory analystic agent for boss readiness.
-Use analyze_boss_readiness when the user asks about one target boss.
-Use find_available_bosses when the user asks which bosses are possible.
-Explain the result in Korean.
-
-Rules:
-- Use boss requirement data from the configured Neo4j graph connection.
-- Use character_profile, stat_summary, and equipment_summary from AgentState.
-- Use fetch_nexon_character_state when the user gives only a character name and AgentState is not populated yet.
-- Do not invoke the calculator agent; only consume values already present in AgentState.
-- Produce growth_report and recommended_actions as the analystic output contract.
-- Judge boss readiness with the weighted boss attempt fit score, not by one missing sub-stat alone.
-- Apply different stat priority profiles by boss tier: early, mid, late, and endgame.
-- Treat detailed lacking stats as bottlenecks and improvement advice unless level or force is a hard gate.
-- State whether the character is difficult, risky, challengeable, or recommended.
-- Explain the strongest bottlenecks first.
-- Do not invent boss requirements when the Neo4j connection or boss row is missing.
-- You may only use tools explicitly provided in the tools list.
-- Never invent tools.
-- Never call get_state.
-""".strip()
-
-ANALYTICS_STATE_SYSTEM_PROMPT = f"""
-{master_prompt}
-
-You are the MapleStory analystic agent node.
-Use the provided @tool functions, LLM reasoning, and prompt instructions to derive AgentState-compatible analystic outputs.
-Do not write the final user-facing answer.
-Do not output a plan for fetching, checking, calculating, or analyzing data.
-The tools and numeric analysis have already produced the analystic result in the input.
-Your recommended_actions must be practical next actions for the user after the analysis, not instructions for the agent.
-Return only one JSON object with these keys:
-- llm_interpretation: object with status_comment, priority_adjustment, reasoning, confidence_note
-- recommended_actions: array of common.domain.ActionPlan objects
-
-Each recommended_actions item must match common.domain.ActionPlan:
-- category: short string such as BOSS_READINESS, BOSS_CHALLENGE, STAT_GROWTH, EQUIPMENT, UNION, LINK_SKILL
-- target: the boss, stat, or growth area
-- priority: integer from 1 to 5 where 1 is most urgent
-- expected_cp_gain: integer, use 0 when the research context does not support a numeric estimate
-- description: concise Korean recommendation grounded in the provided context. It must not say "조회합니다", "가져옵니다", "분석합니다", or "확인합니다".
-
-Use these tools when useful:
-- analyze_boss_readiness for one target boss.
-- find_available_bosses when the user asks for possible or recommended bosses.
-- fetch_nexon_character_state only when AgentState lacks character data and the query contains a character name.
-
-The numeric status from existing analystic results is the primary judgment. You may interpret, explain, and reorder bottlenecks, but do not invent unsupported stats.
-Research Agent context may be used only if it is already present in state.context or state.retrieved_docs.
-Do not invent boss requirements, character stats, or unsupported numeric gains.
-Prefer recommendations that explain practical bottlenecks and next actions.
-Never call or imply direct retrieval from analystic; consume only state.context and state.retrieved_docs.
-Never recommend that the user fetch, update, look up, check, or analyze data through Nexon API.
-""".strip()
 
 
 def analytics_agent(
@@ -2456,8 +2413,8 @@ def analytics_agent(
     }
 
 
-# if __name__ == "__main__":
-#     state = analytics_agent(
-#         state={"user_query": "나 음표인데 하드 루시드 가능해?"}
-#     )
-#     print(state['growth_report'])
+if __name__ == "__main__":
+    state = analytics_agent(
+        state={"user_query": "나 음표인데 하드 루시드 가능해?"}
+    )
+    print(state['growth_report'])
