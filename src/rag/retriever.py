@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 from pgvector.psycopg2 import register_vector
 from psycopg2.extras import RealDictCursor
 
-from common.state import RetrievedDocument
+from common.state import AgentState, RetrievedDocument
+from src.rag.web_search import WebSearchRAG, to_retrieved_documents
 
 
 ReliabilityFilter = Literal["ALL", "HIGH_ONLY"]
@@ -785,3 +786,38 @@ def _retrieval_priority(retrieval_method: str) -> int:
     if "graph" in retrieval_method:
         return 2
     return 1
+
+
+class Wrapper:
+    """Wrapper that combines DB Search RAG and Web Search RAG documents."""
+
+    def __init__(self, web_retriever: WebSearchRAG | None = None) -> None:
+        self.web_retriever = web_retriever or WebSearchRAG()
+
+    def retrieve_docs(
+        self,
+        query: str,
+        **kwargs: Any,
+    ) -> list[RetrievedDocument]:
+        db_top_k = kwargs.pop("db_top_k", kwargs.pop("top_k", 5))
+        web_max_results = kwargs.pop("web_max_results", 5)
+        web_max_contexts = kwargs.pop("web_max_contexts", 5)
+        official_only = kwargs.pop("official_only", True)
+        character_context = kwargs.pop("character_context", None)
+        db_docs = search_db_state(query=query, top_k=db_top_k, **kwargs)
+        web_result = self.web_retriever.retrieve(
+            question=query,
+            character_context=character_context,
+            official_only=official_only,
+            max_results=web_max_results,
+            max_contexts=web_max_contexts,
+        )
+        web_docs = to_retrieved_documents(web_result)
+        return [*db_docs, *web_docs]
+
+    def update_state(self, state: AgentState, **kwargs: Any) -> AgentState:
+        kwargs.setdefault("character_context", state.get("character_profile") or state)
+        return {
+            **state,
+            "retrieved_docs": self.retrieve_docs(state["user_query"], **kwargs),
+        }
