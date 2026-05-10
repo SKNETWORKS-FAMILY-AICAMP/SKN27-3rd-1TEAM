@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 import requests
@@ -1056,44 +1057,6 @@ _NEXON_OPTION_KEYS = {
     "all_stat": "all_stat_percent",
 }
 
-_CHARACTER_QUERY_STOPWORDS = {
-    "가능한",
-    "보스",
-    "추천",
-    "추천하",
-    "뭐",
-    "뭐가",
-    "무엇",
-    "어떤",
-    "하드",
-    "노말",
-    "노멀",
-    "이지",
-    "카오스",
-    "익스트림",
-    "가능해",
-    "가능할까",
-}
-
-_BOSS_DIFFICULTY_WORDS = {"이지", "노멀", "노말", "하드", "카오스", "익스트림"}
-_QUERY_END_WORD_PREFIXES = (
-    "가능",
-    "도전",
-    "갈",
-    "잡",
-    "깰",
-    "클리어",
-    "어때",
-    "될까",
-    "추천",
-    "알려",
-    "뭐",
-    "무엇",
-    "어떤",
-    "있",
-)
-
-
 def _nexon_api_date(date: Optional[str] = None) -> str:
     if date:
         return date
@@ -1298,75 +1261,164 @@ def _fetch_nexon_character_state(character_name: str, date: Optional[str] = None
     }
 
 
-def _clean_query_token(token: str) -> str:
-    return re.sub(r"(인데요|인데|입니다|이고|님|은|는|이|가|으로|로|의)$", "", token).strip()
-
-
 def _query_tokens(query: str) -> List[str]:
-    return [_clean_query_token(token) for token in re.findall(r"[0-9A-Za-z가-힣_]+", query or "")]
+    return [token.strip() for token in re.findall(r"[0-9A-Za-z가-힣_]+", query or "") if token.strip()]
 
 
-def _is_query_end_word(token: str) -> bool:
-    return any(token.startswith(prefix) for prefix in _QUERY_END_WORD_PREFIXES)
+def _strip_korean_particle(token: str) -> str:
+    return re.sub(r"(인데요|인데|입니다|이고|이라는|라는|은|는|이|가)$", "", token).strip()
 
 
-def _is_character_query_boundary(token: str) -> bool:
-    return (
-        token in _CHARACTER_QUERY_STOPWORDS
-        or token in _BOSS_DIFFICULTY_WORDS
-        or _is_query_end_word(token)
+QUERY_PARSER_SYSTEM_PROMPT = """
+You are a MapleStory Korean query parser for an analystic agent node.
+Extract only routing/query slots. Do not answer the user.
+Return only one JSON object with these keys:
+- intent: boss_readiness | available_boss_recommendation | character_analysis | unknown
+- character_name: string or null
+- target_boss: string or null
+- boss_difficulty: Easy | Normal | Hard | Chaos | Extreme | null
+- needs_boss_recommendation: boolean
+- confidence: number from 0 to 1
+
+Rules:
+- Preserve Korean character names exactly.
+- Map boss abbreviations when obvious, e.g. 하스우 -> 하드 스우, 검마 -> 검은 마법사.
+- If the query asks "가능한 보스", "추천 보스", or "어디까지 가능", set needs_boss_recommendation true.
+- If no specific boss is asked, target_boss must be null.
+- Do not invent a character name when it is not present.
+""".strip()
+
+
+def _get_default_model() -> str | BaseChatModel:
+    if get_llm is None:
+        raise RuntimeError("common.get_model.get_llm is required for LLM query parsing.")
+    _load_project_env()
+    return get_llm()
+
+
+def _query_parser_prompt(payload: Dict[str, Any]) -> List[HumanMessage]:
+    return [
+        HumanMessage(
+            content=(
+                f"{QUERY_PARSER_SYSTEM_PROMPT}\n\n"
+                f"User query: {payload.get('user_query', '')}\n"
+                "JSON only:"
+            )
+        )
+    ]
+
+
+def _invoke_query_parser_model(payload: Dict[str, Any]) -> str:
+    model = payload["model"]
+    response = model.invoke(payload["messages"])
+    return str(getattr(response, "content", response))
+
+
+def _normalise_parsed_query(parsed: Dict[str, Any]) -> Dict[str, Any]:
+    intent = str(parsed.get("intent") or "unknown")
+    if intent not in {"boss_readiness", "available_boss_recommendation", "character_analysis", "unknown"}:
+        intent = "unknown"
+
+    difficulty = parsed.get("boss_difficulty")
+    if difficulty is not None:
+        difficulty = str(difficulty).title()
+        if difficulty not in {"Easy", "Normal", "Hard", "Chaos", "Extreme"}:
+            difficulty = None
+
+    try:
+        confidence = float(parsed.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        confidence = 0.0
+
+    return {
+        "intent": intent,
+        "character_name": str(parsed["character_name"]).strip() if parsed.get("character_name") else None,
+        "target_boss": str(parsed["target_boss"]).strip() if parsed.get("target_boss") else None,
+        "boss_difficulty": difficulty,
+        "needs_boss_recommendation": bool(parsed.get("needs_boss_recommendation", False)),
+        "confidence": max(0.0, min(1.0, confidence)),
+    }
+
+
+def _parse_user_query_with_runnable(user_query: str, model: str | BaseChatModel | None = None) -> Dict[str, Any]:
+    if model is None:
+        model = _get_default_model()
+    parser_chain = (
+        RunnablePassthrough.assign(model=RunnableLambda(lambda _: model))
+        | RunnablePassthrough.assign(messages=RunnableLambda(_query_parser_prompt))
+        | RunnableLambda(_invoke_query_parser_model)
+        | RunnableLambda(_parse_json_object)
+        | RunnableLambda(_normalise_parsed_query)
     )
+    return parser_chain.invoke({"user_query": user_query})
+
+
+def _apply_parsed_query_to_state(state: AgentState, parsed: Dict[str, Any]) -> AgentState:
+    if not parsed:
+        return state
+
+    new_state = dict(state)
+    if parsed.get("intent") and parsed["intent"] != "unknown":
+        new_state.setdefault("intent", parsed["intent"])
+
+    if parsed.get("character_name") and not _value(new_state, "character_name"):
+        new_state["character_name"] = parsed["character_name"]
+
+    target_boss = parsed.get("target_boss")
+    difficulty = parsed.get("boss_difficulty")
+    difficulty_label = _boss_difficulty_ko(difficulty) or difficulty
+    difficulty_text = str(difficulty or "")
+    if target_boss and difficulty_label and difficulty_text.lower() not in target_boss.lower() and str(difficulty_label) not in target_boss:
+        target_boss = f"{difficulty_label} {target_boss}"
+
+    if target_boss:
+        raw_api_results = dict(_value(new_state, "raw_api_results", {}) or {})
+        raw_api_results["target_boss"] = target_boss
+        new_state["raw_api_results"] = raw_api_results
+
+    tool_results = dict(_value(new_state, "tool_results", {}) or {})
+    tool_results["analystic_query_parse"] = parsed
+    new_state["tool_results"] = tool_results
+    return new_state
+
+
+def _fallback_parse_query_to_state(state: AgentState) -> AgentState:
+    user_query = str(_value(state, "user_query", ""))
+    target_boss = _extract_target_boss_from_query(user_query)
+    parsed = {
+        "intent": "boss_readiness" if target_boss else "available_boss_recommendation",
+        "character_name": _extract_character_name_from_query(user_query) or None,
+        "target_boss": target_boss or None,
+        "boss_difficulty": None,
+        "needs_boss_recommendation": not bool(target_boss),
+        "confidence": 0.35,
+    }
+    return _apply_parsed_query_to_state(state, parsed)
 
 
 def _extract_character_name_from_query(query: str) -> str:
-    tokens = [token for token in _query_tokens(query) if token]
+    tokens = _query_tokens(query)
     if not tokens:
         return ""
-
     for marker in ("캐릭터", "닉네임", "이름"):
-        if marker not in tokens:
-            continue
-        marker_index = tokens.index(marker) + 1
-        candidate_tokens = []
-        for token in tokens[marker_index:]:
-            if _is_character_query_boundary(token):
-                break
-            candidate_tokens.append(token)
-            if len(candidate_tokens) >= 2:
-                break
-        candidate = "".join(candidate_tokens)
-        if candidate:
-            return candidate
-
-    candidate_tokens = []
+        for index, token in enumerate(tokens):
+            if _strip_korean_particle(token) == marker and index + 1 < len(tokens):
+                return _strip_korean_particle(tokens[index + 1])
     for token in tokens:
-        if token in {"내", "제", "저", "나", "캐릭터", "닉네임", "이름"}:
-            continue
-        if _is_character_query_boundary(token):
-            break
-        candidate_tokens.append(token)
-        if len(candidate_tokens) >= 2:
-            break
-    candidate = "".join(candidate_tokens)
-    if candidate:
-        return candidate
+        cleaned = _strip_korean_particle(token)
+        if cleaned and cleaned not in {"나", "내", "제", "저", "캐릭터", "닉네임", "이름"}:
+            return cleaned
     return ""
 
 
 def _extract_target_boss_from_query(query: str) -> str:
-    tokens = [token for token in _query_tokens(query) if token]
+    tokens = _query_tokens(query)
+    difficulties = {"이지", "노멀", "노말", "하드", "카오스", "익스트림"}
+    stopwords = {"가능", "가능해", "가능할까", "추천", "추천해", "보스", "뭐", "뭐가"}
     for index, token in enumerate(tokens):
-        if token not in _BOSS_DIFFICULTY_WORDS:
+        if token not in difficulties:
             continue
-        boss_tokens = []
-        for boss_token in tokens[index + 1:]:
-            if boss_token in _CHARACTER_QUERY_STOPWORDS or boss_token in _BOSS_DIFFICULTY_WORDS:
-                break
-            if _is_query_end_word(boss_token):
-                break
-            boss_tokens.append(boss_token)
-            if len(boss_tokens) >= 2:
-                break
+        boss_tokens = [item for item in tokens[index + 1 : index + 3] if item not in stopwords and item not in difficulties]
         if boss_tokens:
             return f"{token} {' '.join(boss_tokens)}"
     return ""
@@ -1898,6 +1950,43 @@ def _normalise_action_plan(action: Any, *, fallback_category: str = "BOSS_READIN
     }
 
 
+def _is_valid_recommendation_action(action: Dict[str, Any]) -> bool:
+    description = str(action.get("description", ""))
+    target = str(action.get("target", ""))
+    if not target or target == "unknown" or not description:
+        return False
+    planning_phrases = (
+        "api",
+        "API",
+        "넥슨",
+        "Nexon",
+        "이용해",
+        "이용하여",
+        "가져와",
+        "가져와서",
+        "가져오",
+        "분석합니다",
+        "분석하세요",
+        "분석하",
+        "조회합니다",
+        "조회하세요",
+        "조회하고",
+        "조회하",
+        "확인합니다",
+        "확인하세요",
+        "확인하",
+        "계산합니다",
+        "계산하세요",
+        "계산하",
+        "업데이트",
+        "fetch",
+        "analyze",
+        "retrieve",
+        "check",
+    )
+    return not any(phrase in description for phrase in planning_phrases)
+
+
 def _normalise_action_plans(result: Dict[str, Any]) -> List[Dict[str, Any]]:
     raw_actions = result.get("recommended_actions") or []
     if raw_actions:
@@ -2161,14 +2250,29 @@ def _parse_json_object(content: str) -> Dict[str, Any]:
 def _merge_action_plans(base_actions: List[Dict[str, Any]], llm_actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     merged: List[Dict[str, Any]] = []
     seen = set()
-    for action in [*llm_actions, *base_actions]:
+    for action in [*base_actions, *llm_actions]:
         normalised = _normalise_action_plan(action)
+        if not _is_valid_recommendation_action(normalised):
+            continue
         key = (normalised["category"], normalised["target"])
         if key in seen:
             continue
         seen.add(key)
         merged.append(normalised)
     return merged[:8]
+
+
+def _analysis_has_usable_result(state: AgentState) -> bool:
+    result = _value(_value(state, "tool_results", {}), "analystic", {}) or {}
+    if _value(result, "error"):
+        return False
+    if _value(result, "data_reliability") == "analysis_failed_or_missing_data":
+        return False
+    if _value(result, "boss_requirements") or _value(result, "available_bosses"):
+        return True
+    if _value(result, "clear_status") or _value(result, "boss_clear_prediction"):
+        return True
+    return bool(_value(state, "recommended_actions", []))
 
 
 def _agent_state_payload(state: AgentState) -> Dict[str, Any]:
@@ -2209,9 +2313,11 @@ def _generate_agent_state_update(
     )
     parsed = _parse_json_object(result["messages"][-1].content)
     parsed["recommended_actions"] = [
-        _normalise_action_plan(action)
+        normalised
         for action in (parsed.get("recommended_actions") or [])[:5]
         if isinstance(action, dict)
+        for normalised in [_normalise_action_plan(action)]
+        if _is_valid_recommendation_action(normalised)
     ]
     interpretation = parsed.get("llm_interpretation")
     parsed["llm_interpretation"] = interpretation if isinstance(interpretation, dict) else {}
@@ -2251,6 +2357,9 @@ ANALYTICS_STATE_SYSTEM_PROMPT = f"""
 You are the MapleStory analystic agent node.
 Use the provided @tool functions, LLM reasoning, and prompt instructions to derive AgentState-compatible analystic outputs.
 Do not write the final user-facing answer.
+Do not output a plan for fetching, checking, calculating, or analyzing data.
+The tools and numeric analysis have already produced the analystic result in the input.
+Your recommended_actions must be practical next actions for the user after the analysis, not instructions for the agent.
 Return only one JSON object with these keys:
 - llm_interpretation: object with status_comment, priority_adjustment, reasoning, confidence_note
 - recommended_actions: array of common.domain.ActionPlan objects
@@ -2260,7 +2369,7 @@ Each recommended_actions item must match common.domain.ActionPlan:
 - target: the boss, stat, or growth area
 - priority: integer from 1 to 5 where 1 is most urgent
 - expected_cp_gain: integer, use 0 when the research context does not support a numeric estimate
-- description: concise Korean recommendation grounded in the provided context
+- description: concise Korean recommendation grounded in the provided context. It must not say "조회합니다", "가져옵니다", "분석합니다", or "확인합니다".
 
 Use these tools when useful:
 - analyze_boss_readiness for one target boss.
@@ -2272,6 +2381,7 @@ Research Agent context may be used only if it is already present in state.contex
 Do not invent boss requirements, character stats, or unsupported numeric gains.
 Prefer recommendations that explain practical bottlenecks and next actions.
 Never call or imply direct retrieval from analystic; consume only state.context and state.retrieved_docs.
+Never recommend that the user fetch, update, look up, check, or analyze data through Nexon API.
 """.strip()
 
 
@@ -2285,6 +2395,13 @@ def analytics_agent(
     """Run analystic node with create_agent tools and return AgentState-compatible fields."""
 
     user_query = state["user_query"]
+    try:
+        parsed_query = _parse_user_query_with_runnable(user_query, model)
+        state = _apply_parsed_query_to_state(state, parsed_query)
+    except Exception as exc:
+        state = _append_state_error(state, f"analystic query parser failed: {exc}")
+        state = _fallback_parse_query_to_state(state)
+
     if boss_graph_connection is not None:
         set_boss_neo4j_connection(boss_graph_connection)
     elif boss_db_connection is not None:
@@ -2294,10 +2411,13 @@ def analytics_agent(
         boss_graph_connection=boss_graph_connection,
         boss_db_connection=boss_db_connection,
     )
-    try:
-        agent_update = _generate_agent_state_update(state, model)
-    except Exception as exc:
-        state = _append_state_error(state, f"analystic create_agent state generation failed: {exc}")
+    if _analysis_has_usable_result(state):
+        try:
+            agent_update = _generate_agent_state_update(state, model)
+        except Exception as exc:
+            state = _append_state_error(state, f"analystic create_agent state generation failed: {exc}")
+            agent_update = {}
+    else:
         agent_update = {}
 
     llm_actions = agent_update.get("recommended_actions") or []
@@ -2338,6 +2458,6 @@ def analytics_agent(
 
 if __name__ == "__main__":
     state = analytics_agent(
-        state={"user_query": "내 캐릭터는 음표인데 하드 검 가능해?"}
+        state={"user_query": "내 캐릭터는 음표인데 하드 루시드 가능해?"}
     )
-    print(state['recommended_actions'])
+    print(state['growth_report'])
