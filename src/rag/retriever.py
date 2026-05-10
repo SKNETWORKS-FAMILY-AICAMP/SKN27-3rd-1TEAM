@@ -817,7 +817,24 @@ class Wrapper:
 
     def update_state(self, state: AgentState, **kwargs: Any) -> AgentState:
         kwargs.setdefault("character_context", state.get("character_profile") or state)
+        retrieved_docs = self.retrieve_docs(state["user_query"], **kwargs)
         return {
             **state,
-            "retrieved_docs": self.retrieve_docs(state["user_query"], **kwargs),
+            "retrieved_docs": retrieved_docs,
+            "context": self.build_context(retrieved_docs),
         }
+
+    def build_context(self, docs: Iterable[RetrievedDocument]) -> str:
+        blocks = []
+        for index, doc in enumerate(docs, start=1):
+            metadata = doc.get("metadata", {})
+            title = metadata.get("title") or doc.get("source") or "retrieved document"
+            source = metadata.get("url") or metadata.get("source_url") or doc.get("source") or ""
+            reliability = metadata.get("reliability") or "unknown"
+            blocks.append(
+                f"[{index}] {title}\n"
+                f"source: {source}\n"
+                f"reliability: {reliability}\n"
+                f"{doc.get('page_content', '')}"
+            )
+        return "\n\n".join(blocks)
