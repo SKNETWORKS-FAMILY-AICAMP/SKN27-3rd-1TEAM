@@ -16,6 +16,7 @@ DEFAULT_CONFIDENCE = 0.5
 HIGH_CONFIDENCE = 0.8
 LOW_CONFIDENCE = 0.3
 RELIABILITY_ORDER = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+FRESHNESS_ORDER = {"HIGH": 0, "MEDIUM": 1, "UNKNOWN": 2, "LOW": 3}
 MAX_SOURCE_COUNT = 5
 MAX_RETRY_COUNT = 2
 
@@ -134,7 +135,7 @@ def build_chat_response(state: AgentState) -> dict[str, JsonValue]:
 
     final_answer = state.get("final_answer", "")
     confidence = state.get("confidence_score", DEFAULT_CONFIDENCE)
-    success = bool(final_answer) and bool(state.get("validation_passed", True))
+    success = bool(final_answer) and bool(state.get("validation_passed", False))
 
     return {
         "success": success,
@@ -193,7 +194,14 @@ def generate_final_answer(state: AgentState, draft_answer: str) -> str:
         return finalize_answer(draft_answer)
 
     prompt = build_final_answer_prompt(state, draft_answer)
-    response = get_llm().invoke(prompt)
+    try:
+        response = get_llm().invoke(prompt)
+    except Exception as exc:
+        errors = list(state.get("errors") or [])
+        errors.append(f"final_answer LLM call failed: {exc}")
+        state["errors"] = errors
+        return finalize_answer(draft_answer)
+
     content = getattr(response, "content", response)
     if isinstance(content, list):
         content = "\n".join(str(item) for item in content)
@@ -230,11 +238,30 @@ def format_recommendations(state: AgentState) -> str:
     if not actions:
         return ""
 
-    sorted_actions = sorted(actions, key=lambda action: action.priority)
+    sorted_actions = sorted(actions, key=get_action_priority)
     return "\n".join(
-        f"{action.priority}. {action.category} - {action.target}: {action.description}"
+        (
+            f"{get_action_priority(action)}. "
+            f"{get_action_value(action, 'category')} - "
+            f"{get_action_value(action, 'target')}: "
+            f"{get_action_value(action, 'description')}"
+        )
         for action in sorted_actions
     )
+
+
+def get_action_priority(action: Any) -> int:
+    value = get_action_value(action, "priority", default=999)
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 999
+
+
+def get_action_value(action: Any, field: str, default: Any = "") -> Any:
+    if isinstance(action, dict):
+        return action.get(field, default)
+    return getattr(action, field, default)
 
 
 def collect_sources(state: AgentState) -> list[dict[str, JsonValue]]:
@@ -250,8 +277,23 @@ def collect_sources(state: AgentState) -> list[dict[str, JsonValue]]:
 
     return sorted(
         unique_sources.values(),
-        key=lambda source: RELIABILITY_ORDER.get(str(source.get("reliability")), 99),
+        key=source_sort_key,
     )[:MAX_SOURCE_COUNT]
+
+
+def source_sort_key(source: dict[str, JsonValue]) -> tuple[int, int, float]:
+    reliability = str(source.get("reliability") or "LOW")
+    freshness = str(source.get("freshness") or "UNKNOWN")
+    score = source.get("score")
+    try:
+        normalized_score = float(score or 0)
+    except (TypeError, ValueError):
+        normalized_score = 0.0
+    return (
+        RELIABILITY_ORDER.get(reliability, 99),
+        FRESHNESS_ORDER.get(freshness, 99),
+        -normalized_score,
+    )
 
 
 def source_from_document(document: RetrievedDocument) -> dict[str, JsonValue]:
@@ -264,6 +306,9 @@ def source_from_document(document: RetrievedDocument) -> dict[str, JsonValue]:
         "title": str(title),
         "url": str(url),
         "reliability": reliability,
+        "freshness": normalize_freshness(metadata.get("freshness")),
+        "published_at": metadata.get("published_at"),
+        "score": document.get("score", 0.0),
     }
 
 
@@ -272,6 +317,13 @@ def normalize_reliability(value: Any) -> str:
     if reliability not in RELIABILITY_ORDER:
         return "LOW"
     return reliability
+
+
+def normalize_freshness(value: Any) -> str:
+    freshness = str(value or "UNKNOWN").upper()
+    if freshness not in FRESHNESS_ORDER:
+        return "UNKNOWN"
+    return freshness
 
 
 def calculate_confidence(
