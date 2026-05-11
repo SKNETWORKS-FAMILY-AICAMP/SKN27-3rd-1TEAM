@@ -121,6 +121,13 @@ def run_research(
     docs: list[RetrievedDocument] = []
 
     tool_results = dict(state.get("tool_results", {}))
+    research_result: dict[str, Any] = {
+        "route": route,
+        "db_success": False,
+        "web_success": False,
+        "document_count": 0,
+        "errors": [],
+    }
 
     errors = list(state.get("errors", []))
 
@@ -141,8 +148,12 @@ def run_research(
             "sources": db_response.sources,
             "route": route,
         }
+        research_result["db_success"] = True
+        research_result["db_document_count"] = len(db_response.retrieved_docs)
     except Exception as exc:
-        errors.append(f"research db_search_rag failed: {exc}")
+        message = f"research db_search_rag failed: {exc}"
+        errors.append(message)
+        research_result["errors"].append(message)
 
     if route["use_web"]:
         try:
@@ -157,10 +168,19 @@ def run_research(
             )
             docs.extend(web_state.get("retrieved_docs", []))
             tool_results.update(web_state.get("tool_results", {}))
+            research_result["web_success"] = True
+            research_result["web_document_count"] = len(web_state.get("retrieved_docs", []))
         except Exception as exc:
-            errors.append(f"research web_search_rag failed: {exc}")
+            message = f"research web_search_rag failed: {exc}"
+            errors.append(message)
+            research_result["errors"].append(message)
+    else:
+        research_result["web_skipped"] = True
 
     merged_docs = merge_retrieved_documents(docs)
+    research_result["document_count"] = len(merged_docs)
+    research_result["has_context"] = bool(merged_docs)
+    tool_results["research"] = research_result
 
     next_state: AgentState = {
         **state,

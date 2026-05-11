@@ -887,6 +887,8 @@ def to_retrieved_documents(retrieval_result: dict[str, Any]) -> list[RetrievedDo
                     "reliability": context.get("reliability", "MEDIUM"),
                     "freshness": context.get("freshness", "UNKNOWN"),
                     "published_at": context.get("published_at"),
+                    "retrieval_method": "web",
+                    "source_type": "web",
                 },
                 "score": float(context.get("score") or 0.0),
                 "source": context.get("url", ""),

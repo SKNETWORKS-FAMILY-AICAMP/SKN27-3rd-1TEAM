@@ -159,7 +159,7 @@ AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
         "required_outputs": ("growth_report", "recommended_actions"),
     },
     "research": {
-        "required_inputs": ("user_query", "character_name", "world_name"),
+        "required_inputs": ("user_query",),
         "required_outputs": ("retrieved_docs", "context"),
     },
     "final_answer": {
