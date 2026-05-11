@@ -1,5 +1,4 @@
 # SKN27-3rd-1TEAM
-
 ```mermaid
 flowchart TD
     A["AgentState 수신"] --> B["validate_agent_inputs('final_answer')"]
