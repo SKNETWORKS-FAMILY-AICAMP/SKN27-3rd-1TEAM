@@ -6,102 +6,114 @@ import streamlit as st
 
 from app.common.chat_style import (
     ASSISTANT_AVATAR_PATH,
-    INPUT_PET_PATH,
     USER_AVATAR_PATH,
-    get_maple_chat_css,
     image_to_data_uri,
+    render_style,
 )
 
 
 MENU_ITEMS = (
-    ("assistant", ASSISTANT_AVATAR_PATH, "Chat"),
-    ("friend", None, "Friends"),
-    ("guild", None, "Guild"),
-    ("party", None, "Party"),
-    ("setting", USER_AVATAR_PATH, "Settings"),
+    ("chat", "Chat", "pages/7_Chat.py"),
+    ("models", "Models", "pages/2_Friends.py"),
+    ("history", "History", "pages/3_Guild.py"),
+    ("settings", "Settings", "pages/6_Settings.py"),
+)
+
+PROMPT_CHIPS = (
+    ("chip_story", "✣ Tell me a story", "메이플스토리 초보 모험가를 위한 짧은 모험 이야기를 들려줘."),
+    ("chip_debug", "<> Help me debug code", "지금 메이플 가이드 챗봇 코드에서 확인해야 할 디버깅 포인트를 알려줘."),
+    ("chip_quantum", "◉ Explain quantum physics", "양자 물리를 메이플스토리 비유로 쉽게 설명해줘."),
 )
 
 
-def render_style() -> None:
-    st.markdown(get_maple_chat_css(), unsafe_allow_html=True)
+def _queue_prompt(prompt: str) -> None:
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.session_state.pending_user_input = prompt
+    if st.session_state.get("active_page") != "chat":
+        st.switch_page("pages/7_Chat.py")
+    st.rerun()
 
 
-def render_top_navigation() -> None:
-    user_icon = image_to_data_uri(USER_AVATAR_PATH)
-    input_pet = image_to_data_uri(INPUT_PET_PATH)
-    menu_parts = []
-    for key, icon_path, label in MENU_ITEMS:
-        icon = image_to_data_uri(icon_path) if icon_path else ""
-        fallback_icon = {
-            "friend": "🌱",
-            "guild": "🐱",
-            "party": "🐧",
-        }.get(key, "")
-        icon_html = (
-            f'<img class="maple-menu-icon" src="{icon}" alt="">'
-            if icon
-            else f'<span class="maple-menu-emoji">{fallback_icon}</span>'
-        )
-        active = " is-active" if key == "assistant" else ""
-        menu_parts.append(
-            f'<span class="maple-menu-item{active}">'
-            f"{icon_html}"
-            f"<span>{label}</span>"
-            f"</span>"
-        )
-    menu_html = "".join(menu_parts)
-    st.markdown(
-        (
-            f'<div class="maple-home">'
-            f'<img class="maple-home-icon" src="{user_icon}" alt="">'
-            f"<span>홈</span>"
-            f"</div>"
-            f'<div class="maple-topbar">'
-            f'<nav class="maple-menu">{menu_html}</nav>'
-            f"</div>"
-            f'<div class="maple-actions">'
-            f'<span class="maple-action-icon">♧</span>'
-            f'<span class="maple-action-icon">⚙</span>'
-            f"</div>"
-            f'<div class="maple-input-pet">'
-            f'<img src="{input_pet}" alt="">'
-            f"</div>"
-        ),
-        unsafe_allow_html=True,
-    )
+def render_top_navigation(active_menu_key: str | None = "chat") -> None:
+    st.markdown('<div class="maple-nav-bg"></div>', unsafe_allow_html=True)
+
+    with st.container(key="maple-home-badge"):
+        if st.button("Home", key="home_badge_button", type="tertiary", use_container_width=True):
+            st.switch_page("maple_chat.py")
+
+    with st.container(key="maple-brand-bar"):
+        st.button("Maple AI", key="brand_home", type="tertiary", use_container_width=True)
+
+    with st.container(key="maple-nav-bar"):
+        columns = st.columns(len(MENU_ITEMS), gap="small")
+        for column, (key, label, page_path) in zip(columns, MENU_ITEMS):
+            with column:
+                button_type = "primary" if key == active_menu_key else "tertiary"
+                if st.button(
+                    label,
+                    key=f"nav_{key}",
+                    type=button_type,
+                    use_container_width=True,
+                ):
+                    st.switch_page(page_path)
+
+
+def render_prompt_buttons() -> None:
+    with st.container(key="maple-chip-row"):
+        columns = st.columns(len(PROMPT_CHIPS), gap="medium")
+        for column, (key, label, prompt) in zip(columns, PROMPT_CHIPS):
+            with column:
+                if st.button(label, key=key, type="tertiary", use_container_width=True):
+                    _queue_prompt(prompt)
 
 
 def render_messages() -> None:
-    assistant_icon = image_to_data_uri(ASSISTANT_AVATAR_PATH)
-    user_icon = image_to_data_uri(USER_AVATAR_PATH)
-    message_html = [
-        '<div class="maple-room-notice">⌁ Welcome to the <b>Henesys</b> region chat. Keep it friendly!</div>'
-    ]
+    st.markdown(
+        """
+<section class="maple-hero">
+    <h1 class="maple-title" aria-hidden="true"></h1>
+    <div class="maple-input-space"></div>
+</section>
+""",
+        unsafe_allow_html=True,
+    )
 
-    for index, message in enumerate(st.session_state.messages):
-        role = message["role"]
-        content = escape(message["content"]).replace("\n", "<br>")
+    render_prompt_buttons()
 
-        if role == "user":
-            message_html.append(
-                f'<div class="maple-message-row is-user">'
-                f'<div class="maple-message-meta">방금</div>'
-                f'<div class="maple-message-bubble">{content}</div>'
-                f'<img class="maple-message-avatar" src="{user_icon}" alt="">'
+
+def render_chat_page() -> None:
+    messages = st.session_state.get("messages", [])
+    visible_messages = messages[1:]
+    assistant_avatar = image_to_data_uri(ASSISTANT_AVATAR_PATH)
+    user_avatar = image_to_data_uri(USER_AVATAR_PATH)
+
+    if visible_messages:
+        html_messages = []
+        for message in visible_messages[-20:]:
+            raw_role = str(message.get("role", "assistant"))
+            role = "user" if raw_role == "user" else "assistant"
+            content = escape(str(message.get("content", ""))).replace("\n", "<br>")
+            avatar = user_avatar if role == "user" else assistant_avatar
+            html_messages.append(
+                f'<div class="maple-chat-row {role}">'
+                f'<img class="maple-chat-avatar" src="{avatar}" alt="">'
+                f'<div class="maple-chat-bubble {role}">{content}</div>'
                 f"</div>"
             )
-            continue
-
-        sender = "Maple Guide" if index == 0 else "SlimeKing"
-        time_text = "온라인" if index == 0 else "방금"
-        message_html.append(
-            f'<div class="maple-message-row is-assistant">'
-            f'<img class="maple-message-avatar" src="{assistant_icon}" alt="">'
-            f'<div class="maple-message-body">'
-            f'<div class="maple-message-name">{sender} <span>{time_text}</span></div>'
-            f'<div class="maple-message-bubble">{content}</div>'
-            f"</div>"
-            f"</div>"
+        thread_html = "".join(html_messages)
+    else:
+        thread_html = (
+            '<div class="maple-chat-empty">'
+            "메이플 장비 추천, 육성 가이드, 보스 준비를 물어보세요."
+            "</div>"
         )
 
-    st.markdown("".join(message_html), unsafe_allow_html=True)
+    st.markdown(
+        f"""
+<div class="maple-chat-page-marker"></div>
+<section class="maple-chat-page">
+    <div class="maple-chat-thread">{thread_html}</div>
+</section>
+""",
+        unsafe_allow_html=True,
+    )

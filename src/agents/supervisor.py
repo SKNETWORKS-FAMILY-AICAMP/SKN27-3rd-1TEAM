@@ -69,18 +69,22 @@ TASK_AGENT_MAP = {
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
     llm = get_model()
+
     existing_plan = state.get("plan") or []
     feedback = state.get("feedback", "")
     retry_count = state.get("retry_count", 0)
     errors = state.get("errors", [])
-    completed_agent = None
+
 
     if existing_plan:
         # supervisor로 다시 돌아온 경우, plan의 첫 번째 agent는 방금 실행된 agent로 보고 제거
         completed_agent = existing_plan[0]
         remaining_plan = existing_plan[1:]
-    else:
+    elif state.get("next_agent") in ["research", "analystic", "calculator", "final_answer"]:
         remaining_plan = []
+    elif state.get("plan") is None:
+        completed_agent = None
+
 
     messages = state["messages"]
     prompt = f"""

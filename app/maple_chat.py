@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,7 @@ from app.common.chat_render import (  # noqa: E402
     render_style,
     render_top_navigation,
 )
+from app.common.youtube_embed import render_youtube_embed  # noqa: E402
 
 
 PAGE_CONFIG = {
@@ -34,6 +36,14 @@ PAGE_CONFIG = {
     "layout": "wide",
     "initial_sidebar_state": "collapsed",
 }
+
+# 기본 BGM 영상 ID. ``MAPLE_YOUTUBE_BGM`` 으로 다른 id를 주거나, 빈 문자열이면 BGM 끔.
+_DEFAULT_YOUTUBE_BGM = "cMTdq4VGqoI"
+_env_bgm = os.environ.get("MAPLE_YOUTUBE_BGM")
+if _env_bgm is None:
+    YOUTUBE_BGM_VIDEO_ID = _DEFAULT_YOUTUBE_BGM
+else:
+    YOUTUBE_BGM_VIDEO_ID = _env_bgm.strip() or None
 
 WELCOME_MESSAGE = {
     "role": "assistant",
@@ -155,12 +165,14 @@ def append_agent_turn(user_input: str, answer: str) -> None:
 
 
 def handle_user_input() -> None:
-    user_input = st.chat_input("메이플스토리 질문을 입력하세요")
+    user_input = st.chat_input("Type your question here...")
     if not user_input:
         return
 
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.session_state.pending_user_input = user_input
+    if st.session_state.get("active_page") != "chat":
+        st.switch_page("pages/7_Chat.py")
     st.rerun()
 
 
@@ -182,12 +194,21 @@ def main() -> None:
     st.set_page_config(**PAGE_CONFIG)
 
     init_session_state()
+    st.session_state.active_page = "home"
+    if YOUTUBE_BGM_VIDEO_ID:
+        with st.sidebar:
+            st.caption("배경 음악 (자동 재생은 음소거로 시작합니다)")
+            render_youtube_embed(
+                YOUTUBE_BGM_VIDEO_ID,
+                height=88,
+                muted=True,
+                loop=True,
+                controls=False,
+            )
     render_style()
-    render_top_navigation()
-    with st.container(key="chat-shell"):
-        render_messages()
+    render_messages()
+    render_top_navigation(active_menu_key="chat")
     handle_user_input()
-    process_pending_response()
 
 
 if __name__ == "__main__":

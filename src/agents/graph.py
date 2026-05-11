@@ -1,30 +1,50 @@
 from langgraph.graph import StateGraph, START, END
+
 from common.state import AgentState
-from agents.supervisor import supervisor
+
+
+def supervisor(state: AgentState):
+    from agents.supervisor import supervisor as supervisor_agent
+
+    return supervisor_agent(state)
 
 
 def research(state: AgentState):
-    # TODO: research agent 구현이 들어오면 이 placeholder를 실제 함수 import로 교체
+    # TODO: replace this placeholder when the research agent is merged.
     return state
 
 
 def analystic(state: AgentState):
-    # TODO: analystic agent 구현이 들어오면 이 placeholder를 실제 함수 import로 교체
-    return state
+    from agents.analytics import analytics_agent
+
+    return analytics_agent(state=state)
 
 
 def calculator(state: AgentState):
-    # TODO: calculator agent 구현이 들어오면 이 placeholder를 실제 함수 import로 교체
-    return state
+    from agents.calculator import calculator_agent
+
+    return calculator_agent(state=state)
 
 
 def final_answer(state: AgentState):
-    # TODO: final_answer agent 구현이 들어오면 이 placeholder를 실제 함수 import로 교체
-    return state
+    from agents.final_answer import run_final_answer_agent
+
+    next_state = {
+        **state,
+        "context": state.get("context", ""),
+        "recommended_actions": state.get("recommended_actions", []),
+    }
+    return run_final_answer_agent(next_state)
 
 
 def evaluation(state: AgentState):
-    # TODO: evaluation agent 구현이 들어오면 이 placeholder를 실제 함수 import로 교체
+    # TODO: replace this placeholder when the evaluation agent is merged.
+    if state.get("final_answer"):
+        return {
+            **state,
+            "validation_passed": True,
+            "is_complete": True,
+        }
     return state
 
 
@@ -49,12 +69,11 @@ def route_from_evaluation(state: AgentState):
 
     retry_target = state.get("retry_target")
 
-    # 단순 어투/구문 문제면 final_answer에서 자체 재생성
     if retry_target == "final_answer":
         return "final_answer"
 
-    # 근거 부족처럼 다른 agent 작업이 필요하면 supervisor가 feedback을 보고 재라우팅
     return "supervisor"
+
 
 def maple_chat_graph():
     graph = StateGraph(AgentState)
