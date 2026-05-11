@@ -2,7 +2,8 @@ from __future__ import annotations
 import sys
 import os
 import re
-from datetime import datetime, timedelta
+import json
+from datetime import datetime
 
 # 현재 파일(main.py)의 부모의 부모의 부모 폴더를 path에 추가 (project_root 경로)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -17,9 +18,9 @@ from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
-import requests
 from neo4j import GraphDatabase
 from common.get_model import get_llm
 from common.prompt import master_prompt
@@ -30,8 +31,6 @@ load_dotenv()
 
 _BOSS_GRAPH_CONNECTION: Any = None
 _BOSS_GRAPH_DATABASE: Optional[str] = None
-_NEXON_API_BASE_URL = "https://open.api.nexon.com/maplestory/v1"
-_NEXON_API_TIMEOUT_SECONDS = 10
 
 
 class BossStatAnalysisInput(BaseModel):
@@ -77,14 +76,6 @@ class AvailableBossesInput(BaseModel):
     union_level: int = Field(0, ge=0, description="Union level.")
     include_risky: bool = Field(True, description="Whether to include risky bosses in the returned list.")
     max_results: int = Field(20, ge=1, le=100, description="Maximum number of bosses to return per group.")
-
-
-class NexonCharacterLookupInput(BaseModel):
-    """Input schema for fetching MapleStory character data from Nexon Open API."""
-
-    character_name: str = Field(..., description="MapleStory character name.")
-    date: Optional[str] = Field(None, description="KST query date in YYYY-MM-DD. Defaults to yesterday.")
-
 
 def _load_project_env() -> None:
     project_root = Path(__file__).resolve().parents[2]
@@ -730,11 +721,11 @@ def _bottleneck(stat_name: str, actual: float, required: float, description: str
 _BOSS_PRIORITY_PROFILES = {
     "early": {
         "weights": {
-            "combat_power": 0.48,
-            "main_stat": 0.18,
+            "combat_power": 0.42,
+            "main_stat": 0.22,
             "attack_or_magic": 0.10,
-            "boss_damage": 0.05,
-            "ignore_def": 0.03,
+            "boss_damage": 0.06,
+            "ignore_def": 0.05,
             "crit_rate": 0.04,
             "crit_damage": 0.04,
             "final_damage": 0.02,
@@ -743,17 +734,17 @@ _BOSS_PRIORITY_PROFILES = {
             "starforce": 0.01,
             "union_level": 0.00,
         },
-        "thresholds": {"recommended": 1.00, "challengeable": 0.84, "risky": 0.65},
-        "hard_gates": {"level": 1.0, "force": 0.55, "ignore_def": 0.55, "combat_power": 0.50},
-        "critical_stats": ["level", "combat_power"],
+        "thresholds": {"recommended": 1.08, "challengeable": 0.82, "risky": 0.62},
+        "hard_gates": {"level": 0.88, "force": 0.55, "ignore_def": 0.55, "combat_power": 0.50},
+        "critical_stats": ["level", "combat_power", "main_stat"],
     },
     "mid": {
         "weights": {
-            "combat_power": 0.40,
-            "main_stat": 0.14,
+            "combat_power": 0.34,
+            "main_stat": 0.20,
             "attack_or_magic": 0.08,
-            "boss_damage": 0.08,
-            "ignore_def": 0.08,
+            "boss_damage": 0.10,
+            "ignore_def": 0.10,
             "crit_rate": 0.03,
             "crit_damage": 0.05,
             "final_damage": 0.05,
@@ -762,47 +753,47 @@ _BOSS_PRIORITY_PROFILES = {
             "starforce": 0.01,
             "union_level": 0.00,
         },
-        "thresholds": {"recommended": 1.03, "challengeable": 0.88, "risky": 0.70},
-        "hard_gates": {"level": 1.0, "force": 0.65, "ignore_def": 0.65, "combat_power": 0.58},
-        "critical_stats": ["level", "combat_power", "force", "ignore_def"],
+        "thresholds": {"recommended": 1.10, "challengeable": 0.85, "risky": 0.68},
+        "hard_gates": {"level": 0.90, "force": 0.65, "ignore_def": 0.68, "combat_power": 0.58},
+        "critical_stats": ["level", "combat_power", "main_stat", "force", "ignore_def"],
     },
     "late": {
         "weights": {
-            "combat_power": 0.34,
-            "main_stat": 0.10,
+            "combat_power": 0.28,
+            "main_stat": 0.16,
             "attack_or_magic": 0.07,
-            "boss_damage": 0.10,
-            "ignore_def": 0.11,
+            "boss_damage": 0.13,
+            "ignore_def": 0.14,
             "crit_rate": 0.02,
             "crit_damage": 0.06,
             "final_damage": 0.08,
-            "force": 0.08,
+            "force": 0.10,
             "level": 0.03,
             "starforce": 0.01,
             "union_level": 0.00,
         },
-        "thresholds": {"recommended": 1.05, "challengeable": 0.92, "risky": 0.76},
-        "hard_gates": {"level": 1.0, "force": 0.75, "ignore_def": 0.75, "combat_power": 0.65},
-        "critical_stats": ["level", "combat_power", "force", "ignore_def", "boss_damage"],
+        "thresholds": {"recommended": 1.12, "challengeable": 0.88, "risky": 0.74},
+        "hard_gates": {"level": 0.92, "force": 0.75, "ignore_def": 0.78, "combat_power": 0.62},
+        "critical_stats": ["level", "combat_power", "main_stat", "force", "ignore_def", "boss_damage"],
     },
     "endgame": {
         "weights": {
-            "combat_power": 0.28,
-            "main_stat": 0.08,
+            "combat_power": 0.24,
+            "main_stat": 0.13,
             "attack_or_magic": 0.06,
-            "boss_damage": 0.10,
-            "ignore_def": 0.13,
+            "boss_damage": 0.14,
+            "ignore_def": 0.16,
             "crit_rate": 0.01,
             "crit_damage": 0.06,
             "final_damage": 0.09,
-            "force": 0.14,
+            "force": 0.15,
             "level": 0.04,
             "starforce": 0.01,
             "union_level": 0.00,
         },
-        "thresholds": {"recommended": 1.08, "challengeable": 0.96, "risky": 0.82},
-        "hard_gates": {"level": 1.0, "force": 0.85, "ignore_def": 0.82, "combat_power": 0.72},
-        "critical_stats": ["level", "combat_power", "force", "ignore_def", "boss_damage", "final_damage"],
+        "thresholds": {"recommended": 1.15, "challengeable": 0.90, "risky": 0.80},
+        "hard_gates": {"level": 0.94, "force": 0.82, "ignore_def": 0.84, "combat_power": 0.65},
+        "critical_stats": ["level", "combat_power", "main_stat", "force", "ignore_def", "boss_damage", "final_damage"],
     },
 }
 
@@ -836,16 +827,34 @@ _ENDGAME_BOSS_KEYS = {
 }
 
 
+_VERY_HIGH_MECHANIC_BOSS_KEYS = {
+    _normalize_boss_lookup_text(name)
+    for name in (
+        "Lucid",
+        "Will",
+        "Verus Hilla",
+        "Black Mage",
+        "하드 루시드",
+        "하드 윌",
+        "진 힐라",
+        "검은 마법사",
+    )
+}
+
+
 def _boss_priority_tier(boss: Dict[str, Any], required_values: Dict[str, float]) -> str:
     boss_name_key = _normalize_boss_lookup_text(_value(boss, "boss_name", ""))
     required_level = _number(required_values, "level")
     required_force = _number(required_values, "force")
     required_ignore_def = _number(required_values, "ignore_def")
+    required_main_stat = _number(required_values, "main_stat")
+    required_authentic_force = _number(required_values, "authentic_force")
 
     if (
         any(key and key in boss_name_key for key in _ENDGAME_BOSS_KEYS)
         or required_level >= 275
-        or required_force >= 300
+        or required_main_stat >= 110000
+        or required_authentic_force > 0
     ):
         return "endgame"
     if (
@@ -867,10 +876,15 @@ def _boss_priority_profile(boss: Dict[str, Any], required_values: Dict[str, floa
     required_force = _number(required_values, "force")
     required_ignore_def = _number(required_values, "ignore_def")
     required_combat_power = _number(required_values, "combat_power")
+    required_main_stat = _number(required_values, "main_stat")
+    boss_name_key = _normalize_boss_lookup_text(_value(boss, "boss_name", ""))
+    thresholds = dict(base_profile["thresholds"])
+    hard_gates = dict(base_profile["hard_gates"])
+    critical_stats = list(base_profile["critical_stats"])
 
     if required_combat_power <= 0:
         weights["combat_power"] = 0.0
-        weights["main_stat"] += 0.08
+        weights["main_stat"] += 0.12
         weights["attack_or_magic"] += 0.04
     if required_force > 0:
         weights["force"] += 0.04
@@ -880,13 +894,23 @@ def _boss_priority_profile(boss: Dict[str, Any], required_values: Dict[str, floa
         weights["combat_power"] = max(0.0, weights["combat_power"] - 0.02)
     elif required_ignore_def > 0:
         weights["ignore_def"] += 0.02
+    if required_main_stat >= 50000:
+        weights["main_stat"] += 0.04
+        weights["attack_or_magic"] = max(0.0, weights["attack_or_magic"] - 0.01)
+    if any(key and key in boss_name_key for key in _VERY_HIGH_MECHANIC_BOSS_KEYS):
+        thresholds["recommended"] += 0.03
+        thresholds["challengeable"] += 0.02
+        weights["boss_damage"] += 0.02
+        weights["ignore_def"] += 0.02
+        if "boss_damage" not in critical_stats:
+            critical_stats.append("boss_damage")
 
     return {
         "tier": tier,
         "weights": {key: round(max(0.0, value), 4) for key, value in weights.items()},
-        "thresholds": dict(base_profile["thresholds"]),
-        "hard_gates": dict(base_profile["hard_gates"]),
-        "critical_stats": list(base_profile["critical_stats"]),
+        "thresholds": {key: round(value, 4) for key, value in thresholds.items()},
+        "hard_gates": hard_gates,
+        "critical_stats": critical_stats,
     }
 
 
@@ -936,11 +960,13 @@ def _status(
     thresholds = priority_profile["thresholds"]
     critical_stats = set(priority_profile["critical_stats"])
 
-    if _number(required_values, "level") > 0 and checks.get("level", 1.0) < 1.0:
+    if _number(required_values, "level") > 0 and checks.get("level", 1.0) < hard_gates["level"]:
         return "difficult"
     if _number(required_values, "force") > 0 and checks.get("force", 1.0) < hard_gates["force"]:
         return "difficult"
     if _number(required_values, "combat_power") > 0 and checks.get("combat_power", 1.0) < hard_gates["combat_power"]:
+        return "difficult"
+    if _number(required_values, "ignore_def") > 0 and checks.get("ignore_def", 1.0) < hard_gates["ignore_def"]:
         return "difficult"
 
     severe_bottleneck = any(
@@ -951,14 +977,15 @@ def _status(
     )
 
     combat_power_ready = checks.get("combat_power", 1.0) >= 1.0
-    if score >= thresholds["recommended"] and not severe_bottleneck:
+    soft_level_gap = _number(required_values, "level") > 0 and checks.get("level", 1.0) < 1.0
+    if score >= thresholds["recommended"] and not severe_bottleneck and not soft_level_gap:
         return "recommended"
     if severe_bottleneck and score >= thresholds["challengeable"]:
         return "risky"
     if score >= thresholds["challengeable"] or (
         combat_power_ready and score >= max(0.80, thresholds["challengeable"] - 0.08)
     ):
-        return "challengeable"
+        return "risky" if soft_level_gap else "challengeable"
     if score >= thresholds["risky"]:
         return "risky"
     return "difficult"
@@ -995,389 +1022,167 @@ def _first_text(sources: List[Any], keys: List[str], default: str = "") -> str:
     return default
 
 
-_NEXON_FINAL_STAT_KEYS = {
-    "전투력": "combat_power",
-    "최소 스탯공격력": "min_stat_damage",
-    "최소 스탯 공격력": "min_stat_damage",
-    "최대 스탯공격력": "max_stat_damage",
-    "최대 스탯 공격력": "max_stat_damage",
-    "STR": "str_val",
-    "DEX": "dex",
-    "INT": "int_val",
-    "LUK": "luk",
-    "HP": "hp",
-    "MP": "mp",
-    "데미지": "damage",
-    "보스 몬스터 데미지": "boss_damage",
-    "보스 데미지": "boss_damage",
-    "최종 데미지": "final_damage",
-    "방어율 무시": "ignore_def",
-    "몬스터 방어율 무시": "ignore_def",
-    "크리티컬 확률": "crit_rate",
-    "크리티컬 데미지": "crit_damage",
-    "공격력": "attack_power",
-    "마력": "magic_power",
-    "공격 속도": "attack_speed",
-    "버프 지속시간": "buff_duration",
-    "아케인포스": "arcane_force",
-    "어센틱포스": "authentic_force",
-    "스타포스": "starforce",
-}
-
-_NEXON_INT_STAT_KEYS = {
-    "combat_power",
-    "str_val",
-    "dex",
-    "int_val",
-    "luk",
-    "hp",
-    "mp",
-    "attack_power",
-    "magic_power",
-    "attack_speed",
-    "arcane_force",
-    "authentic_force",
-    "starforce",
-}
-
-_NEXON_OPTION_KEYS = {
-    "str": "str_val",
-    "dex": "dex_val",
-    "int": "int_val",
-    "luk": "luk_val",
-    "max_hp": "hp",
-    "attack_power": "attack_power",
-    "magic_power": "magic_power",
-    "boss_damage": "boss_damage_percent",
-    "ignore_monster_armor": "ignore_def_percent",
-    "ignore_def": "ignore_def_percent",
-    "damage": "damage_percent",
-    "all_stat": "all_stat_percent",
-}
-
-_CHARACTER_QUERY_STOPWORDS = {
-    "가능한",
-    "보스",
-    "추천",
-    "추천하",
-    "뭐",
-    "뭐가",
-    "무엇",
-    "어떤",
-    "하드",
-    "노말",
-    "노멀",
-    "이지",
-    "카오스",
-    "익스트림",
-    "가능해",
-    "가능할까",
-}
-
-_BOSS_DIFFICULTY_WORDS = {"이지", "노멀", "노말", "하드", "카오스", "익스트림"}
-_QUERY_END_WORD_PREFIXES = (
-    "가능",
-    "도전",
-    "갈",
-    "잡",
-    "깰",
-    "클리어",
-    "어때",
-    "될까",
-    "추천",
-    "알려",
-    "뭐",
-    "무엇",
-    "어떤",
-    "있",
-)
-
-
-def _nexon_api_date(date: Optional[str] = None) -> str:
-    if date:
-        return date
-    _load_project_env()
-    env_date = os.environ.get("NEXON_API_DATE")
-    if env_date:
-        return env_date
-    return (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-
-
-def _nexon_headers() -> Dict[str, str]:
-    _load_project_env()
-    api_key = os.environ.get("NEXON_API_KEY")
-    if not api_key:
-        raise RuntimeError("NEXON_API_KEY is required to fetch character data from Nexon Open API.")
-    return {
-        "x-nxopen-api-key": api_key,
-        "Accept": "application/json",
-    }
-
-
-def _nexon_error_message(response: requests.Response) -> str:
-    try:
-        data = response.json()
-    except ValueError:
-        return response.text[:500]
-    if isinstance(data, dict):
-        return str(data.get("message") or data.get("error") or data)[:500]
-    return str(data)[:500]
-
-
-def _nexon_get(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
-    url = f"{_NEXON_API_BASE_URL}{path}"
-    try:
-        response = requests.get(
-            url,
-            headers=_nexon_headers(),
-            params=params,
-            timeout=_NEXON_API_TIMEOUT_SECONDS,
-        )
-    except requests.RequestException as exc:
-        raise RuntimeError(f"Nexon Open API request failed for {path}: {exc}") from exc
-
-    if response.status_code != 200:
-        raise RuntimeError(
-            f"Nexon Open API request failed for {path} "
-            f"({response.status_code}): {_nexon_error_message(response)}"
-        )
-
-    try:
-        data = response.json()
-    except ValueError as exc:
-        raise RuntimeError(f"Nexon Open API returned non-JSON response for {path}.") from exc
-    return data if isinstance(data, dict) else {}
-
-
-def _nexon_number(value: Any, default: float = 0.0) -> float:
-    if value is None or value == "":
-        return default
-    if isinstance(value, (int, float)):
-        return float(value)
-    text = str(value).replace(",", "").replace("%", "").strip()
-    match = re.search(r"[-+]?\d+(?:\.\d+)?", text)
-    if not match:
-        return default
-    try:
-        return float(match.group(0))
-    except ValueError:
-        return default
-
-
-def _normalize_nexon_final_stats(stat_response: Dict[str, Any]) -> Dict[str, Any]:
-    stat_summary: Dict[str, Any] = {}
-    for item in stat_response.get("final_stat") or []:
-        if not isinstance(item, dict):
-            continue
-        stat_name = str(item.get("stat_name", "")).strip()
-        target_key = _NEXON_FINAL_STAT_KEYS.get(stat_name)
-        if not target_key:
-            continue
-        value = _nexon_number(item.get("stat_value"))
-        stat_summary[target_key] = int(value) if target_key in _NEXON_INT_STAT_KEYS else value
-
-    stat_summary["main_stat"] = int(
-        max(
-            _number(stat_summary, "str_val"),
-            _number(stat_summary, "dex"),
-            _number(stat_summary, "int_val"),
-            _number(stat_summary, "luk"),
-        )
-    )
-    return stat_summary
-
-
-def _normalize_nexon_option(option: Any) -> Dict[str, Any]:
-    if not isinstance(option, dict):
-        return {}
-    normalized: Dict[str, Any] = {}
-    for source_key, target_key in _NEXON_OPTION_KEYS.items():
-        value = _nexon_number(option.get(source_key))
-        if value == 0:
-            continue
-        normalized[target_key] = int(value) if target_key.endswith("_val") or target_key in {
-            "attack_power",
-            "magic_power",
-            "hp",
-        } else value
-    return normalized
-
-
-def _normalize_nexon_equipment(equipment_response: Dict[str, Any]) -> List[Dict[str, Any]]:
-    equipment_items: List[Dict[str, Any]] = []
-    for item in equipment_response.get("item_equipment") or []:
-        if not isinstance(item, dict):
-            continue
-        equipment_items.append(
-            {
-                "item_name": item.get("item_name", ""),
-                "part": item.get("item_equipment_part") or item.get("item_equipment_slot", ""),
-                "item_gender": item.get("item_gender"),
-                "starforce": int(_nexon_number(item.get("starforce"))),
-                "potential_grade": item.get("potential_option_grade"),
-                "additional_potential_grade": item.get("additional_potential_option_grade"),
-                "total_stats": _normalize_nexon_option(item.get("item_total_option")),
-                "bonus_stats": _normalize_nexon_option(item.get("item_add_option")),
-                "scroll_stats": _normalize_nexon_option(item.get("item_etc_option")),
-                "set_name": item.get("set_item_name"),
-            }
-        )
-    return equipment_items
-
-
-def _normalize_nexon_union(union_response: Dict[str, Any]) -> Dict[str, Any]:
-    if not isinstance(union_response, dict):
-        return {}
-    return {
-        "union_level": int(_nexon_number(union_response.get("union_level"))),
-        "union_grade": str(union_response.get("union_grade") or ""),
-        "artifact_level": None,
-        "artifact_exp": 0,
-    }
-
-
-def _fetch_nexon_character_state(character_name: str, date: Optional[str] = None) -> Dict[str, Any]:
-    api_date = _nexon_api_date(date)
-    id_response = _nexon_get("/id", {"character_name": character_name})
-    ocid = id_response.get("ocid")
-    if not ocid:
-        raise RuntimeError(f"Nexon Open API did not return ocid for character: {character_name}")
-
-    dated_params = {"ocid": ocid, "date": api_date}
-    basic_response = _nexon_get("/character/basic", dated_params)
-    stat_response = _nexon_get("/character/stat", dated_params)
-    equipment_response = _nexon_get("/character/item-equipment", dated_params)
-    try:
-        union_response = _nexon_get("/user/union", dated_params)
-    except RuntimeError as exc:
-        union_response = {"error": str(exc)}
-
-    stat_summary = _normalize_nexon_final_stats(stat_response)
-    equipment_items = _normalize_nexon_equipment(equipment_response)
-    union_status = _normalize_nexon_union(union_response)
-    if union_status.get("union_level"):
-        stat_summary["union_level"] = union_status["union_level"]
-
-    profile = {
-        "character_name": basic_response.get("character_name") or character_name,
-        "job_name": basic_response.get("character_class") or stat_response.get("character_class", ""),
-        "world_name": basic_response.get("world_name", ""),
-        "level": int(_nexon_number(basic_response.get("character_level"))),
-        "gender": basic_response.get("character_gender"),
-        "final_stats": stat_summary,
-        "equipment_list": equipment_items,
-        "union_info": union_status,
-    }
-    total_starforce = _sum_equipment_starforce(equipment_items)
-
-    return {
-        "ocid": ocid,
-        "character_name": profile["character_name"],
-        "world_name": profile["world_name"],
-        "character_profile": profile,
-        "character_stats": stat_summary,
-        "equipment_items": equipment_items,
-        "union_status": union_status,
-        "stat_summary": stat_summary,
-        "equipment_summary": {
-            "equipment_count": len(equipment_items),
-            "starforce": total_starforce,
-            "total_starforce": total_starforce,
-        },
-        "raw_api_results": {
-            "nexon": {
-                "date": api_date,
-                "id": id_response,
-                "basic": basic_response,
-                "stat": stat_response,
-                "item_equipment": equipment_response,
-                "union": union_response,
-            }
-        },
-    }
-
-
-def _clean_query_token(token: str) -> str:
-    return re.sub(r"(인데요|인데|입니다|이고|님|은|는|이|가|으로|로|의)$", "", token).strip()
-
-
 def _query_tokens(query: str) -> List[str]:
-    return [_clean_query_token(token) for token in re.findall(r"[0-9A-Za-z가-힣_]+", query or "")]
+    return [token.strip() for token in re.findall(r"[0-9A-Za-z가-힣_]+", query or "") if token.strip()]
 
 
-def _is_query_end_word(token: str) -> bool:
-    return any(token.startswith(prefix) for prefix in _QUERY_END_WORD_PREFIXES)
+def _strip_korean_particle(token: str) -> str:
+    return re.sub(r"(인데요|인데|입니다|이고|이라는|라는|은|는|이|가)$", "", token).strip()
 
 
-def _is_character_query_boundary(token: str) -> bool:
-    return (
-        token in _CHARACTER_QUERY_STOPWORDS
-        or token in _BOSS_DIFFICULTY_WORDS
-        or _is_query_end_word(token)
+QUERY_PARSER_SYSTEM_PROMPT = """
+You are a MapleStory Korean query parser for an analystic agent node.
+Extract only routing/query slots. Do not answer the user.
+Return only one JSON object with these keys:
+- intent: boss_readiness | available_boss_recommendation | character_analysis | unknown
+- character_name: string or null
+- target_boss: string or null
+- boss_difficulty: Easy | Normal | Hard | Chaos | Extreme | null
+- needs_boss_recommendation: boolean
+- confidence: number from 0 to 1
+
+Rules:
+- Preserve Korean character names exactly.
+- Map boss abbreviations when obvious, e.g. 하스우 -> 하드 스우, 검마 -> 검은 마법사.
+- If the query asks "가능한 보스", "추천 보스", or "어디까지 가능", set needs_boss_recommendation true.
+- If no specific boss is asked, target_boss must be null.
+- Do not invent a character name when it is not present.
+""".strip()
+
+
+def _get_default_model() -> str | BaseChatModel:
+    if get_llm is None:
+        raise RuntimeError("common.get_model.get_llm is required for LLM query parsing.")
+    _load_project_env()
+    return get_llm()
+
+
+def _query_parser_prompt(payload: Dict[str, Any]) -> List[HumanMessage]:
+    return [
+        HumanMessage(
+            content=(
+                f"{QUERY_PARSER_SYSTEM_PROMPT}\n\n"
+                f"User query: {payload.get('user_query', '')}\n"
+                "JSON only:"
+            )
+        )
+    ]
+
+
+def _invoke_query_parser_model(payload: Dict[str, Any]) -> str:
+    model = payload["model"]
+    response = model.invoke(payload["messages"])
+    return str(getattr(response, "content", response))
+
+
+def _normalise_parsed_query(parsed: Dict[str, Any]) -> Dict[str, Any]:
+    intent = str(parsed.get("intent") or "unknown")
+    if intent not in {"boss_readiness", "available_boss_recommendation", "character_analysis", "unknown"}:
+        intent = "unknown"
+
+    difficulty = parsed.get("boss_difficulty")
+    if difficulty is not None:
+        difficulty = str(difficulty).title()
+        if difficulty not in {"Easy", "Normal", "Hard", "Chaos", "Extreme"}:
+            difficulty = None
+
+    try:
+        confidence = float(parsed.get("confidence", 0.0))
+    except (TypeError, ValueError):
+        confidence = 0.0
+
+    return {
+        "intent": intent,
+        "character_name": str(parsed["character_name"]).strip() if parsed.get("character_name") else None,
+        "target_boss": str(parsed["target_boss"]).strip() if parsed.get("target_boss") else None,
+        "boss_difficulty": difficulty,
+        "needs_boss_recommendation": bool(parsed.get("needs_boss_recommendation", False)),
+        "confidence": max(0.0, min(1.0, confidence)),
+    }
+
+
+def _parse_user_query_with_runnable(user_query: str, model: str | BaseChatModel | None = None) -> Dict[str, Any]:
+    if model is None:
+        model = _get_default_model()
+    parser_chain = (
+        RunnablePassthrough.assign(model=RunnableLambda(lambda _: model))
+        | RunnablePassthrough.assign(messages=RunnableLambda(_query_parser_prompt))
+        | RunnableLambda(_invoke_query_parser_model)
+        | RunnableLambda(_parse_json_object)
+        | RunnableLambda(_normalise_parsed_query)
     )
+    return parser_chain.invoke({"user_query": user_query})
+
+
+def _apply_parsed_query_to_state(state: AgentState, parsed: Dict[str, Any]) -> AgentState:
+    if not parsed:
+        return state
+
+    new_state = dict(state)
+    if parsed.get("intent") and parsed["intent"] != "unknown":
+        new_state.setdefault("intent", parsed["intent"])
+
+    if parsed.get("character_name") and not _value(new_state, "character_name"):
+        new_state["character_name"] = parsed["character_name"]
+
+    target_boss = parsed.get("target_boss")
+    difficulty = parsed.get("boss_difficulty")
+    difficulty_label = _boss_difficulty_ko(difficulty) or difficulty
+    difficulty_text = str(difficulty or "")
+    if target_boss and difficulty_label and difficulty_text.lower() not in target_boss.lower() and str(difficulty_label) not in target_boss:
+        target_boss = f"{difficulty_label} {target_boss}"
+
+    if target_boss:
+        raw_api_results = dict(_value(new_state, "raw_api_results", {}) or {})
+        raw_api_results["target_boss"] = target_boss
+        new_state["raw_api_results"] = raw_api_results
+
+    tool_results = dict(_value(new_state, "tool_results", {}) or {})
+    tool_results["analystic_query_parse"] = parsed
+    new_state["tool_results"] = tool_results
+    return new_state
+
+
+def _fallback_parse_query_to_state(state: AgentState) -> AgentState:
+    user_query = str(_value(state, "user_query", ""))
+    target_boss = _extract_target_boss_from_query(user_query)
+    parsed = {
+        "intent": "boss_readiness" if target_boss else "available_boss_recommendation",
+        "character_name": _extract_character_name_from_query(user_query) or None,
+        "target_boss": target_boss or None,
+        "boss_difficulty": None,
+        "needs_boss_recommendation": not bool(target_boss),
+        "confidence": 0.35,
+    }
+    return _apply_parsed_query_to_state(state, parsed)
 
 
 def _extract_character_name_from_query(query: str) -> str:
-    tokens = [token for token in _query_tokens(query) if token]
+    tokens = _query_tokens(query)
     if not tokens:
         return ""
-
     for marker in ("캐릭터", "닉네임", "이름"):
-        if marker not in tokens:
-            continue
-        marker_index = tokens.index(marker) + 1
-        candidate_tokens = []
-        for token in tokens[marker_index:]:
-            if _is_character_query_boundary(token):
-                break
-            candidate_tokens.append(token)
-            if len(candidate_tokens) >= 2:
-                break
-        candidate = "".join(candidate_tokens)
-        if candidate:
-            return candidate
-
-    candidate_tokens = []
+        for index, token in enumerate(tokens):
+            if _strip_korean_particle(token) == marker and index + 1 < len(tokens):
+                return _strip_korean_particle(tokens[index + 1])
     for token in tokens:
-        if token in {"내", "제", "저", "나", "캐릭터", "닉네임", "이름"}:
-            continue
-        if _is_character_query_boundary(token):
-            break
-        candidate_tokens.append(token)
-        if len(candidate_tokens) >= 2:
-            break
-    candidate = "".join(candidate_tokens)
-    if candidate:
-        return candidate
+        cleaned = _strip_korean_particle(token)
+        if cleaned and cleaned not in {"나", "내", "제", "저", "캐릭터", "닉네임", "이름"}:
+            return cleaned
     return ""
 
 
 def _extract_target_boss_from_query(query: str) -> str:
-    tokens = [token for token in _query_tokens(query) if token]
+    tokens = _query_tokens(query)
+    difficulties = {"이지", "노멀", "노말", "하드", "카오스", "익스트림"}
+    stopwords = {"가능", "가능해", "가능할까", "추천", "추천해", "보스", "뭐", "뭐가"}
     for index, token in enumerate(tokens):
-        if token not in _BOSS_DIFFICULTY_WORDS:
+        if token not in difficulties:
             continue
-        boss_tokens = []
-        for boss_token in tokens[index + 1:]:
-            if boss_token in _CHARACTER_QUERY_STOPWORDS or boss_token in _BOSS_DIFFICULTY_WORDS:
-                break
-            if _is_query_end_word(boss_token):
-                break
-            boss_tokens.append(boss_token)
-            if len(boss_tokens) >= 2:
-                break
+        boss_tokens = [item for item in tokens[index + 1 : index + 3] if item not in stopwords and item not in difficulties]
         if boss_tokens:
             return f"{token} {' '.join(boss_tokens)}"
     return ""
-
-
-def _state_needs_nexon_fetch(state: AgentState) -> bool:
-    for key in ("character_profile", "stat_summary", "equipment_summary"):
-        if key not in state or state[key] is None:
-            return True
-        if isinstance(state[key], dict) and not state[key]:
-            return True
-    return False
 
 
 def _append_state_error(state: AgentState, message: str) -> AgentState:
@@ -1410,34 +1215,6 @@ def _empty_analytics_result(message: str) -> Dict[str, Any]:
         "data_reliability": "analysis_failed_or_missing_data",
         "error": message,
     }
-
-
-def _hydrate_state_from_nexon_if_needed(state: AgentState) -> AgentState:
-    if not _state_needs_nexon_fetch(state):
-        return state
-
-    profile = _value(state, "character_profile", {})
-    character_name = _first_text([state, profile], ["character_name", "name"], "")
-    if not character_name:
-        character_name = _extract_character_name_from_query(str(_value(state, "user_query", "")))
-    if not character_name:
-        raise ValueError("Could not extract character_name from user_query.")
-
-    fetched_state = _fetch_nexon_character_state(character_name)
-    raw_api_results = {
-        **(_value(state, "raw_api_results", {}) or {}),
-        **fetched_state.pop("raw_api_results", {}),
-    }
-    target_boss = _value(state, "target_boss") or _extract_target_boss_from_query(str(_value(state, "user_query", "")))
-
-    hydrated_state = {
-        **state,
-        **fetched_state,
-        "raw_api_results": raw_api_results,
-    }
-    if target_boss:
-        hydrated_state["target_boss"] = str(target_boss)
-    return hydrated_state
 
 
 def _state_stat_sources(state: AgentState) -> List[Any]:
@@ -1641,21 +1418,16 @@ def _analyze_boss_row(
         "decision_basis": {
             "formula": "weighted_boss_attempt_fit",
             "stat_priority_profile": priority_profile["tier"],
-            "primary_signal": "combat_power_when_available",
+            "primary_signal": "combat_power_when_available_otherwise_main_stat_and_damage_stats",
             "stat_weights": priority_profile["weights"],
+            "status_thresholds": priority_profile["thresholds"],
             "hard_gates": priority_profile["hard_gates"],
             "critical_stats": priority_profile["critical_stats"],
             "bottlenecks_are_advisory": True,
+            "calibration_basis": "neo4j_stat_requirements_and_postgres_boss_recommendation_guardrails",
         },
         "data_reliability": "neo4j_requirements_weighted_boss_fit",
     }
-
-
-@tool(args_schema=NexonCharacterLookupInput)
-def fetch_nexon_character_state(character_name: str, date: Optional[str] = None) -> Dict[str, Any]:
-    """Fetch MapleStory character data from Nexon Open API and normalize it for AgentState."""
-
-    return _fetch_nexon_character_state(character_name, date=date)
 
 
 @tool(args_schema=BossStatAnalysisInput)
@@ -1871,6 +1643,135 @@ def _extract_character_input(state: AgentState) -> Dict[str, Any]:
     }
 
 
+def _normalise_action_plan(action: Any, *, fallback_category: str = "BOSS_READINESS") -> Dict[str, Any]:
+    category = str(_value(action, "category", fallback_category) or fallback_category)
+    target = _value(action, "target", None) or _value(action, "stat", None) or _value(action, "boss_name", None)
+    target = str(target or "unknown")
+    priority = int(_number(action, "priority", 3))
+    priority = min(5, max(1, priority))
+    expected_cp_gain = int(max(0, _number(action, "expected_cp_gain", _number(action, "gap", 0))))
+    description = _value(action, "description", "")
+    if not description:
+        if category == "BOSS_CHALLENGE":
+            description = f"{target} is a candidate boss target for the current character."
+        else:
+            description = f"{target} is a bottleneck for the current boss readiness analysis."
+
+    return {
+        "category": category,
+        "target": target,
+        "priority": priority,
+        "expected_cp_gain": expected_cp_gain,
+        "description": str(description),
+    }
+
+
+def _is_valid_recommendation_action(action: Dict[str, Any]) -> bool:
+    description = str(action.get("description", ""))
+    target = str(action.get("target", ""))
+    if not target or target == "unknown" or not description:
+        return False
+    planning_phrases = (
+        "api",
+        "API",
+        "넥슨",
+        "Nexon",
+        "이용해",
+        "이용하여",
+        "가져와",
+        "가져와서",
+        "가져오",
+        "분석합니다",
+        "분석하세요",
+        "분석하",
+        "조회합니다",
+        "조회하세요",
+        "조회하고",
+        "조회하",
+        "확인합니다",
+        "확인하세요",
+        "확인하",
+        "계산합니다",
+        "계산하세요",
+        "계산하",
+        "업데이트",
+        "fetch",
+        "analyze",
+        "retrieve",
+        "check",
+    )
+    return not any(phrase in description for phrase in planning_phrases)
+
+
+def _normalise_action_plans(result: Dict[str, Any]) -> List[Dict[str, Any]]:
+    raw_actions = result.get("recommended_actions") or []
+    if raw_actions:
+        return [_normalise_action_plan(action) for action in raw_actions]
+
+    if "available_bosses" in result:
+        return [
+            _normalise_action_plan(
+                {
+                    "category": "BOSS_CHALLENGE",
+                    "target": item.get("boss_name"),
+                    "priority": 2,
+                    "expected_cp_gain": 0,
+                    "description": f"{item.get('boss_name', 'unknown')} is included in the available boss list.",
+                },
+                fallback_category="BOSS_CHALLENGE",
+            )
+            for item in (result.get("available_bosses") or [])[:5]
+        ]
+
+    return []
+
+
+def _boss_prediction_from_result(result: Dict[str, Any]) -> Dict[str, bool]:
+    prediction = result.get("boss_clear_prediction")
+    if isinstance(prediction, dict):
+        return {str(key): bool(value) for key, value in prediction.items()}
+
+    boss_groups = result.get("boss_groups") or {}
+    if not isinstance(boss_groups, dict):
+        return {}
+
+    derived: Dict[str, bool] = {}
+    for status in ("recommended", "challengeable"):
+        for item in boss_groups.get(status, []) or []:
+            boss_name = _value(item, "boss_name")
+            if boss_name:
+                derived[str(boss_name)] = True
+    for status in ("risky", "difficult"):
+        for item in boss_groups.get(status, []) or []:
+            boss_name = _value(item, "boss_name")
+            if boss_name and boss_name not in derived:
+                derived[str(boss_name)] = False
+    return derived
+
+
+def _build_growth_report(
+    state: AgentState,
+    tool_input: Dict[str, Any],
+    result: Dict[str, Any],
+    recommended_actions: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    return {
+        "character_id": _value(state, "ocid", tool_input.get("character_name", "")),
+        "current_combat_power": int(tool_input.get("combat_power", 0)),
+        "attack": int(max(tool_input.get("attack_power", 0), tool_input.get("magic_power", 0))),
+        "boss_damage": float(tool_input.get("boss_damage", 0.0)),
+        "ignore_def": float(tool_input.get("ignore_def", 0.0)),
+        "crit_rate": float(tool_input.get("crit_rate", 0.0)),
+        "crit_damage": float(tool_input.get("crit_damage", 0.0)),
+        "damage": _first_number(_state_stat_sources(state), ["damage"], 0),
+        "bottleneck_analysis": result.get("bottleneck_analysis", {}),
+        "recommended_actions": recommended_actions,
+        "boss_clear_prediction": _boss_prediction_from_result(result),
+        "data_reliability": result.get("data_reliability", "unknown"),
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+    }
+
+
 def run_analystic(
     state: AgentState,
     *,
@@ -1881,12 +1782,11 @@ def run_analystic(
     """Run the common.state-compatible analystic step.
 
     This function uses common.state.AgentState fields directly. It reads
-    character_profile, stat_summary, and equipment_summary first, then falls back to
-    compatible raw character fields when older callers still provide them.
+    character_profile, stat_summary, and equipment_summary from AgentState.
+    Character data must already be present in state; this node does not fetch it.
     """
 
     try:
-        state = _hydrate_state_from_nexon_if_needed(state)
         _validate_analystic_state_inputs(state)
         if validate_agent_inputs is not None:
             validate_agent_inputs("analystic", state)
@@ -1916,48 +1816,24 @@ def run_analystic(
             "crit_rate": 0.0,
             "crit_damage": 0.0,
         }
+        recommended_actions = _normalise_action_plans(result)
         new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
         new_state["bottleneck_analysis"] = {}
-        new_state["growth_report"] = {
-            "character_id": _value(new_state, "ocid", tool_input["character_name"]),
-            "current_combat_power": 0,
-            "attack": 0,
-            "boss_damage": 0.0,
-            "ignore_def": 0.0,
-            "crit_rate": 0.0,
-            "crit_damage": 0.0,
-            "damage": 0.0,
-            "bottleneck_analysis": {},
-            "recommended_actions": [],
-            "boss_clear_prediction": {},
-            "data_reliability": result["data_reliability"],
-            "timestamp": "",
-        }
-        new_state["recommended_actions"] = []
+        new_state["growth_report"] = _build_growth_report(new_state, tool_input, result, recommended_actions)
+        new_state["recommended_actions"] = recommended_actions
         new_state["confidence_score"] = 0.0
+        if validate_agent_outputs is not None:
+            validate_agent_outputs("analystic", new_state)
         return new_state
 
-    growth_report = {
-        "character_id": _value(state, "ocid", tool_input["character_name"]),
-        "current_combat_power": tool_input["combat_power"],
-        "attack": max(tool_input["attack_power"], tool_input["magic_power"]),
-        "boss_damage": tool_input["boss_damage"],
-        "ignore_def": tool_input["ignore_def"],
-        "crit_rate": tool_input["crit_rate"],
-        "crit_damage": tool_input["crit_damage"],
-        "damage": _first_number(_state_stat_sources(state), ["damage"], 0),
-        "bottleneck_analysis": result.get("bottleneck_analysis", {}),
-        "recommended_actions": result.get("recommended_actions", result.get("available_bosses", [])),
-        "boss_clear_prediction": result.get("boss_clear_prediction", {}),
-        "data_reliability": result["data_reliability"],
-        "timestamp": "",
-    }
+    recommended_actions = _normalise_action_plans(result)
+    growth_report = _build_growth_report(state, tool_input, result, recommended_actions)
 
     new_state = dict(state)
     new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
     new_state["bottleneck_analysis"] = result.get("bottleneck_analysis", {})
     new_state["growth_report"] = growth_report
-    new_state["recommended_actions"] = growth_report["recommended_actions"]
+    new_state["recommended_actions"] = recommended_actions
     new_state["confidence_score"] = result.get("challenge_fit_score", 0.0)
 
     if validate_agent_outputs is not None:
@@ -2019,41 +1895,167 @@ def _compact_analytics_context(state: AgentState) -> Dict[str, Any]:
     return context
 
 
-ANALYTICS_TOOLS = [fetch_nexon_character_state, analyze_boss_readiness, find_available_bosses]
+def _compact_research_context(state: AgentState) -> Dict[str, Any]:
+    docs = []
+    for doc in (_value(state, "retrieved_docs", []) or [])[:4]:
+        content = str(_value(doc, "page_content", ""))[:700]
+        metadata = _value(doc, "metadata", {}) or {}
+        docs.append(
+            {
+                "page_content": content,
+                "source": _value(doc, "source", _value(metadata, "source", "")),
+                "score": _value(doc, "score", None),
+            }
+        )
 
-ANALYTICS_SYSTEM_PROMPT = f"""
+    return {
+        "context": str(_value(state, "context", ""))[:2500],
+        "retrieved_docs": docs,
+    }
+
+
+def _has_research_context(state: AgentState) -> bool:
+    return bool(str(_value(state, "context", "")).strip() or (_value(state, "retrieved_docs", []) or []))
+
+
+def _parse_action_plan_json(content: str) -> List[Dict[str, Any]]:
+    text = content.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\[[\s\S]*\]", text)
+        if not match:
+            return []
+        try:
+            parsed = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return []
+
+    if isinstance(parsed, dict):
+        parsed = parsed.get("recommended_actions", [])
+    if not isinstance(parsed, list):
+        return []
+    return [_normalise_action_plan(item, fallback_category="BOSS_READINESS") for item in parsed[:5]]
+
+
+def _parse_json_object(content: str) -> Dict[str, Any]:
+    text = content.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{[\s\S]*\}", text)
+        if not match:
+            return {}
+        try:
+            parsed = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return {}
+
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _merge_action_plans(base_actions: List[Dict[str, Any]], llm_actions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    merged: List[Dict[str, Any]] = []
+    seen = set()
+    for action in [*base_actions, *llm_actions]:
+        normalised = _normalise_action_plan(action)
+        if not _is_valid_recommendation_action(normalised):
+            continue
+        key = (normalised["category"], normalised["target"])
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(normalised)
+    return merged[:8]
+
+
+def _analysis_has_usable_result(state: AgentState) -> bool:
+    result = _value(_value(state, "tool_results", {}), "analystic", {}) or {}
+    if _value(result, "error"):
+        return False
+    if _value(result, "data_reliability") == "analysis_failed_or_missing_data":
+        return False
+    if _value(result, "boss_requirements") or _value(result, "available_bosses"):
+        return True
+    if _value(result, "clear_status") or _value(result, "boss_clear_prediction"):
+        return True
+    return bool(_value(state, "recommended_actions", []))
+
+
+def _agent_state_payload(state: AgentState) -> Dict[str, Any]:
+    return {
+        "user_query": _value(state, "user_query", ""),
+        "analytics": _compact_analytics_context(state),
+        "research_context": _compact_research_context(state),
+        "current_recommended_actions": _value(state, "recommended_actions", []),
+    }
+
+ANALYTICS_TOOLS = [analyze_boss_readiness, find_available_bosses]
+
+
+ANALYTICS_STATE_SYSTEM_PROMPT = f"""
 {master_prompt}
 
-You are the MapleStory analystic agent for boss readiness.
-Use analyze_boss_readiness when the user asks about one target boss.
-Use find_available_bosses when the user asks which bosses are possible.
-Explain the result in Korean.
+너는 메이플스토리 분석 전문가이다.\
+다음의 룰은 꼭지켜야한다.
+- 툴을 사용하여 분석 결과를 제시하여야한다.
+- 절대로 문장으로 답변을 제시하면 안된다.
+- 절대로 너가 임의로 답변을 만들면 안된다. 
+- 너는 어디까지나 state에 이미 들어온 유저 캐릭터의 스탯과 DB를 통해 가져온 보스 필요스탯을 비교하여 정의된 규칙에 따라서 적절성을 판단한후 그걸 정해진 state에 넣는것을 수행하는 절차의 일부이다.
+- 유저 캐릭터 정보는 AgentState에서만 읽고, 이 노드에서 외부 API를 호출하지 않는다.
 
-Rules:
-- Use boss requirement data from the configured Neo4j graph connection.
-- Use character_profile, stat_summary, and equipment_summary from AgentState.
-- Use fetch_nexon_character_state when the user gives only a character name and AgentState is not populated yet.
-- Do not invoke the calculator agent; only consume values already present in AgentState.
-- Produce growth_report and recommended_actions as the analystic output contract.
-- Judge boss readiness with the weighted boss attempt fit score, not by one missing sub-stat alone.
-- Apply different stat priority profiles by boss tier: early, mid, late, and endgame.
-- Treat detailed lacking stats as bottlenecks and improvement advice unless level or force is a hard gate.
-- State whether the character is difficult, risky, challengeable, or recommended.
-- Explain the strongest bottlenecks first.
-- Do not invent boss requirements when the Neo4j connection or boss row is missing.
-- You may only use tools explicitly provided in the tools list.
-- Never invent tools.
-- Never call get_state.
+
 """.strip()
 
-ANALYTICS_ANSWER_SYSTEM_PROMPT = f"""
-{master_prompt}
+def _generate_agent_state_update(
+    state: AgentState,
+    model: str | BaseChatModel | None,
+) -> Dict[str, Any]:
+    if model is None:
+        if get_llm is None:
+            raise RuntimeError("common.get_model.get_llm is required for analystic agent state generation.")
+        _load_project_env()
+        model = get_llm()
 
-You are the MapleStory analystic final response writer.
-Answer in Korean using only the provided compact analysis context.
-Do not call tools. Do not request raw API data.
-Keep the answer concise and mention the strongest boss recommendations first.
-""".strip()
+    analytic_agent = create_agent(
+        model=model,
+        tools=ANALYTICS_TOOLS,
+        system_prompt=ANALYTICS_STATE_SYSTEM_PROMPT,
+    )
+    result = analytic_agent.invoke(
+        {
+            "messages": [
+                HumanMessage(
+                    content=(
+                        "Return only a JSON object for AgentState update. "
+                        f"Input: {json.dumps(_agent_state_payload(state), ensure_ascii=False)}"
+                    )
+                )
+            ]
+        }
+    )
+    parsed = _parse_json_object(result["messages"][-1].content)
+    parsed["recommended_actions"] = [
+        normalised
+        for action in (parsed.get("recommended_actions") or [])[:5]
+        if isinstance(action, dict)
+        for normalised in [_normalise_action_plan(action)]
+        if _is_valid_recommendation_action(normalised)
+    ]
+    interpretation = parsed.get("llm_interpretation")
+    parsed["llm_interpretation"] = interpretation if isinstance(interpretation, dict) else {}
+    return parsed
+
+
+
 
 
 def analytics_agent(
@@ -2063,9 +2065,16 @@ def analytics_agent(
     boss_db_connection: Any = None,
     state: AgentState,
 ) -> AgentState:
-    """Create the analystic agent with common.get_model and Neo4j-backed tools."""
+    """Run analystic node with create_agent tools and return AgentState-compatible fields."""
 
     user_query = state["user_query"]
+    try:
+        parsed_query = _parse_user_query_with_runnable(user_query, model)
+        state = _apply_parsed_query_to_state(state, parsed_query)
+    except Exception as exc:
+        state = _append_state_error(state, f"analystic query parser failed: {exc}")
+        state = _fallback_parse_query_to_state(state)
+
     if boss_graph_connection is not None:
         set_boss_neo4j_connection(boss_graph_connection)
     elif boss_db_connection is not None:
@@ -2075,36 +2084,108 @@ def analytics_agent(
         boss_graph_connection=boss_graph_connection,
         boss_db_connection=boss_db_connection,
     )
-    if model is None:
-        if get_llm is None:
-            raise RuntimeError("common.get_model.get_llm is required for the analystic agent.")
-        _load_project_env()
-        model = get_llm()
+    if _analysis_has_usable_result(state):
+        try:
+            agent_update = _generate_agent_state_update(state, model)
+        except Exception as exc:
+            state = _append_state_error(state, f"analystic create_agent state generation failed: {exc}")
+            agent_update = {}
+    else:
+        agent_update = {}
 
-    analytics_agent = create_agent(
-        model=model,
-        tools=[],
-        system_prompt=ANALYTICS_SYSTEM_PROMPT
-    )
+    llm_actions = agent_update.get("recommended_actions") or []
+    llm_interpretation = agent_update.get("llm_interpretation") or {}
+    if llm_actions or llm_interpretation:
+        base_actions = [_normalise_action_plan(action) for action in (_value(state, "recommended_actions", []) or [])]
+        recommended_actions = _merge_action_plans(base_actions, llm_actions)
+        growth_report = dict(_value(state, "growth_report", {}) or {})
+        growth_report["recommended_actions"] = recommended_actions
+        if _has_research_context(state):
+            growth_report["data_reliability"] = "boss_requirements_from_neo4j_with_research_context"
 
-    analysis_context = _compact_analytics_context(state)
+        tool_results = dict(_value(state, "tool_results", {}) or {})
+        analystic_result = dict(_value(tool_results, "analystic", {}) or {})
+        analystic_result["llm_interpretation"] = llm_interpretation
+        analystic_result["agent_recommended_actions"] = llm_actions
+        analystic_result["recommended_actions"] = recommended_actions
+        analystic_result["data_reliability"] = growth_report.get(
+            "data_reliability",
+            analystic_result.get("data_reliability", "boss_requirements_from_neo4j"),
+        )
+        tool_results["analystic"] = analystic_result
 
-    result = analytics_agent.invoke({"messages": [HumanMessage(content=f'''질문:{user_query}
+        state = {
+            **state,
+            "tool_results": tool_results,
+            "growth_report": growth_report,
+            "recommended_actions": recommended_actions,
+        }
 
-    분석 요약:{analysis_context}
-    
-    위 분석 요약만 사용해서 답변하라''')]})
-    analysis = result["messages"][-1].content
-
+    if validate_agent_outputs is not None:
+        validate_agent_outputs("analystic", state)
     return {
         **state,
         "user_query": user_query,
-        "analysis": analysis,
     }
 
 
 # if __name__ == "__main__":
-#     state = analytics_agent(
-#         state={"user_query": "내 캐릭터는 음표인데 노멀 발드릭스 가능해?"}
-#     )
-#     print(state["analysis"])
+#     input_state = {
+#     "user_query": "나 음표인데 하드 검마 가능해?",
+#     "character_name": "음표",
+#     "ocid": "816a7a2b984c1a3031fbc144d913a189",
+#     "character_profile": {
+#         "character_name": "음표",
+#         "job_name": "플레임위자드",
+#         "world_name": "스카니아",
+#         "level": 294,
+#         "gender": "여",
+#         "final_stats": {
+#             "combat_power": 144744108,
+#             "main_stat": 60976,
+#             "int_val": 60976,
+#             "boss_damage": 320,
+#             "ignore_def": 89.89,
+#             "crit_rate": 90,
+#             "crit_damage": 91.55,
+#             "final_damage": 122.75,
+#             "arcane_force": 1375,
+#             "authentic_force": 800,
+#             "starforce": 279,
+#             "magic_power": 7104,
+#             "attack_power": 2268,
+#             "union_level": 8935,
+#         },
+#         "union_info": {
+#             "union_level": 8935,
+#             "union_grade": "그랜드 마스터 유니온 2",
+#         },
+#     },
+#     "stat_summary": {
+#         "combat_power": 144744108,
+#         "main_stat": 60976,
+#         "int_val": 60976,
+#         "str_val": 3870,
+#         "dex": 3494,
+#         "luk": 6306,
+#         "boss_damage": 320,
+#         "ignore_def": 89.89,
+#         "crit_rate": 90,
+#         "crit_damage": 91.55,
+#         "final_damage": 122.75,
+#         "arcane_force": 1375,
+#         "authentic_force": 800,
+#         "starforce": 279,
+#         "magic_power": 7104,
+#         "attack_power": 2268,
+#         "union_level": 8935,
+#     },
+#     "equipment_summary": {
+#         "equipment_count": 24,
+#         "starforce": 264,
+#         "total_starforce": 264,
+#     },
+
+# }
+#     result_state = analytics_agent(state=input_state)
+#     print(result_state['growth_report'])
