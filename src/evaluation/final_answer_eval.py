@@ -1,22 +1,23 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
 
-import pandas as pd
 
-from src.evaluation.ragas_eval import parse_contexts, parse_metadata
-
-
+EVALUATION_PASS = "PASS"
+EVALUATION_REPLAN = "REPLAN"
+EVALUATION_TOOL_KEY = "evaluation"
 DEFAULT_MIN_ANSWER_CHARS = 20
 DEFAULT_CONTEXT_OVERLAP_THRESHOLD = 0.05
 DEFAULT_QUESTION_OVERLAP_THRESHOLD = 0.05
 DEFAULT_REFERENCE_OVERLAP_THRESHOLD = 0.10
 DEFAULT_MIN_CONFIDENCE_ON_PASS = 0.50
+DEFAULT_MAX_RETRY_COUNT = 2
 
 INSUFFICIENT_INFO_PATTERNS = (
     "\uc815\ubcf4\uac00 \ubd80\uc871",
@@ -28,6 +29,48 @@ INSUFFICIENT_INFO_PATTERNS = (
     "insufficient",
     "not enough",
 )
+
+
+def parse_contexts(value: Any) -> list[str]:
+    if is_empty_scalar(value):
+        return []
+    if isinstance(value, list | tuple):
+        return [str(item).strip() for item in value if str(item).strip()]
+
+    text = str(value).strip()
+    if not text:
+        return []
+
+    if text.startswith("[") and text.endswith("]"):
+        for loader in (json.loads, ast.literal_eval):
+            try:
+                parsed = loader(text)
+            except (ValueError, SyntaxError, TypeError, json.JSONDecodeError):
+                continue
+            if isinstance(parsed, list | tuple):
+                return [str(item).strip() for item in parsed if str(item).strip()]
+
+    if "\n\n" in text:
+        return [part.strip() for part in text.split("\n\n") if part.strip()]
+    return [text]
+
+
+def parse_metadata(value: Any) -> dict[str, Any]:
+    if is_empty_scalar(value):
+        return {}
+    if isinstance(value, dict):
+        return value
+    text = str(value).strip()
+    if not text:
+        return {}
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        try:
+            parsed = ast.literal_eval(text)
+        except (ValueError, SyntaxError):
+            return {"raw": text}
+    return parsed if isinstance(parsed, dict) else {"raw": parsed}
 
 
 @dataclass(frozen=True)
@@ -146,7 +189,7 @@ def evaluate_final_answer_record(
         warnings.append("final answer has no source citation")
     if not handles_insufficient_context:
         warnings.append("final answer should state that evidence is insufficient")
-    if validation_passed is False:
+    if validation_passed is False and metadata.get("enforce_validation_passed") is True:
         warnings.append("state validation_passed is false")
     if not confidence_consistent:
         warnings.append("confidence score is inconsistent with validation result")
@@ -183,7 +226,9 @@ def evaluate_final_answer_records(
     question_overlap_threshold: float = DEFAULT_QUESTION_OVERLAP_THRESHOLD,
     reference_overlap_threshold: float = DEFAULT_REFERENCE_OVERLAP_THRESHOLD,
     min_confidence_on_pass: float = DEFAULT_MIN_CONFIDENCE_ON_PASS,
-) -> pd.DataFrame:
+) -> Any:
+    import pandas as pd
+
     return pd.DataFrame(
         [
             evaluate_final_answer_record(
@@ -209,7 +254,9 @@ def evaluate_final_answer_csv(
     question_overlap_threshold: float = DEFAULT_QUESTION_OVERLAP_THRESHOLD,
     reference_overlap_threshold: float = DEFAULT_REFERENCE_OVERLAP_THRESHOLD,
     min_confidence_on_pass: float = DEFAULT_MIN_CONFIDENCE_ON_PASS,
-) -> pd.DataFrame:
+) -> Any:
+    import pandas as pd
+
     frame = pd.read_csv(input_path)
     result = evaluate_final_answer_records(
         frame.to_dict(orient="records"),
@@ -227,9 +274,9 @@ def evaluate_final_answer_csv(
 
 
 def summarize_final_answer_eval(
-    frame: pd.DataFrame,
+    frame: Any,
     group_by: str | None = None,
-) -> pd.DataFrame:
+) -> Any:
     metric_columns = [
         "has_answer",
         "answer_relevant",
@@ -244,6 +291,10 @@ def summarize_final_answer_eval(
         "final_answer_chars",
     ]
     existing_metrics = [column for column in metric_columns if column in frame.columns]
+    if not existing_metrics:
+        raise ValueError(
+            "summary requires an evaluated CSV. Run the evaluate command first."
+        )
     if group_by:
         if group_by not in frame.columns:
             raise ValueError(f"summary group column does not exist: {group_by}")
@@ -254,6 +305,208 @@ def summarize_final_answer_eval(
     summary = frame[existing_metrics].mean(numeric_only=True).to_frame().T
     summary.insert(0, "row_count", len(frame))
     return summary
+
+
+def run_final_answer_evaluation(
+    state: dict[str, Any],
+    *,
+    apply_route: bool = False,
+    max_retry_count: int = DEFAULT_MAX_RETRY_COUNT,
+    require_source_citation: bool = True,
+    min_answer_chars: int = DEFAULT_MIN_ANSWER_CHARS,
+    context_overlap_threshold: float = DEFAULT_CONTEXT_OVERLAP_THRESHOLD,
+    question_overlap_threshold: float = DEFAULT_QUESTION_OVERLAP_THRESHOLD,
+    reference_overlap_threshold: float = DEFAULT_REFERENCE_OVERLAP_THRESHOLD,
+    min_confidence_on_pass: float = DEFAULT_MIN_CONFIDENCE_ON_PASS,
+) -> dict[str, Any]:
+    """Evaluate AgentState after final_answer and write an evaluation tool result.
+
+    When apply_route is False, this function is a pure evaluation node: it stores
+    tool_results["evaluation"], then lets src.agents.final_answer.route_after_evaluation
+    decide the next graph hop. When apply_route is True, it also writes next_agent,
+    retry_target, retry_count, and is_complete for simpler pipelines.
+    """
+
+    result = evaluate_final_answer_record(
+        final_answer_state_to_record(state),
+        require_source_citation=require_source_citation,
+        min_answer_chars=min_answer_chars,
+        context_overlap_threshold=context_overlap_threshold,
+        question_overlap_threshold=question_overlap_threshold,
+        reference_overlap_threshold=reference_overlap_threshold,
+        min_confidence_on_pass=min_confidence_on_pass,
+    )
+    retry_count = int(state.get("retry_count") or 0)
+    evaluation = build_evaluation_tool_result(
+        result,
+        retry_count=retry_count,
+        max_retry_count=max_retry_count,
+    )
+
+    next_state = {
+        **state,
+        "validation_passed": result.final_pass,
+        "feedback": evaluation["feedback"],
+        "tool_results": merge_evaluation_tool_result(state, evaluation),
+    }
+
+    if not apply_route:
+        return next_state
+
+    routed_state = dict(next_state)
+    route = evaluation["route"]
+    next_agent = evaluation["next_agent"]
+    routed_state["next_agent"] = next_agent
+    routed_state["retry_target"] = next_agent
+    routed_state["is_complete"] = route == EVALUATION_PASS
+    if route != EVALUATION_PASS:
+        routed_state["retry_count"] = retry_count + 1
+    return routed_state
+
+
+def final_answer_state_to_record(state: dict[str, Any]) -> dict[str, Any]:
+    retrieved_docs = state.get("retrieved_docs") or []
+    sources = state.get("sources") or sources_from_retrieved_docs(retrieved_docs)
+    metadata = {
+        "requires_source_citation": bool(sources),
+        "state_eval": True,
+    }
+    return {
+        "eval_id": state.get("eval_id") or state.get("request_id") or "",
+        "rag_type": state.get("rag_type") or "",
+        "task_type": state.get("task_type") or state.get("intent") or "",
+        "question": state.get("user_query") or state.get("question") or "",
+        "final_answer": state.get("final_answer") or "",
+        "contexts": state.get("context") or contexts_from_retrieved_docs(retrieved_docs),
+        "sources": sources,
+        "reference": state.get("reference") or state.get("ground_truth") or "",
+        "confidence_score": state.get("confidence_score"),
+        "metadata": metadata,
+    }
+
+
+def build_evaluation_tool_result(
+    result: FinalAnswerEvalResult,
+    *,
+    retry_count: int,
+    max_retry_count: int = DEFAULT_MAX_RETRY_COUNT,
+) -> dict[str, Any]:
+    route = choose_evaluation_route(
+        result,
+        retry_count=retry_count,
+        max_retry_count=max_retry_count,
+    )
+    next_agent = next_agent_for_route(route)
+    feedback = build_evaluation_feedback(result, route)
+    return {
+        "agent": "evaluation",
+        "is_pass": result.final_pass,
+        "route": route,
+        "next_agent": next_agent,
+        "retry_target": next_agent,
+        "feedback": feedback,
+        "reason": feedback,
+        "warnings": result.warnings,
+        "failure_type": infer_failure_type(result),
+        "score": calculate_quality_score(result),
+        "metrics": result.to_record(),
+        "retry_count": retry_count,
+        "max_retry_count": max_retry_count,
+    }
+
+
+def choose_evaluation_route(
+    result: FinalAnswerEvalResult,
+    *,
+    retry_count: int,
+    max_retry_count: int,
+) -> str:
+    if result.final_pass:
+        return EVALUATION_PASS
+    return EVALUATION_REPLAN
+
+
+def next_agent_for_route(route: str) -> str:
+    if route == EVALUATION_PASS:
+        return "FINISH"
+    return "supervisor"
+
+
+def build_evaluation_feedback(result: FinalAnswerEvalResult, route: str) -> str:
+    if result.final_pass:
+        return "Final answer passed rule-based evaluation."
+    warning_text = "; ".join(result.warnings) if result.warnings else "unknown failure"
+    return f"Send back to supervisor: {warning_text}"
+
+
+def infer_failure_type(result: FinalAnswerEvalResult) -> str:
+    if result.final_pass:
+        return ""
+    if not result.answer_relevant:
+        return "question_mismatch"
+    if not result.handles_insufficient_context:
+        return "missing_context"
+    if not result.grounded_in_context:
+        return "ungrounded"
+    if not result.has_source_citation:
+        return "missing_source"
+    if not result.has_answer:
+        return "empty_answer"
+    return "quality_rule_failed"
+
+
+def calculate_quality_score(result: FinalAnswerEvalResult) -> float:
+    checks = [
+        result.has_answer,
+        result.answer_relevant,
+        result.grounded_in_context,
+        result.has_source_citation,
+        result.handles_insufficient_context,
+        result.confidence_consistent,
+    ]
+    return round(sum(1 for check in checks if check) / len(checks), 6)
+
+
+def merge_evaluation_tool_result(
+    state: dict[str, Any],
+    evaluation: dict[str, Any],
+) -> dict[str, Any]:
+    tool_results = dict(state.get("tool_results") or {})
+    tool_results[EVALUATION_TOOL_KEY] = evaluation
+    return tool_results
+
+
+def contexts_from_retrieved_docs(retrieved_docs: Any) -> list[str]:
+    contexts: list[str] = []
+    if not isinstance(retrieved_docs, list):
+        return contexts
+    for document in retrieved_docs:
+        if not isinstance(document, dict):
+            continue
+        content = str(document.get("page_content") or "").strip()
+        if content:
+            contexts.append(content)
+    return contexts
+
+
+def sources_from_retrieved_docs(retrieved_docs: Any) -> list[str]:
+    sources: list[str] = []
+    if not isinstance(retrieved_docs, list):
+        return sources
+    for document in retrieved_docs:
+        if not isinstance(document, dict):
+            continue
+        metadata = document.get("metadata") or {}
+        source = (
+            metadata.get("url")
+            or metadata.get("source_url")
+            or metadata.get("source")
+            or metadata.get("title")
+            or document.get("source")
+        )
+        if source and str(source) not in sources:
+            sources.append(str(source))
+    return sources
 
 
 def is_answer_relevant(
@@ -342,10 +595,9 @@ def get_first_text(row: dict[str, Any], *keys: str) -> str:
 def is_empty_scalar(value: Any) -> bool:
     if value is None:
         return True
-    try:
-        return bool(pd.isna(value))
-    except (TypeError, ValueError):
-        return False
+    if isinstance(value, float):
+        return value != value
+    return False
 
 
 def parse_optional_float(value: Any) -> float | None:
@@ -405,6 +657,13 @@ def main() -> None:
     summary_parser.add_argument("--output-csv")
     summary_parser.add_argument("--group-by")
 
+    state_parser = subparsers.add_parser("evaluate-state")
+    state_parser.add_argument("state_json")
+    state_parser.add_argument("--output-json")
+    state_parser.add_argument("--apply-route", action="store_true")
+    state_parser.add_argument("--no-source-required", action="store_true")
+    state_parser.add_argument("--max-retry-count", type=int, default=DEFAULT_MAX_RETRY_COUNT)
+
     args = parser.parse_args()
     if args.command == "evaluate":
         frame = evaluate_final_answer_csv(
@@ -419,6 +678,8 @@ def main() -> None:
         )
         print(frame.to_string(index=False))
     elif args.command == "summary":
+        import pandas as pd
+
         frame = summarize_final_answer_eval(
             pd.read_csv(args.final_answer_eval_csv),
             group_by=args.group_by,
@@ -427,6 +688,19 @@ def main() -> None:
             Path(args.output_csv).parent.mkdir(parents=True, exist_ok=True)
             frame.to_csv(args.output_csv, index=False)
         print(frame.to_string(index=False))
+    elif args.command == "evaluate-state":
+        state = json.loads(Path(args.state_json).read_text(encoding="utf-8"))
+        result = run_final_answer_evaluation(
+            state,
+            apply_route=args.apply_route,
+            max_retry_count=args.max_retry_count,
+            require_source_citation=not args.no_source_required,
+        )
+        output = json.dumps(result, ensure_ascii=False, indent=2)
+        if args.output_json:
+            Path(args.output_json).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.output_json).write_text(output, encoding="utf-8")
+        print(output)
 
 
 if __name__ == "__main__":
