@@ -1,21 +1,20 @@
 # SKN27-3rd-1TEAM
+
 ```mermaid
 flowchart TD
-    A["AgentState 수신"] --> B["validate_agent_inputs('final_answer')"]
-    B --> C["근거 후보 수집<br/>context, retrieved_docs, tool_results"]
-    C --> D["출처 중복 제거<br/>url/title 기준 병합"]
-    D --> E["신뢰도 정렬<br/>HIGH > MEDIUM > LOW"]
-    E --> F["최신성 정렬<br/>HIGH > MEDIUM > UNKNOWN > LOW"]
-    F --> G["질문 관련도 확인<br/>score, intent, keyword"]
-    G --> H{"근거 충분 여부"}
+    A["질문"] --> B["supervisor Agent"]
 
-    H -->|"충분"| I["공통 프롬프트 원칙 반영"]
-    H -->|"부족"| J["근거 부족 메시지 생성<br/>추측 금지"]
+    B -->|"입력 state 계약 검증"| D["research"]
+    B -->|"입력 state 계약 검증"| E["analystic"]
+    B -->|"입력 state 계약 검증"| F["calculator"]
 
-    I --> K["draft_answer 생성"]
-    J --> K
-    K --> L["출처/단계 로그 구성"]
-    L --> M["final_answer 확정"]
-    M --> N["validation_passed, confidence_score 기록"]
-    N --> O["validate_agent_outputs('final_answer')"]
+    D --> D1["RAG<br/>(vector, graph, postgre)"]
+    D -->|"출력 state 계약 검증"| B
+    E -->|"출력 state 계약 검증"| B
+    F -->|"출력 state 계약 검증"| B
+    B -->|"입력 state 계약 검증"| G["final_answer"]
+    G --> H{"evaluation"}
+    H -->|"is_pass == True"| I["답변"]
+    H -->|"is_pass == False<br/>문맥/근거는 적합"| G
+    H -->|"질문 무관<br/>라우팅 오류"| B
 ```
