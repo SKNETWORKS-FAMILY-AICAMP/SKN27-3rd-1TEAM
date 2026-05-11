@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import os
 import sys
+import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +22,7 @@ from app.common.chat_memory import (  # noqa: E402
     build_agent_messages,
     compact_agent_history,
 )
+from app.common.bgm import render_bgm_sidebar  # noqa: E402
 from app.common.chat_render import (  # noqa: E402
     ASSISTANT_AVATAR_PATH,
     USER_AVATAR_PATH,
@@ -38,7 +41,7 @@ PAGE_CONFIG = {
 }
 
 # 기본 BGM 영상 ID. ``MAPLE_YOUTUBE_BGM`` 으로 다른 id를 주거나, 빈 문자열이면 BGM 끔.
-_DEFAULT_YOUTUBE_BGM = "cMTdq4VGqoI"
+_DEFAULT_YOUTUBE_BGM = "VtvcSMZcEdE"
 _env_bgm = os.environ.get("MAPLE_YOUTUBE_BGM")
 if _env_bgm is None:
     YOUTUBE_BGM_VIDEO_ID = _DEFAULT_YOUTUBE_BGM
@@ -67,6 +70,66 @@ def init_session_state() -> None:
         st.session_state.agent_errors = []
     if "pending_user_input" not in st.session_state:
         st.session_state.pending_user_input = None
+    if "chat_sessions" not in st.session_state:
+        st.session_state.chat_sessions = []
+    if "current_chat_id" not in st.session_state:
+        st.session_state.current_chat_id = None
+
+
+def make_chat_title(user_input: str) -> str:
+    compact = " ".join(user_input.split())
+    if not compact:
+        return "New chat"
+    return compact[:24] + ("..." if len(compact) > 24 else "")
+
+
+def save_current_chat() -> None:
+    chat_id = st.session_state.get("current_chat_id")
+    if not chat_id:
+        return
+
+    for session in st.session_state.chat_sessions:
+        if session["id"] == chat_id:
+            session["messages"] = deepcopy(st.session_state.messages)
+            session["agent_messages"] = deepcopy(st.session_state.agent_messages)
+            session["agent_memory_summary"] = st.session_state.agent_memory_summary
+            session["agent_errors"] = list(st.session_state.agent_errors)
+            session["pending_user_input"] = st.session_state.pending_user_input
+            return
+
+
+def load_chat_session(chat_id: str) -> None:
+    save_current_chat()
+    for session in st.session_state.chat_sessions:
+        if session["id"] == chat_id:
+            st.session_state.current_chat_id = chat_id
+            st.session_state.messages = deepcopy(session["messages"])
+            st.session_state.agent_messages = deepcopy(session["agent_messages"])
+            st.session_state.agent_memory_summary = session["agent_memory_summary"]
+            st.session_state.agent_errors = list(session["agent_errors"])
+            st.session_state.pending_user_input = session.get("pending_user_input")
+            return
+
+
+def start_new_chat(user_input: str) -> None:
+    chat_id = f"chat-{int(time.time() * 1000)}"
+    session = {
+        "id": chat_id,
+        "title": make_chat_title(user_input),
+        "messages": [WELCOME_MESSAGE.copy(), {"role": "user", "content": user_input}],
+        "agent_messages": [],
+        "agent_memory_summary": "",
+        "agent_errors": [],
+        "pending_user_input": user_input,
+        "created_at": time.time(),
+    }
+    st.session_state.chat_sessions.insert(0, session)
+    st.session_state.current_chat_id = chat_id
+    st.session_state.messages = deepcopy(session["messages"])
+    st.session_state.agent_messages = []
+    st.session_state.agent_memory_summary = ""
+    st.session_state.agent_errors = []
+    st.session_state.pending_user_input = user_input
 
 
 @st.cache_resource(show_spinner=False)
@@ -169,11 +232,16 @@ def handle_user_input() -> None:
     if not user_input:
         return
 
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    st.session_state.pending_user_input = user_input
     if st.session_state.get("active_page") != "chat":
+        start_new_chat(user_input)
         st.switch_page("pages/7_Chat.py")
-    st.rerun()
+
+    if not st.session_state.get("current_chat_id"):
+        start_new_chat(user_input)
+    else:
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        st.session_state.pending_user_input = user_input
+        save_current_chat()
 
 
 def process_pending_response() -> None:
@@ -182,11 +250,17 @@ def process_pending_response() -> None:
         return
 
     with st.spinner("답변을 준비하고 있습니다..."):
+        started_at = time.perf_counter()
         answer = get_assistant_response(user_input)
+        st.session_state.last_response_seconds = round(
+            time.perf_counter() - started_at,
+            2,
+        )
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
     append_agent_turn(user_input, answer)
     st.session_state.pending_user_input = None
+    save_current_chat()
     st.rerun()
 
 
@@ -200,10 +274,10 @@ def main() -> None:
             st.caption("배경 음악 (자동 재생은 음소거로 시작합니다)")
             render_youtube_embed(
                 YOUTUBE_BGM_VIDEO_ID,
-                height=88,
-                muted=True,
+                height=120,
+                muted=False,
                 loop=True,
-                controls=False,
+                controls=True,
             )
     render_style()
     render_messages()

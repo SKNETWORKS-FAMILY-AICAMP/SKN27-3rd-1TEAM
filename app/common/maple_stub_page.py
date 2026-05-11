@@ -4,6 +4,7 @@ from html import escape
 
 import streamlit as st
 
+from app.common.bgm import render_bgm_sidebar
 from app.common.chat_render import render_style, render_top_navigation
 
 
@@ -12,10 +13,13 @@ def render_stub_body(
 ) -> None:
     render_style()
     render_top_navigation(active_menu_key=active_menu_key)
+    with st.sidebar:
+        render_bgm_sidebar()
     t = escape(title)
     b = escape(body).replace("\n", "<br>")
     st.markdown(
         f"""
+<div class="maple-sub-page-marker"></div>
 <div style="max-width:720px;margin:6.5rem auto 2rem;padding:0 1.25rem;color:#e8e3e7;">
 <h2 style="margin-bottom:0.5rem;">{t}</h2>
 <p style="color:#a09ca8;line-height:1.6;">{b}</p>

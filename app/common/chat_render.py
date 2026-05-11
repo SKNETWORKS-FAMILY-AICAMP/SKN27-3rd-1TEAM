@@ -27,10 +27,20 @@ PROMPT_CHIPS = (
 
 
 def _queue_prompt(prompt: str) -> None:
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    st.session_state.pending_user_input = prompt
     if st.session_state.get("active_page") != "chat":
+        from app.maple_chat import start_new_chat
+
+        start_new_chat(prompt)
         st.switch_page("pages/7_Chat.py")
+    else:
+        from app.maple_chat import save_current_chat, start_new_chat
+
+        if not st.session_state.get("current_chat_id"):
+            start_new_chat(prompt)
+        else:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.pending_user_input = prompt
+            save_current_chat()
     st.rerun()
 
 
