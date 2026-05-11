@@ -30,3 +30,19 @@ def render_bgm_sidebar() -> None:
         loop=True,
         controls=True,
     )
+
+
+def render_global_bgm() -> None:
+    """Render hidden autoplay BGM on every page that calls the shared layout."""
+    video_id = get_youtube_bgm_video_id()
+    if not video_id:
+        return
+
+    render_youtube_embed(
+        video_id,
+        height=1,
+        muted=True,
+        loop=True,
+        controls=False,
+        hidden=True,
+    )

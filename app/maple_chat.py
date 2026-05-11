@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 import sys
 import time
 from copy import deepcopy
@@ -18,11 +17,11 @@ for path in (PROJECT_ROOT, SRC_ROOT):
         sys.path.insert(0, str(path))
 
 
+from app.common.bgm import render_global_bgm  # noqa: E402
 from app.common.chat_memory import (  # noqa: E402
     build_agent_messages,
     compact_agent_history,
 )
-from app.common.bgm import render_bgm_sidebar  # noqa: E402
 from app.common.chat_render import (  # noqa: E402
     ASSISTANT_AVATAR_PATH,
     USER_AVATAR_PATH,
@@ -30,7 +29,6 @@ from app.common.chat_render import (  # noqa: E402
     render_style,
     render_top_navigation,
 )
-from app.common.youtube_embed import render_youtube_embed  # noqa: E402
 
 
 PAGE_CONFIG = {
@@ -39,14 +37,6 @@ PAGE_CONFIG = {
     "layout": "wide",
     "initial_sidebar_state": "collapsed",
 }
-
-# 기본 BGM 영상 ID. ``MAPLE_YOUTUBE_BGM`` 으로 다른 id를 주거나, 빈 문자열이면 BGM 끔.
-_DEFAULT_YOUTUBE_BGM = "VtvcSMZcEdE"
-_env_bgm = os.environ.get("MAPLE_YOUTUBE_BGM")
-if _env_bgm is None:
-    YOUTUBE_BGM_VIDEO_ID = _DEFAULT_YOUTUBE_BGM
-else:
-    YOUTUBE_BGM_VIDEO_ID = _env_bgm.strip() or None
 
 WELCOME_MESSAGE = {
     "role": "assistant",
@@ -269,17 +259,8 @@ def main() -> None:
 
     init_session_state()
     st.session_state.active_page = "home"
-    if YOUTUBE_BGM_VIDEO_ID:
-        with st.sidebar:
-            st.caption("배경 음악 (자동 재생은 음소거로 시작합니다)")
-            render_youtube_embed(
-                YOUTUBE_BGM_VIDEO_ID,
-                height=120,
-                muted=False,
-                loop=True,
-                controls=True,
-            )
     render_style()
+    render_global_bgm()
     render_messages()
     render_top_navigation(active_menu_key="chat")
     handle_user_input()

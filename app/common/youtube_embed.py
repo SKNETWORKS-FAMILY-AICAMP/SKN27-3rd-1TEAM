@@ -40,6 +40,7 @@ def render_youtube_embed(
     muted: bool = True,
     loop: bool = False,
     controls: bool = False,
+    hidden: bool = False,
 ) -> None:
     """Embed YouTube in the page; autoplay on load when ``muted`` is True."""
     src = youtube_embed_url(
@@ -49,11 +50,20 @@ def render_youtube_embed(
         controls=controls,
         loop=loop,
     )
+    wrapper_style = (
+        "position:fixed;left:-9999px;bottom:0;width:1px;height:1px;"
+        "overflow:hidden;opacity:0;pointer-events:none;"
+        if hidden
+        else "overflow:hidden;border-radius:8px;line-height:0;"
+    )
+    iframe_width = "1" if hidden else "100%"
+    iframe_height = "1" if hidden else str(height)
+    component_height = 1 if hidden else height + 8
     html = f"""
-<div style="overflow:hidden;border-radius:8px;line-height:0;">
+<div style="{wrapper_style}">
   <iframe
-    width="100%"
-    height="{height}"
+    width="{iframe_width}"
+    height="{iframe_height}"
     src="{src}"
     title="YouTube"
     frameborder="0"
@@ -64,4 +74,4 @@ def render_youtube_embed(
   ></iframe>
 </div>
 """
-    components.html(html, height=height + 8, scrolling=False)
+    components.html(html, height=component_height, scrolling=False)
