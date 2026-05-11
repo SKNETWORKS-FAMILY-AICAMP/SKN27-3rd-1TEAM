@@ -208,3 +208,6 @@ database/postgres/
 database/postgres_data/
 database/mapleqa_full_handoff_with_raw_2026-05-06/
 CODEX.md
+
+# Evaluation generated CSV outputs
+src/evaluation/results/*.csv
