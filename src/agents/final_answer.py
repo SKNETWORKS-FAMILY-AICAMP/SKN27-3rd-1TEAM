@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from common.get_model import get_llm, has_llm_config
+from common.get_model import get_llm
 from common.prompt import master_prompt
 from common.state import AgentState, JsonValue, RetrievedDocument
 from common.validator import (
@@ -210,7 +210,7 @@ def generate_final_answer(state: AgentState, draft_answer: str) -> str:
 
 
 def should_use_llm() -> bool:
-    return has_llm_config()
+    return True
 
 
 def build_final_answer_messages(
