@@ -371,7 +371,7 @@ def print_summary(session):
 def main():
     load_dotenv()
     uri = env("NEO4J_URI", "bolt://localhost:7687")
-    user = env("NEO4J_USER", "admin")
+    user = env("NEO4J_USER", "neo4j") ##
     password = env("NEO4J_PASSWORD", "admin123")
     database = env("NEO4J_DATABASE", "mapledb")
 
