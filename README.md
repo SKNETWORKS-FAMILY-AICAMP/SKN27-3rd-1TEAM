@@ -14,11 +14,12 @@
 3. [기술 스택 및 사용 모델](#3-기술-스택-및-사용-모델)
 4. [시스템 아키텍처 및 구조](#4-시스템-아키텍처-및-구조)
 5. [주요 기능](#5-주요-기능)
-6. [RAG](#6-rag)
-7. [테스트 및 결과](#7-테스트-및-결과)
-8. [향후 서비스 방향](#8-향후-서비스-방향)
-9. [결론](#9-결론)
-10. [회고](#10-회고)
+6. [데이터 파이프라인 및 DB 적재](#6-데이터-파이프라인-및-db-적재)
+7. [RAG](#7-rag)
+8. [테스트 및 결과](#8-테스트-및-결과)
+9. [향후 서비스 방향](#9-향후-서비스-방향)
+10. [결론](#10-결론)
+11. [회고](#11-회고)
 <br>
 
 ---
@@ -106,13 +107,25 @@
 
 #### 타 서비스 비교
 
-<!-- 추후 작성 -->
+| 구분 | 일반 검색/위키 | 커뮤니티 질문 | 메이플 정보 사이트 | 본 프로젝트 |
+|---|---|---|---|---|
+| 정보 범위 | 문서 단위 검색 | 사용자 경험 중심 | 랭킹/아이템/시세 중심 | 공식 문서, 위키, API, 추천 룰 통합 |
+| 최신성 | 직접 확인 필요 | 답변 시점 의존 | 제공 범위별 상이 | Web RAG 기반 최신 공지 보강 |
+| 개인화 | 낮음 | 질문자 설명 의존 | 일부 캐릭터 조회 중심 | NEXON API 기반 캐릭터 상태 분석 |
+| 근거 추적 | 출처 직접 확인 | 근거 누락 가능 | 화면 정보 중심 | 출처, 신뢰도, 최신성 메타데이터 관리 |
+| 추천 방식 | 사용자가 직접 판단 | 답변자 숙련도 의존 | 정적 지표 중심 | MultiAgent 기반 검색, 분석, 계산, 최종 답변 분리 |
+| 확장성 | 검색 결과 의존 | 재현성 낮음 | 기능 범위 고정 | PostgreSQL/PGVector, Neo4j, Web RAG 병행 |
 
 <br>
 
 #### 시장성
 
-<!-- 추후 작성 -->
+- 장기간 운영 게임 특성상 누적된 정보량과 높은 탐색 비용
+- 신규/복귀 유저의 성장 루트, 보스 컷, 장비 우선순위 판단 수요
+- 패치, 이벤트, 테스트월드 업데이트에 따른 지속적 정보 갱신 수요
+- 캐릭터 API 기반 개인화 분석 서비스로 확장 가능한 구조
+- 챗봇, 보스 추천, 장비 성장 계산, 미니게임을 결합한 서비스형 UI 확장성
+- 커뮤니티 의존 답변을 공식 근거 기반 답변으로 전환할 수 있는 가능성
 
 <br>
 
@@ -334,18 +347,6 @@ SKN27-3rd-1TEAM/
 
 <div align="center">
   <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTIx/MDAxNzc4NTUxNDQyMzg1.nfkb-wFserIH-_4q8blTLHfn4mYrJDX9EgA6818nIKkg.aUfw9GliNZkTfRMZfNUoE1Y0hkE7f2LxvqPmw2KVOZ0g.PNG/3._%EB%A9%94%EC%9D%B4%ED%94%8C%EB%B4%87.png?type=w966" width="760" />
-</div>
-
-#### 3-1. 채팅 화면
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjM5/MDAxNzc4NTU4MTgyNzUw.FJHePqZZnToniVdJ-WPBgBVtwlCUW3VwOgOgQ-UNlHsg._TKGFTvlE9RsqUwGuLXkrHaoH7EIxE_4j2LmK7q7gyMg.PNG/%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84%EC%84%9C.png?type=w966" width="760" />
-</div>
-
-#### 3-2. 미니게임
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNzkg/MDAxNzc4NTQ5MTg3MjI5.Fvzx582T9Nk8pWyEY6zrN0HA0Eo287sfvevMBKlw574g.kAStWT1gCwGUxe1Cdn7sT09Ff7-yeaSvEA1js6pX9OYg.PNG/%EB%AF%B8%EB%8B%88%EA%B2%8C%EC%9E%84.png?type=w966" width="760" />
 </div>
 
 #### 4. 내 캐릭터
@@ -574,7 +575,50 @@ flowchart TD
 
 ---
 
-# 6. RAG
+# 6. 데이터 파이프라인 및 DB 적재
+
+### 데이터 파이프라인
+
+```mermaid
+flowchart LR
+    A["Raw Data<br/>NEXON API / 공식 문서 / wiki / 추천 룰"] --> B["전처리<br/>정규화 / 중복 제거 / 메타데이터 통일"]
+    B --> C["최종 데이터셋<br/>maple_chatbot_final_dataset.csv"]
+    C --> D["PostgreSQL<br/>source_catalog / documents / document_chunks"]
+    D --> E["PGVector<br/>document_embeddings vector(768)"]
+    D --> F["Entity Index<br/>wiki_entities"]
+    E --> G["DB Search RAG"]
+    F --> G
+```
+
+### 데이터 적재 의도
+
+| 구분 | 적재 의도 | 설계 이유 |
+|---|---|---|
+| 원천 데이터 | 공식 API, 공식 문서, 위키, 추천 룰 수집 | 답변 근거 범위 확보 |
+| 전처리 데이터 | 문서 형식, 출처, 카테고리, 신뢰도 통일 | RAG 검색 조건 표준화 |
+| PostgreSQL | 문서 원문, 청크, 출처, 엔티티 색인 관리 | 정형 메타데이터와 검색 근거 통합 |
+| PGVector | 청크 단위 임베딩 저장 | 의미 기반 문서 검색 |
+| wiki_entities | 보스, 몬스터, 스킬, 아이템, 퀘스트, 맵 색인 | 고유명사 검색 보강 |
+| DB dump | 팀원 간 동일 DB 상태 공유 | 실행 환경 재현성 확보 |
+
+### 주요 기능별 데이터 연결
+
+| 주요 기능 | 연결 데이터/테이블 | 활용 포인트 |
+|---|---|---|
+| 캐릭터 정보 조회 | `characters`, `char_stat`, `char_equipment`, NEXON Open API | 캐릭터 기본 정보, 스탯, 장비 기준 데이터 |
+| DB Search RAG | `documents`, `document_chunks`, `document_embeddings`, `wiki_entities` | 공식/위키/추천 룰 기반 근거 검색 |
+| GraphDB RAG | Neo4j 직업, 보스, 장비, 이벤트 관계 데이터 | 관계형 질의와 보스 요구 스펙 탐색 |
+| Web Search RAG | 공식 공지, 이벤트, 업데이트, 테스트월드 문서 | 최신 정보 보강 |
+| 캐릭터 분석 | `char_stat`, `char_equipment`, `analysis_reports` | 보스 도전 가능성, 성장 병목 진단 |
+| 장비 계산 | `char_equipment`, `char_set_effects`, 장비 옵션 데이터 | 장비별 기여도, 스타포스, 성장 우선순위 |
+| 최종 답변 생성 | RAG 검색 결과, Agent 결과, 출처 메타데이터 | 근거 기반 최종 응답 조합 |
+| 답변 평가 | `docs/ragas_report.md`, RAGAS 평가 결과 | 검색 품질과 답변 근거성 검증 |
+| 미니게임 | Streamlit 화면 데이터, 캐릭터/랭킹 연계 가능 데이터 | 챗봇 외 부가 사용자 경험 |
+
+
+---
+
+# 7. RAG
 
 ### 데이터 수집
 
@@ -658,13 +702,25 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 
 ---
 
-# 7. 테스트 및 결과
+# 8. 테스트 및 결과
+
+### 챗봇 시연 결과
+
+<div align="center">
+  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjM5/MDAxNzc4NTU4MTgyNzUw.FJHePqZZnToniVdJ-WPBgBVtwlCUW3VwOgOgQ-UNlHsg._TKGFTvlE9RsqUwGuLXkrHaoH7EIxE_4j2LmK7q7gyMg.PNG/%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84%EC%84%9C.png?type=w966" width="760" />
+</div>
+
+### 미니게임 시연 결과
+
+<div align="center">
+  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNzkg/MDAxNzc4NTQ5MTg3MjI5.Fvzx582T9Nk8pWyEY6zrN0HA0Eo287sfvevMBKlw574g.kAStWT1gCwGUxe1Cdn7sT09Ff7-yeaSvEA1js6pX9OYg.PNG/%EB%AF%B8%EB%8B%88%EA%B2%8C%EC%9E%84.png?type=w966" width="760" />
+</div>
 
 <br>
 
 ---
 
-# 8. 향후 서비스 방향
+# 9. 향후 서비스 방향
 
 - NEXON Open API 실시간 연동을 통해 캐릭터명 기반 개인화 추천 고도화
 - 보스 컷, 장비 성장 수치, 보상 가치 기준에 대한 팀 검수 및 최신화
@@ -676,7 +732,7 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 
 ---
 
-# 9. 결론
+# 10. 결론
 
 - 메이플스토리 공식 API, 공식 문서, 위키 문서, 추천 룰 데이터 통합
 - RAG 기반 챗봇의 검색 근거 체계화
@@ -694,7 +750,7 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 
 ---
 
-# 10. 회고
+# 11. 회고
 
 ## 김민경
 
