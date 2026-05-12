@@ -180,8 +180,8 @@ GraphDB는 문서 유사도 검색을 대체하는 저장소가 아니라 PGVect
 | 항목 | 값 |
 | --- | ---: |
 | `documents` | 3567 |
-| `document_chunks` | 10069 |
-| `document_embeddings` | 10069 |
+| `document_chunks` | 10025 |
+| `document_embeddings` | 10025 |
 | `wiki_entities` | 1328 |
 | 미임베딩 chunk | 0 |
 | embedding model | `google/embeddinggemma-300m` |

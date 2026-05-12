@@ -5,6 +5,7 @@ import ast
 import csv
 import hashlib
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Iterable
@@ -23,6 +24,7 @@ from common.logging_config import set_logging
 logger = set_logging()
 
 VECTOR_EXCLUDED_SCOPES = {"api_static_sample"}
+OFFICIAL_COMMENT_BLOCK_RE = re.compile(r"(?:\s*-{5,})?\s*댓글\s+\d+\s+.*$", re.DOTALL)
 
 DEFAULT_DATASET = (
     Path(__file__).resolve().parents[1]
@@ -71,6 +73,16 @@ def parse_tags(value: str | None) -> list[str]:
 
 def normalize_tag(value: str) -> str:
     return " ".join(value.strip().lower().split())
+
+
+def clean_rag_text(row: dict[str, str]) -> str:
+    text = row.get("rag_text") or row.get("text_preview") or ""
+    if (
+        row.get("source_type") == "official"
+        and row.get("collection_scope") == "official_document_collection"
+    ):
+        text = OFFICIAL_COMMENT_BLOCK_RE.sub("", text)
+    return text.strip()
 
 
 def raise_csv_field_limit() -> None:
@@ -150,7 +162,7 @@ def upsert_source(cur, row: dict[str, str]) -> str:
     return source_id
 
 
-def upsert_document(cur, row: dict[str, str], source_id: str) -> str:
+def upsert_document(cur, row: dict[str, str], source_id: str, content: str) -> str:
     cur.execute(
         """
         INSERT INTO documents (
@@ -202,7 +214,7 @@ def upsert_document(cur, row: dict[str, str], source_id: str) -> str:
             row.get("content_format") or None,
             parse_int(row.get("text_length")),
             row.get("text_preview") or None,
-            row.get("rag_text") or row.get("text_preview") or "",
+            content,
             parse_bool(row.get("rag_ready")),
             parse_bool(row.get("is_final_keep")),
             parse_date(row.get("published_at")),
@@ -350,8 +362,9 @@ def load_dataset(
             reader = csv.DictReader(file)
             with conn.cursor() as cur:
                 for row in reader:
+                    content = clean_rag_text(row)
                     source_id = upsert_source(cur, row)
-                    document_id = upsert_document(cur, row, source_id)
+                    document_id = upsert_document(cur, row, source_id, content)
                     replace_tags(cur, document_id, parse_tags(row.get("tags")))
                     if row.get("collection_scope") in VECTOR_EXCLUDED_SCOPES:
                         removed_count = remove_chunks(cur, document_id)
@@ -366,7 +379,7 @@ def load_dataset(
                             cur,
                             document_id,
                             row["doc_id"],
-                            row.get("rag_text") or "",
+                            content,
                             chunk_size,
                             overlap,
                         )

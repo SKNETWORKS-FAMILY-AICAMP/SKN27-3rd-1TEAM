@@ -1,0 +1,56 @@
+﻿requirement_id,boss_name,level,main_stat,arcane_force,boss_damage,ignore_def,authentic_force,confidence
+requirement_7421eadae6ad13181d01,자쿰,90,0,0,0,0,0,draft
+requirement_8478b62ccf3f221f9b23,카오스 자쿰,150,3000,0,50,0,0,draft
+requirement_764b3a7f85d20b792106,노멀 스우,220,15000,0,150,85,0,draft
+requirement_02b206c1423efdb0fd60,노멀 데미안,220,15000,0,150,85,0,draft
+requirement_833be4ea15d44fee8999,노멀 루시드,235,25000,360,200,90,0,draft
+requirement_7a12b872defcbcdab93f,노멀 윌,235,28000,760,220,90,0,draft
+requirement_da6bbdd85986aa5f2fda,하드 루시드,250,50000,360,300,93,0,draft
+requirement_f3623f3ad8f9a8fa8ce3,하드 윌,250,55000,760,320,93,0,draft
+requirement_3eb48e1436308af0fd7e,진 힐라,250,65000,900,350,94,0,draft
+requirement_0ad01b01c8216ad323b8,검은 마법사,255,90000,1320,400,95,0,draft
+requirement_supplemental_rule_0001,Zakum,60,2000,0,0,0,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0002,Zakum,100,5000,0,30,30,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0003,Zakum,160,12000,0,100,70,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0004,Hilla,140,8000,0,50,50,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0005,Hilla,190,15000,0,120,75,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0006,Pink Bean,180,15000,0,120,75,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0007,Cygnus,170,14000,0,100,70,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0008,Cygnus,190,20000,0,150,80,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0009,Papulatus,180,16000,0,120,75,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0010,Papulatus,210,26000,0,180,85,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0011,Von Leon,170,12000,0,100,70,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0012,Magnus,150,10000,0,70,60,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0013,Magnus,190,20000,0,150,80,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0014,Magnus,220,32000,0,200,88,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0015,Von Bon,210,26000,0,180,85,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0016,Pierre,210,26000,0,180,85,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0017,Crimson Queen,210,26000,0,180,85,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0018,Vellum,220,32000,0,200,88,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0019,Akechi Mitsuhide,220,32000,0,200,88,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0020,Lotus,220,34000,0,200,88,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0021,Damien,220,34000,0,200,88,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0022,Lucid,225,38000,360,220,90,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0023,Lucid,230,50000,360,250,92,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0024,Lucid,250,70000,360,300,94,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0025,Will,240,45000,560,240,91,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0026,Will,250,60000,560,280,93,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0027,Will,260,85000,560,330,95,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0028,Gloom,255,70000,730,300,94,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0029,Guard Captain Darknell,260,75000,850,320,95,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0030,Verus Hilla,260,80000,900,320,95,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0031,Black Mage,275,110000,1320,350,97,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0032,Seren,275,120000,0,350,96,150,project_draft_rule_needs_review
+requirement_supplemental_rule_0033,Kalos,275,130000,0,360,97,200,project_draft_rule_needs_review
+requirement_supplemental_rule_0034,Kaling,280,145000,0,380,97,230,project_draft_rule_needs_review
+requirement_supplemental_rule_0035,Limbo,285,170000,0,400,98,0,project_draft_rule_needs_review
+requirement_supplemental_rule_0036,Lotus,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0037,Lotus,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0038,Damien,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0039,Lucid,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0040,Lucid,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0041,Will,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0042,Will,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0043,Will,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0044,Verus Hilla,,,,,,,project_draft_rule_needs_review
+requirement_supplemental_rule_0045,Black Mage,,,,,,,project_draft_rule_needs_review

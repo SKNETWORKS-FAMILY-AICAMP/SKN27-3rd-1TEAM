@@ -1,6 +1,7 @@
 import csv
 import hashlib
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -43,6 +44,7 @@ OFFICIAL_DOCUMENT_CATEGORIES = {
     "official_update",
     "testworld_update",
 }
+OFFICIAL_COMMENT_BLOCK_RE = re.compile(r"(?:\s*-{5,})?\s*댓글\s+\d+\s+.*$", re.DOTALL)
 RULE_CATEGORIES = {
     "boss_recommendation_rule",
     "equipment_growth_rule",
@@ -197,6 +199,13 @@ def text_preview(value, limit=1000):
     if len(text) > limit:
         return text[:limit].rstrip() + "..."
     return text
+
+
+def clean_rag_text(row):
+    text = row.get("rag_text") or row.get("text_preview") or ""
+    if row.get("category", "").strip() in OFFICIAL_DOCUMENT_CATEGORIES:
+        text = OFFICIAL_COMMENT_BLOCK_RE.sub("", text)
+    return text.strip()
 
 
 def read_handoff_dataset(path=HANDOFF_DATASET_PATH):
@@ -459,7 +468,7 @@ def build_handoff_sources(handoff_rows):
                 "url": url,
                 "trust_level": row.get("trust_level", ""),
                 "collected_at": row.get("collected_at", ""),
-                "text_preview": text_preview(row.get("rag_text") or row.get("text_preview"), 1000),
+                "text_preview": text_preview(clean_rag_text(row), 1000),
                 "reliability": trust_to_reliability(row.get("trust_level")),
             }
         )
@@ -518,7 +527,8 @@ def build_handoff_graph_rows(handoff_rows):
         source_id = "source_" + clean_handoff_id(row.get("unified_id") or row.get("doc_id"))
         title = row.get("title") or row.get("primary_name") or ""
         primary_name = (row.get("primary_name") or title).strip()
-        fields = parse_rule_fields(row.get("rag_text") or "")
+        cleaned_text = clean_rag_text(row)
+        fields = parse_rule_fields(cleaned_text)
 
         if category == "official_event" and primary_name:
             event_id = "event_" + stable_id(primary_name)
@@ -529,7 +539,7 @@ def build_handoff_graph_rows(handoff_rows):
                         "name": primary_name,
                         "event_type": "official_event",
                         "target_user": "all",
-                        "description": text_preview(row.get("rag_text") or title, 300),
+                        "description": text_preview(cleaned_text or title, 300),
                         "start_date": "",
                         "end_date": "",
                     }
@@ -554,7 +564,7 @@ def build_handoff_graph_rows(handoff_rows):
                             "difficulty": difficulty,
                             "required_level": extract_number(fields.get("recommended level") or fields.get("minimum level")),
                             "boss_type": "boss",
-                            "description": text_preview(row.get("rag_text"), 300),
+                            "description": text_preview(cleaned_text, 300),
                         }
                     )
                     seen_bosses.add(boss_id)
@@ -615,7 +625,7 @@ def build_handoff_graph_rows(handoff_rows):
                             "difficulty": "",
                             "required_level": "",
                             "boss_type": "boss",
-                            "description": text_preview(row.get("rag_text"), 300),
+                            "description": text_preview(cleaned_text, 300),
                         }
                     )
                     seen_bosses.add(boss_id)
@@ -629,7 +639,7 @@ def build_handoff_graph_rows(handoff_rows):
                             "name": reward_name,
                             "reward_type": fields.get("reward_category") or "reward",
                             "value_type": fields.get("value_tier") or "",
-                            "description": fields.get("why_it_matters") or text_preview(row.get("rag_text"), 300),
+                            "description": fields.get("why_it_matters") or text_preview(cleaned_text, 300),
                         }
                     )
                     seen_rewards.add(reward_id)
@@ -651,7 +661,7 @@ def build_handoff_graph_rows(handoff_rows):
                             "name": job_name,
                             "job_group": fields.get("job_group") or fields.get("job group") or "",
                             "main_stat": "",
-                            "description": text_preview(row.get("rag_text"), 300),
+                            "description": text_preview(cleaned_text, 300),
                         }
                     )
                     seen_jobs.add(job_id)
