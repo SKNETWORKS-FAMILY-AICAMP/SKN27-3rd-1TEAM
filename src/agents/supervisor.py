@@ -1,7 +1,7 @@
 import json
 
 from common.state import AgentState, AgentName
-from common.get_model import get_model
+from common.get_model import get_llm
 from common.prompt import master_prompt
 
 TASK_TYPES = {
@@ -57,17 +57,34 @@ def has_character_analysis_state(state: AgentState) -> bool:
 
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
-    llm = get_model()
+    llm = get_llm()
 
     existing_plan = state.get("plan") or []
     feedback = state.get("feedback", "")
     retry_count = state.get("retry_count", 0)
     errors = state.get("errors", [])
+    tool_results = state.get("tool_results") or {}
+    evaluation_result = (
+        tool_results.get("evaluation") if isinstance(tool_results, dict) else {}
+    )
+    is_evaluation_retry = (
+        state.get("retry_target") == "supervisor"
+        and state.get("validation_passed") is False
+        and bool(evaluation_result)
+    )
+    if not feedback and isinstance(evaluation_result, dict):
+        feedback = str(
+            evaluation_result.get("feedback")
+            or evaluation_result.get("reason")
+            or ""
+        )
 
     completed_agent = None
     remaining_plan = []
 
-    if existing_plan:
+    if is_evaluation_retry:
+        remaining_plan = existing_plan
+    elif existing_plan:
         # supervisor로 다시 돌아온 경우, plan의 첫 번째 agent는 방금 실행된 agent로 보고 제거
         completed_agent = existing_plan[0]
         remaining_plan = existing_plan[1:]
@@ -188,6 +205,9 @@ feedback: {feedback}
     if completed_agent and not feedback and plan and plan[0] == completed_agent:
         # feedback 없이 정상 진행 중이면 이미 실행한 agent를 다시 실행하지 않도록 제거
         plan = plan[1:]
+
+    if not plan:
+        plan = ["final_answer"]
 
     next_agent = response_dict.get("next_agent") or plan[0]
     if next_agent not in plan:

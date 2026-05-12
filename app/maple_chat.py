@@ -17,7 +17,7 @@ for path in (PROJECT_ROOT, SRC_ROOT):
         sys.path.insert(0, str(path))
 
 
-from app.common.bgm import render_global_bgm  # noqa: E402
+from app.common.bgm import render_page_bgm  # noqa: E402
 from app.common.chat_memory import (  # noqa: E402
     build_agent_messages,
     compact_agent_history,
@@ -216,13 +216,12 @@ def append_agent_turn(user_input: str, answer: str) -> None:
 
 
 def handle_user_input() -> None:
+    if st.session_state.get("active_page") != "chat":
+        return
+
     user_input = st.chat_input("Type your question here...")
     if not user_input:
         return
-
-    if st.session_state.get("active_page") != "chat":
-        start_new_chat(user_input)
-        st.switch_page("pages/7_Chat.py")
 
     if not st.session_state.get("current_chat_id"):
         start_new_chat(user_input)
@@ -230,6 +229,7 @@ def handle_user_input() -> None:
         st.session_state.messages.append({"role": "user", "content": user_input})
         st.session_state.pending_user_input = user_input
         save_current_chat()
+    st.rerun()
 
 
 def process_pending_response() -> None:
@@ -237,13 +237,12 @@ def process_pending_response() -> None:
     if not user_input:
         return
 
-    with st.spinner("답변을 준비하고 있습니다..."):
-        started_at = time.perf_counter()
-        answer = get_assistant_response(user_input)
-        st.session_state.last_response_seconds = round(
-            time.perf_counter() - started_at,
-            2,
-        )
+    started_at = time.perf_counter()
+    answer = get_assistant_response(user_input)
+    st.session_state.last_response_seconds = round(
+        time.perf_counter() - started_at,
+        2,
+    )
 
     st.session_state.messages.append({"role": "assistant", "content": answer})
     append_agent_turn(user_input, answer)
@@ -258,7 +257,7 @@ def main() -> None:
     init_session_state()
     st.session_state.active_page = "home"
     render_style()
-    render_global_bgm()
+    render_page_bgm("home")
     render_messages()
     render_top_navigation(active_menu_key="home")
     handle_user_input()

@@ -19,4 +19,5 @@ st.set_page_config(
 render_stub_body(
     title="라운지",
     body="상단 Maple Guide·메뉴로 채팅 및 다른 탭으로 이동할 수 있습니다.",
+    bgm_page_key="lounge",
 )

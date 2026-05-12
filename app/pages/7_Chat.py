@@ -11,7 +11,7 @@ from app.common.chat_render import (  # noqa: E402
     render_style,
     render_top_navigation,
 )
-from app.common.bgm import render_global_bgm  # noqa: E402
+from app.common.bgm import render_page_bgm  # noqa: E402
 from app.maple_chat import (  # noqa: E402
     PAGE_CONFIG,
     handle_user_input,
@@ -28,7 +28,7 @@ if not st.session_state.get("current_chat_id") and st.session_state.chat_session
     load_chat_session(st.session_state.chat_sessions[0]["id"])
 
 render_style()
-render_global_bgm()
+render_page_bgm("chat")
 render_chat_page()
 render_top_navigation(active_menu_key="chat")
 handle_user_input()
