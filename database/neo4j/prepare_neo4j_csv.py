@@ -529,7 +529,6 @@ def build_handoff_graph_rows(handoff_rows):
                         "name": primary_name,
                         "event_type": "official_event",
                         "target_user": "all",
-                        "description": text_preview(row.get("rag_text") or title, 300),
                         "start_date": "",
                         "end_date": "",
                     }
@@ -538,7 +537,7 @@ def build_handoff_graph_rows(handoff_rows):
             add_mention(source_id, "Event", event_id)
 
         if category in {"official_notice", "official_update", "testworld_update"}:
-            # 공식 문서는 Source로 보관하고, 제목/본문에서 핵심 엔티티를 탐지해 MENTIONED_IN으로 연결한다.
+            # 공식 문서는 Source 노드로만 보관한다.
             continue
 
         if category == "boss_recommendation_rule":
@@ -765,7 +764,6 @@ def main():
             "name": name,
             "event_type": event_type,
             "target_user": target_user,
-            "description": description,
             "start_date": "",
             "end_date": "",
         }
@@ -816,7 +814,7 @@ def main():
     )
     write_csv("equipment_catalog.csv", equipment, ["equipment_id", "name", "part", "slot", "item_type", "level_limit", "set_name"])
     write_csv("set_effects.csv", set_effects, ["set_effect_id", "name", "set_type", "description"])
-    write_csv("events.csv", events, ["event_id", "name", "event_type", "target_user", "description", "start_date", "end_date"])
+    write_csv("events.csv", events, ["event_id", "name", "event_type", "target_user", "start_date", "end_date"])
     write_csv("rewards.csv", rewards, ["reward_id", "name", "reward_type", "value_type", "description"])
     write_csv("contents.csv", contents, ["content_id", "name", "content_type", "reset_cycle", "description"])
     write_csv(
@@ -894,28 +892,6 @@ def main():
         for content_name in content_names:
             event_contents.append({"event_id": event["event_id"], "content_id": content_by_name[content_name]["content_id"]})
 
-    source_mentions = build_source_mentions(
-        sources,
-        [
-            ("StatType", stat_types, "stat_type_id", "code"),
-            ("Job", jobs, "job_id", "name"),
-            ("Boss", bosses, "boss_id", "name"),
-            ("EquipmentCatalog", equipment, "equipment_id", "name"),
-            ("SetEffect", set_effects, "set_effect_id", "name"),
-            ("Event", events, "event_id", "name"),
-            ("Reward", rewards, "reward_id", "name"),
-            ("Content", contents, "content_id", "name"),
-        ],
-    )
-    source_mentions.extend(handoff_graph["source_mentions"])
-    seen_mentions = {(row["source_id"], row["entity_label"], row["entity_id"]) for row in source_mentions}
-    for source_id in ["source_domain", "source_openapi"]:
-        for stat_type in stat_types:
-            key = (source_id, "StatType", stat_type["stat_type_id"])
-            if key not in seen_mentions:
-                source_mentions.append({"source_id": source_id, "entity_label": "StatType", "entity_id": stat_type["stat_type_id"]})
-                seen_mentions.add(key)
-
     write_csv("rel_job_main_stats.csv", unique_rows(job_main_stats, ["job_id", "stat_type_id"]), ["job_id", "stat_type_id"])
     write_csv("rel_boss_requirements.csv", unique_rows(boss_requirements, ["boss_id", "requirement_id"]), ["boss_id", "requirement_id"])
     write_csv("rel_requirement_stats.csv", unique_rows(requirement_stats, ["requirement_id", "stat_type_id"]), ["requirement_id", "stat_type_id", "value"])
@@ -923,8 +899,6 @@ def main():
     write_csv("rel_boss_rewards.csv", unique_rows(boss_rewards, ["boss_id", "reward_id"]), ["boss_id", "reward_id"])
     write_csv("rel_event_rewards.csv", unique_rows(event_rewards, ["event_id", "reward_id"]), ["event_id", "reward_id"])
     write_csv("rel_event_contents.csv", unique_rows(event_contents, ["event_id", "content_id"]), ["event_id", "content_id"])
-    write_csv("rel_source_mentions.csv", unique_rows(source_mentions, ["source_id", "entity_label", "entity_id"]), ["source_id", "entity_label", "entity_id"])
-
     manifest = [
         {"file_name": path.name, "row_count": sum(1 for _ in path.open("r", encoding="utf-8-sig")) - 1}
         for path in sorted(OUT_DIR.glob("*.csv"))

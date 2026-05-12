@@ -162,7 +162,6 @@ def load_nodes(session):
             SET n.name = row.name,
                 n.event_type = row.event_type,
                 n.target_user = row.target_user,
-                n.description = row.description,
                 n.start_date = row.start_date,
                 n.end_date = row.end_date
             """,
@@ -283,66 +282,6 @@ def load_relationships(session):
         rows = read_rows(file_name)
         run_batch(session, query, rows)
         print(f"loaded relationships: {file_name} ({len(rows)})")
-    load_source_mentions(session)
-
-
-def load_source_mentions(session):
-    rows = read_rows("rel_source_mentions.csv")
-    queries = {
-        "StatType": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:StatType {stat_type_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "Job": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:Job {job_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "Boss": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:Boss {boss_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "EquipmentCatalog": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:EquipmentCatalog {equipment_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "SetEffect": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:SetEffect {set_effect_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "Event": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:Event {event_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "Reward": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:Reward {reward_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-        "Content": """
-            UNWIND $rows AS row
-            MATCH (s:Source {source_id: row.source_id})
-            MATCH (n:Content {content_id: row.entity_id})
-            MERGE (n)-[:MENTIONED_IN]->(s)
-        """,
-    }
-    for label, query in queries.items():
-        label_rows = [row for row in rows if row.get("entity_label") == label]
-        if label_rows:
-            run_batch(session, query, label_rows)
-    print(f"loaded relationships: rel_source_mentions.csv ({len(rows)})")
 
 
 def print_summary(session):

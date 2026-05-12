@@ -29,7 +29,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `EquipmentCatalog` | 장비 카탈로그 | `equipment_id`, `name`, `part`, `slot`, `item_type`, `level_limit`, `set_name` |
 | `SetEffect` | 장비 세트 효과 | `set_effect_id`, `name`, `set_type`, `description` |
 | `StatRequirement` | 보스/콘텐츠 요구 스펙 | `requirement_id`, `boss_name`, `level`, `main_stat`, `boss_damage`, `ignore_def`, `arcane_force`, `authentic_force`, `confidence` |
-| `Event` | 이벤트 정보 | `event_id`, `name`, `event_type`, `start_date`, `end_date`, `target_user`, `description` |
+| `Event` | 이벤트 정보 | `event_id`, `name`, `event_type`, `start_date`, `end_date`, `target_user` |
 | `Reward` | 보상 정보 | `reward_id`, `name`, `reward_type`, `value_type`, `description` |
 | `Content` | 일일/주간/성장 콘텐츠 | `content_id`, `name`, `content_type`, `reset_cycle`, `description` |
 | `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `url`, `trust_level`, `collected_at`, `text_preview`, `reliability` (`HIGH`, `MEDIUM`, `LOW`) |
@@ -48,7 +48,6 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `RELATED_CONTENT` | `Event` | `Content` | 이벤트와 관련된 콘텐츠 |
 | `HELPS_GROWTH` | `Event` | `Content` | 이벤트가 성장 콘텐츠 수행에 도움 |
 | `REQUIRES_STAT` | `StatRequirement` | `StatType` | 요구 조건이 어떤 domain.py 스탯 필드를 기준으로 하는지 표시 |
-| `MENTIONED_IN` | `StatType/Job/Boss/EquipmentCatalog/Event/Content/Reward` | `Source` | 문서 출처에서 엔티티가 언급됨 |
 
 ## 4. 추가 데이터 선별 기준
 
@@ -67,9 +66,8 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 ```text
 (Boss)-[:HAS_REQUIREMENT]->(StatRequirement)
 (Boss)-[:DROPS_REWARD]->(Reward)
-(Job)-[:MENTIONED_IN]->(Source)
-(EquipmentCatalog)-[:MENTIONED_IN]->(Source)
-(Event)-[:MENTIONED_IN]->(Source)
+(Event)-[:PROVIDES_REWARD]->(Reward)
+(Event)-[:RELATED_CONTENT]->(Content)
 ```
 
 ## 5. domain.py와의 연결
@@ -122,15 +120,14 @@ RETURN e.name, r.name, r.reward_type;
 
 ```cypher
 MATCH (b:Boss)-[:HAS_REQUIREMENT]->(r:StatRequirement)
-MATCH (b)-[:MENTIONED_IN]->(s:Source)
 WHERE r.confidence <> "draft"
-RETURN b.name, b.difficulty, r.level, r.main_stat, s.title
+RETURN b.name, b.difficulty, r.level, r.main_stat
 LIMIT 10;
 ```
 
 ```cypher
-MATCH (e:Event {event_type: "official_event"})-[:MENTIONED_IN]->(s:Source)
-RETURN e.name, s.url, s.trust_level
+MATCH (e:Event {event_type: "official_event"})
+RETURN e.name, e.target_user, e.start_date, e.end_date
 ORDER BY e.name;
 ```
 
@@ -138,7 +135,7 @@ ORDER BY e.name;
 
 현재 seed 데이터는 1차 설계 및 Agent 연동용 기준 데이터이다. 보스 요구 스펙, 이벤트, 보상, 추천 장비 관계는 팀 검증 후 수치와 관계를 보완해야 한다.
 
-공식 문서나 Web RAG가 수집한 문서는 `Source` 노드로 저장하고, 추후 엔티티 추출을 통해 `MENTIONED_IN` 관계를 확장한다.
+공식 문서나 Web RAG가 수집한 문서는 `Source` 노드로 저장하되, 1차 GraphDB 적재에서는 `MENTIONED_IN` 관계를 생성하지 않는다.
 
 
 
