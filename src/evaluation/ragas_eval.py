@@ -458,12 +458,26 @@ def wrap_ragas_models(llm: Any | None = None, embeddings: Any | None = None) -> 
 
 
 def load_default_answer_llm() -> Any:
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    except ImportError:
+        pass
+
     from common.get_model import get_llm
 
     return get_llm()
 
 
 def load_default_embeddings() -> Any:
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    except ImportError:
+        pass
+
     from common.get_model import get_embedding_model
 
     return get_embedding_model()
@@ -698,7 +712,7 @@ def _collect_db_search_docs(question: str, top_k: int, **kwargs: Any) -> list[di
 
 
 def _collect_web_docs(question: str, top_k: int, **kwargs: Any) -> list[dict[str, Any]]:
-    from src.rag.web_search import WebSearchRAG, to_retrieved_documents
+    from src.rag.web_search import WebSearchRAG
 
     retriever = kwargs.pop("retriever", None) or WebSearchRAG()
     result = retriever.retrieve(
@@ -708,7 +722,37 @@ def _collect_web_docs(question: str, top_k: int, **kwargs: Any) -> list[dict[str
         max_results=kwargs.pop("max_results", top_k),
         max_contexts=kwargs.pop("max_contexts", top_k),
     )
-    return to_retrieved_documents(result)
+    return web_result_to_retrieved_documents(result)
+
+
+def web_result_to_retrieved_documents(result: dict[str, Any]) -> list[dict[str, Any]]:
+    docs = []
+    search_provider = result.get("search_provider")
+    search_query = result.get("search_query")
+    for context in result.get("contexts", []):
+        content = str(context.get("content") or "").strip()
+        source_url = context.get("url")
+        if not content:
+            continue
+        docs.append(
+            {
+                "page_content": content,
+                "metadata": {
+                    "title": context.get("title"),
+                    "source_url": source_url,
+                    "chunk_index": context.get("chunk_index"),
+                    "reliability": context.get("reliability"),
+                    "freshness": context.get("freshness"),
+                    "published_at": context.get("published_at"),
+                    "retrieval_method": "web",
+                    "search_provider": search_provider,
+                    "search_query": search_query,
+                },
+                "score": float(context.get("score") or 0),
+                "source": source_url or context.get("title") or "web",
+            }
+        )
+    return docs
 
 
 def _validate_records_for_ragas(records: Sequence[RagasRecord]) -> None:

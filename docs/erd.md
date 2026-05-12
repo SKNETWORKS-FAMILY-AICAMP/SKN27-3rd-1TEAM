@@ -64,7 +64,7 @@ source_catalog
 | 분석 | `action_plans` | 분석 결과 기반 성장 추천 액션 |
 | RAG | `source_catalog` | 공식 문서, 위키, 보조 룰 등 문서 출처 카탈로그 |
 | RAG | `documents` | RAG 원본 문서 |
-| RAG | `wiki_entities` | 위키 문서에서 추출 가능한 게임 엔티티 |
+| RAG | `wiki_entities` | 위키 문서에서 1차 추출한 게임 엔티티 색인 |
 | RAG | `tags` | 문서 태그 마스터 |
 | RAG | `document_tags` | 문서와 태그의 N:M 연결 |
 | RAG | `document_chunks` | 문서 검색 단위 청크 |
@@ -97,7 +97,7 @@ source_catalog
 - RAG 문서 영역은 `source_catalog`를 기준으로 독립 관리한다.
 - 문서 원문과 벡터 검색 단위를 `documents`, `document_chunks`, `document_embeddings`로 분리했다.
 - 문서 태그는 `tags`, `document_tags`로 정규화했다.
-- 위키형 문서의 엔티티 검색 확장을 위해 `wiki_entities`를 별도 테이블로 분리했다.
+- 위키형 문서의 엔티티 검색 확장을 위해 `wiki_entities`를 별도 테이블로 분리하고 1차 색인을 적재했다.
 
 ## 테이블 상세
 
@@ -390,7 +390,7 @@ RAG 검색의 원본 문서를 저장한다.
 
 ### wiki_entities
 
-위키 문서에서 추출 가능한 게임 엔티티를 저장한다.
+위키 문서에서 추출한 게임 엔티티 1차 색인을 저장한다.
 
 | 컬럼 | 타입 | 설명 |
 | --- | --- | --- |
@@ -455,7 +455,7 @@ RAG 검색의 원본 문서를 저장한다.
 | --- | --- | --- |
 | `id` | `uuid` | PK |
 | `chunk_id` | `uuid` | `document_chunks.id` 참조 |
-| `embedding` | `vector(1536)` | 청크 임베딩 벡터 |
+| `embedding` | `vector(768)` | `google/embeddinggemma-300m` 기반 청크 임베딩 벡터 |
 | `embedding_model` | `varchar(100)` | 임베딩 모델명 |
 | `created_at` | `timestamptz` | 생성 시각 |
 | `updated_at` | `timestamptz` | 수정 시각 |
@@ -774,4 +774,4 @@ erDiagram
 - `documents.source_id`는 `source_catalog.source_id`를 참조한다.
 - `document_tags`는 `(document_id, tag_id)` 복합 기본키를 사용한다.
 - `document_embeddings.chunk_id`는 `document_chunks.id`와 1:1로 연결된다.
-- PGVector의 실제 차원은 사용하는 임베딩 모델에 맞춰 조정될 수 있다.
+- 현재 PGVector 차원은 `google/embeddinggemma-300m` 기준 `vector(768)`이다.

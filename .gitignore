@@ -205,6 +205,12 @@ $RECYCLE.BIN/
 database/neo4j_data/
 database/neo4j_logs/
 database/postgres/
+!database/postgres/
+database/postgres/*
+!database/postgres/schema.sql
+!database/postgres/load_mapleqa_dataset.py
+!database/postgres/embed_document_chunks.py
+!database/postgres/load_wiki_entities.sql
 database/postgres_data/
 database/mapleqa_full_handoff_with_raw_2026-05-06/
 CODEX.md
