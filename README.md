@@ -58,11 +58,11 @@
     <td align="center">팀원</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/m2k-dcyh13">GitHub</a></td>
-    <td align="center"><a href="https://github.com/nanseong">GitHub</a></td>
-    <td align="center"><a href="https://github.com/enooola0204-spec">GitHub</a></td>
-    <td align="center"><a href="https://github.com/techshin31">GitHub</a></td>
-    <td align="center"><a href="https://github.com/hjoo10200">GitHub</a></td>
+    <td align="center"><a href="https://github.com/m2k-dcyh13">m2k-dcyh13</a></td>
+    <td align="center"><a href="https://github.com/nanseong">nanseong</a></td>
+    <td align="center"><a href="https://github.com/enooola0204-spec">enooola0204-spec</a></td>
+    <td align="center"><a href="https://github.com/techshin31">techshin31</a></td>
+    <td align="center"><a href="https://github.com/hjoo10200">hjoo10200</a></td>
   </tr>
   <tr>
     <td align="center">프로젝트 구조<br>요구사항 정의<br>Supervisor Agent<br>Streamlit Chatbot<br>코드 통합<br>WBS</td>
