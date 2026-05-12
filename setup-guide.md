@@ -61,12 +61,6 @@ SKN27-3rd-1TEAM/
 │  │  ├─ analysis_service.py        # 보스 판단, 병목 분석
 │  │  └─ recommendation_service.py  # 성장 추천
 │  │
-│  ├─ ML/
-│  │  ├─ feature engineering.py
-│  │  ├─ training.py
-│  │  ├─ modeling.py
-│  │  └─ evaluator.py
-│  │
 │  └─ evaluation/
 │     ├─ ragas_eval.py
 │     └─ answer_eval.py
