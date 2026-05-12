@@ -73,6 +73,28 @@ def parse_metadata(value: Any) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {"raw": parsed}
 
 
+def parse_sources(value: Any) -> list[Any]:
+    if is_empty_scalar(value):
+        return []
+    if isinstance(value, list | tuple):
+        return [item for item in value if not is_empty_scalar(item)]
+
+    text = str(value).strip()
+    if not text:
+        return []
+
+    if text.startswith("[") and text.endswith("]"):
+        for loader in (json.loads, ast.literal_eval):
+            try:
+                parsed = loader(text)
+            except (ValueError, SyntaxError, TypeError, json.JSONDecodeError):
+                continue
+            if isinstance(parsed, list | tuple):
+                return [item for item in parsed if not is_empty_scalar(item)]
+
+    return [text]
+
+
 @dataclass(frozen=True)
 class FinalAnswerEvalResult:
     eval_id: str
@@ -80,13 +102,16 @@ class FinalAnswerEvalResult:
     task_type: str
     question: str
     has_answer: bool
-    answer_relevant: bool
+    question_relevant: bool
     grounded_in_context: bool
-    has_source_citation: bool
+    has_source: bool
+    source_reliability_valid: bool
     handles_insufficient_context: bool
+    api_response_compatible: bool
     confidence_consistent: bool
     final_pass: bool
     final_answer_chars: int
+    source_count: int
     source_citation_count: int
     question_overlap: float
     context_overlap: float
@@ -102,13 +127,16 @@ class FinalAnswerEvalResult:
             "task_type": self.task_type,
             "question": self.question,
             "has_answer": self.has_answer,
-            "answer_relevant": self.answer_relevant,
+            "question_relevant": self.question_relevant,
             "grounded_in_context": self.grounded_in_context,
-            "has_source_citation": self.has_source_citation,
+            "has_source": self.has_source,
+            "source_reliability_valid": self.source_reliability_valid,
             "handles_insufficient_context": self.handles_insufficient_context,
+            "api_response_compatible": self.api_response_compatible,
             "confidence_consistent": self.confidence_consistent,
             "final_pass": self.final_pass,
             "final_answer_chars": self.final_answer_chars,
+            "source_count": self.source_count,
             "source_citation_count": self.source_citation_count,
             "question_overlap": self.question_overlap,
             "context_overlap": self.context_overlap,
@@ -137,7 +165,7 @@ def evaluate_final_answer_record(
     contexts = parse_contexts(
         get_first_value(row, "contexts", "context", "retrieved_contexts")
     )
-    sources = parse_contexts(get_first_value(row, "sources", "source_urls"))
+    sources = parse_sources(get_first_value(row, "sources", "source_urls"))
     metadata = parse_metadata(row.get("metadata"))
     confidence_score = parse_optional_float(
         get_first_value(row, "confidence_score", "confidence")
@@ -153,7 +181,7 @@ def evaluate_final_answer_record(
     context_overlap = compute_overlap(answer_text, contexts)
     reference_overlap = compute_overlap(answer_text, [reference] if reference else [])
 
-    answer_relevant = is_answer_relevant(
+    question_relevant = is_question_relevant(
         question_overlap=question_overlap,
         reference_overlap=reference_overlap,
         has_reference=bool(reference.strip()),
@@ -166,11 +194,18 @@ def evaluate_final_answer_record(
     handles_insufficient_context = bool(contexts) or says_insufficient_info
 
     source_citation_count = count_source_citations(answer_text)
-    has_source_citation = source_citation_count > 0
+    has_source = bool(sources)
+    source_reliability_valid = has_valid_source_reliability(sources)
     source_required = should_require_source_citation(
         metadata=metadata,
         default_required=require_source_citation,
         has_sources=bool(sources),
+    )
+    api_response_compatible = is_api_response_compatible(
+        has_answer=has_answer,
+        has_source=has_source,
+        source_reliability_valid=source_reliability_valid,
+        says_insufficient_info=says_insufficient_info,
     )
 
     confidence_consistent = is_confidence_consistent(
@@ -181,14 +216,18 @@ def evaluate_final_answer_record(
 
     if not has_answer:
         warnings.append("final answer is empty or too short")
-    if not answer_relevant:
-        warnings.append("final answer does not sufficiently overlap the question/reference")
+    if not question_relevant:
+        warnings.append("final answer is not relevant to the user question")
     if not grounded_in_context:
-        warnings.append("final answer is not sufficiently grounded in contexts")
-    if source_required and not has_source_citation:
-        warnings.append("final answer has no source citation")
+        warnings.append("final answer is not grounded in context or state evidence")
+    if source_required and not has_source:
+        warnings.append("final answer has no source")
+    if not source_reliability_valid:
+        warnings.append("source reliability must be HIGH, MEDIUM, or LOW")
     if not handles_insufficient_context:
         warnings.append("final answer should state that evidence is insufficient")
+    if not api_response_compatible:
+        warnings.append("final answer is not compatible with ApiResponseChat response/sources/steps")
     if validation_passed is False and metadata.get("enforce_validation_passed") is True:
         warnings.append("state validation_passed is false")
     if not confidence_consistent:
@@ -201,13 +240,16 @@ def evaluate_final_answer_record(
         task_type=task_type,
         question=question,
         has_answer=has_answer,
-        answer_relevant=answer_relevant,
+        question_relevant=question_relevant,
         grounded_in_context=grounded_in_context,
-        has_source_citation=has_source_citation,
+        has_source=has_source,
+        source_reliability_valid=source_reliability_valid,
         handles_insufficient_context=handles_insufficient_context,
+        api_response_compatible=api_response_compatible,
         confidence_consistent=confidence_consistent,
         final_pass=final_pass,
         final_answer_chars=len(answer_text),
+        source_count=len(sources),
         source_citation_count=source_citation_count,
         question_overlap=round(question_overlap, 6),
         context_overlap=round(context_overlap, 6),
@@ -279,16 +321,19 @@ def summarize_final_answer_eval(
 ) -> Any:
     metric_columns = [
         "has_answer",
-        "answer_relevant",
+        "question_relevant",
         "grounded_in_context",
-        "has_source_citation",
+        "has_source",
+        "source_reliability_valid",
         "handles_insufficient_context",
+        "api_response_compatible",
         "confidence_consistent",
         "final_pass",
         "question_overlap",
         "context_overlap",
         "reference_overlap",
         "final_answer_chars",
+        "source_count",
     ]
     existing_metrics = [column for column in metric_columns if column in frame.columns]
     if not existing_metrics:
@@ -368,7 +413,7 @@ def final_answer_state_to_record(state: dict[str, Any]) -> dict[str, Any]:
     retrieved_docs = state.get("retrieved_docs") or []
     sources = state.get("sources") or sources_from_retrieved_docs(retrieved_docs)
     metadata = {
-        "requires_source_citation": bool(sources),
+        "requires_source_citation": bool(sources or state.get("context")),
         "state_eval": True,
     }
     return {
@@ -442,14 +487,18 @@ def build_evaluation_feedback(result: FinalAnswerEvalResult, route: str) -> str:
 def infer_failure_type(result: FinalAnswerEvalResult) -> str:
     if result.final_pass:
         return ""
-    if not result.answer_relevant:
+    if not result.question_relevant:
         return "question_mismatch"
     if not result.handles_insufficient_context:
         return "missing_context"
     if not result.grounded_in_context:
         return "ungrounded"
-    if not result.has_source_citation:
+    if not result.has_source:
         return "missing_source"
+    if not result.source_reliability_valid:
+        return "invalid_source_reliability"
+    if not result.api_response_compatible:
+        return "api_response_incompatible"
     if not result.has_answer:
         return "empty_answer"
     return "quality_rule_failed"
@@ -458,10 +507,12 @@ def infer_failure_type(result: FinalAnswerEvalResult) -> str:
 def calculate_quality_score(result: FinalAnswerEvalResult) -> float:
     checks = [
         result.has_answer,
-        result.answer_relevant,
+        result.question_relevant,
         result.grounded_in_context,
-        result.has_source_citation,
+        result.has_source,
+        result.source_reliability_valid,
         result.handles_insufficient_context,
+        result.api_response_compatible,
         result.confidence_consistent,
     ]
     return round(sum(1 for check in checks if check) / len(checks), 6)
@@ -489,27 +540,36 @@ def contexts_from_retrieved_docs(retrieved_docs: Any) -> list[str]:
     return contexts
 
 
-def sources_from_retrieved_docs(retrieved_docs: Any) -> list[str]:
-    sources: list[str] = []
+def sources_from_retrieved_docs(retrieved_docs: Any) -> list[dict[str, str]]:
+    sources: list[dict[str, str]] = []
     if not isinstance(retrieved_docs, list):
         return sources
     for document in retrieved_docs:
         if not isinstance(document, dict):
             continue
         metadata = document.get("metadata") or {}
-        source = (
+        source_url = (
             metadata.get("url")
             or metadata.get("source_url")
             or metadata.get("source")
-            or metadata.get("title")
             or document.get("source")
         )
-        if source and str(source) not in sources:
-            sources.append(str(source))
+        title = metadata.get("title") or source_url or "source"
+        reliability = normalize_source_reliability(
+            metadata.get("reliability") or metadata.get("trust_level")
+        )
+        source = {
+            "title": str(title),
+            "url": str(source_url or ""),
+            "reliability": reliability,
+        }
+        key = source["url"] or source["title"]
+        if key and all((item.get("url") or item.get("title")) != key for item in sources):
+            sources.append(source)
     return sources
 
 
-def is_answer_relevant(
+def is_question_relevant(
     question_overlap: float,
     reference_overlap: float,
     has_reference: bool,
@@ -530,7 +590,34 @@ def should_require_source_citation(
         return False
     if metadata.get("requires_source_citation") is True:
         return True
-    return default_required and has_sources
+    return default_required
+
+
+def has_valid_source_reliability(sources: list[Any]) -> bool:
+    for source in sources:
+        if not isinstance(source, dict):
+            return False
+        reliability = source.get("reliability") or source.get("trust_level")
+        if normalize_source_reliability(reliability) not in {"HIGH", "MEDIUM", "LOW"}:
+            return False
+    return True
+
+
+def normalize_source_reliability(value: Any) -> str:
+    reliability = str(value or "LOW").strip().upper()
+    if reliability in {"HIGH", "MEDIUM", "LOW"}:
+        return reliability
+    return "INVALID"
+
+
+def is_api_response_compatible(
+    *,
+    has_answer: bool,
+    has_source: bool,
+    source_reliability_valid: bool,
+    says_insufficient_info: bool,
+) -> bool:
+    return has_answer and source_reliability_valid and (has_source or says_insufficient_info)
 
 
 def is_confidence_consistent(
@@ -545,11 +632,13 @@ def is_confidence_consistent(
     return True
 
 
+
+
 def count_source_citations(answer: str) -> int:
     bracket_citations = re.findall(r"\[\d+\]", answer)
     urls = re.findall(r"https?://\S+", answer)
     source_words = re.findall(
-        r"(?:source|\ucd9c\ucc98|\uadfc\uac70)\s*[:：]?",
+        r"(?:source|\ucd9c\ucc98|\uadfc\uac70)\s*[:\uff1a]?",
         answer,
         flags=re.IGNORECASE,
     )
