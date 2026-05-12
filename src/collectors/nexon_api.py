@@ -622,32 +622,32 @@ def _print_manual_test_summary(state: AgentState) -> None:
     print(", ".join(sorted(state.keys())))
 
 
-if __name__ == "__main__":
-    import argparse
+# if __name__ == "__main__":
+#     import argparse
 
-    try:
-        from dotenv import load_dotenv
+#     try:
+#         from dotenv import load_dotenv
 
-        load_dotenv()
-    except ImportError:
-        pass
+#         load_dotenv()
+#     except ImportError:
+#         pass
 
-    parser = argparse.ArgumentParser(description="Fetch Nexon Open API data into AgentState.")
-    parser.add_argument("character_name", nargs="?", help="MapleStory character name")
-    parser.add_argument("--date", help="Nexon Open API date in YYYY-MM-DD format")
-    parser.add_argument("--no-optional", action="store_true", help="Skip optional V/HEXA/ability calls")
-    args = parser.parse_args()
+#     parser = argparse.ArgumentParser(description="Fetch Nexon Open API data into AgentState.")
+#     parser.add_argument("character_name", nargs="?", help="MapleStory character name")
+#     parser.add_argument("--date", help="Nexon Open API date in YYYY-MM-DD format")
+#     parser.add_argument("--no-optional", action="store_true", help="Skip optional V/HEXA/ability calls")
+#     args = parser.parse_args()
 
-    character_name = args.character_name or input("character_name: ").strip()
-    try:
-        result_state = fetch_character_state(
-            character_name=character_name,
-            api_date=args.date,
-            include_optional=not args.no_optional,
-        )
-    except NexonAPIError as exc:
-        print(f"[NexonAPIError] {exc}")
-        raise SystemExit(1) from exc
+#     character_name = args.character_name or input("character_name: ").strip()
+#     try:
+#         result_state = fetch_character_state(
+#             character_name=character_name,
+#             api_date=args.date,
+#             include_optional=not args.no_optional,
+#         )
+#     except NexonAPIError as exc:
+#         print(f"[NexonAPIError] {exc}")
+#         raise SystemExit(1) from exc
 
-    _print_manual_test_summary(result_state)
+#     _print_manual_test_summary(result_state)
 
