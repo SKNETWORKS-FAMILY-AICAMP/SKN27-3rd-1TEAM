@@ -50,7 +50,7 @@ services:
     # Neo4j 컨테이너에 전달할 환경변수 목록입니다.
     environment:
       # Neo4j 로그인 계정과 비밀번호를 설정하며, 기본값은 admin/admin123입니다.
-      NEO4J_AUTH: ${NEO4J_USER:-admin}/${NEO4J_PASSWORD:-admin123}
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-admin123}
       # APOC 플러그인을 활성화합니다.
       NEO4J_PLUGINS: '["apoc"]'
       # Neo4j Enterprise 라이선스 동의를 명시합니다.
