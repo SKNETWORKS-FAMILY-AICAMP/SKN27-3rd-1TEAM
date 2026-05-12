@@ -29,7 +29,7 @@ if not st.session_state.get("current_chat_id") and st.session_state.chat_session
 
 render_style()
 render_global_bgm()
-handle_user_input()
 render_chat_page()
 render_top_navigation(active_menu_key="chat")
+handle_user_input()
 process_pending_response()

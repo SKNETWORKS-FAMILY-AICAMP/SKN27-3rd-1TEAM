@@ -4,11 +4,21 @@ from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 
+from app.common.maple_paths import ensure_app_import_paths
+
+ensure_app_import_paths()
+
+from app.common.chat_render import render_style, render_top_navigation  # noqa: E402
+
 st.set_page_config(
     page_title="허접한 인내의 숲",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+render_style()
+st.markdown('<div class="maple-game-page-marker"></div>', unsafe_allow_html=True)
+render_top_navigation(active_menu_key="game")
 
 st.markdown(
     """

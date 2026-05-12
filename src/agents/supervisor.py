@@ -48,22 +48,11 @@ CALCULATION_TRIGGER_KEYWORDS = [
 
 
 
-TASK_AGENT_MAP = {
-    "character_status_analysis": ["analystic", "final_answer"],
-    "recommendation": ["research", "analystic", "final_answer"],
-    "system_explanation": ["research", "final_answer"],
-    "story_explanation": ["research", "final_answer"],
-    "reward_explanation": ["research", "final_answer"],
-    "event_information": ["research", "final_answer"],
-    "boss_strategy": ["research", "analystic", "final_answer"],
-    "skill_explanation": ["research", "analystic", "final_answer"],
-    "quest_guide": ["research", "final_answer"],
-    "market_price": ["research", "final_answer"],
-    "patch_information": ["research", "final_answer"],
-    "general_qa": ["final_answer"],
-    "chitchat": ["final_answer"],
-    "unknown": ["final_answer"],
-}
+def has_character_analysis_state(state: AgentState) -> bool:
+    return all(
+        bool(state.get(key))
+        for key in ("character_profile", "stat_summary", "equipment_summary")
+    )
 
 
 def supervisor(state:AgentState):
@@ -75,15 +64,13 @@ def supervisor(state:AgentState):
     retry_count = state.get("retry_count", 0)
     errors = state.get("errors", [])
 
+    completed_agent = None
+    remaining_plan = []
 
     if existing_plan:
         # supervisor로 다시 돌아온 경우, plan의 첫 번째 agent는 방금 실행된 agent로 보고 제거
         completed_agent = existing_plan[0]
         remaining_plan = existing_plan[1:]
-    elif state.get("next_agent") in ["research", "analystic", "calculator", "final_answer"]:
-        remaining_plan = []
-    elif state.get("plan") is None:
-        completed_agent = None
 
 
     messages = state["messages"]
@@ -191,6 +178,9 @@ feedback: {feedback}
     if not plan and state.get("next_agent") in ["research", "analystic", "calculator", "final_answer"]:
         # plan이 비어도 이전 next_agent가 있으면 기존 라우팅을 이어감
         plan = [state["next_agent"]]
+
+    if "analystic" in plan and not has_character_analysis_state(state):
+        plan = [agent for agent in plan if agent != "analystic"]
 
     if "final_answer" not in plan:
         plan.append("final_answer")

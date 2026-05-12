@@ -31,7 +31,6 @@ def validate_required_fields(
             f"{agent_name} {phase} state missing fields: {missing_fields}"
         )
 
-
 def validate_state_keys(state: AgentState) -> None:
     unknown_fields = [field for field in state if field not in STATE_FIELDS]
 

@@ -3,10 +3,11 @@ from __future__ import annotations
 from html import escape
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from app.common.chat_style import (
     ASSISTANT_AVATAR_PATH,
-    ITEM_BOX_PATH,
+    CHAT_BACKGROUND_OVERLAY_PATH,
     USER_AVATAR_PATH,
     image_to_data_uri,
     render_style,
@@ -16,10 +17,9 @@ from app.common.chat_style import (
 # 상단 내비게이션 항목입니다.
 # 튜플 형식: 내부 키, 화면에 보이는 라벨, Streamlit 페이지 경로.
 MENU_ITEMS = (
+    ("home", "Home", "maple_chat.py"),
     ("chat", "Chat", "pages/7_Chat.py"),
-    ("models", "Models", "pages/2_Friends.py"),
-    ("history", "History", "pages/3_Guild.py"),
-    ("settings", "Settings", "pages/6_Settings.py"),
+    ("game", "Game", "pages/8_game.py"),
 )
 
 # 홈 화면 프롬프트 칩입니다.
@@ -121,7 +121,7 @@ def render_chat_page() -> None:
     # 커스텀 HTML에서 바로 쓸 수 있도록 아바타 이미지를 data URI로 변환합니다.
     assistant_avatar = image_to_data_uri(ASSISTANT_AVATAR_PATH)
     user_avatar = image_to_data_uri(USER_AVATAR_PATH)
-    item_box = image_to_data_uri(ITEM_BOX_PATH)
+    chat_overlay = image_to_data_uri(CHAT_BACKGROUND_OVERLAY_PATH)
 
     if visible_messages:
         html_messages = []
@@ -142,14 +142,10 @@ def render_chat_page() -> None:
                 f'<div class="maple-chat-bubble {role}">{content}</div>'
                 f"</div>"
             )
-        thread_html = "".join(html_messages)
+        thread_html = "".join(html_messages) + '<div class="maple-chat-scroll-anchor"></div>'
     else:
         # 아직 표시할 대화가 없을 때 보여주는 빈 상태 문구입니다.
-        thread_html = (
-            '<div class="maple-chat-empty">'
-            "메이플 장비 추천, 육성 가이드, 보스 준비를 물어보세요."
-            "</div>"
-        )
+        thread_html = ""
 
     # marker는 CSS의 :has(...)로 채팅 페이지 여부를 감지하게 해줍니다.
     # section은 고정 채팅 배경이고, 안쪽 div는 스크롤되는 메시지 영역입니다.
@@ -157,9 +153,52 @@ def render_chat_page() -> None:
         f"""
 <div class="maple-chat-page-marker"></div>
 <section class="maple-chat-page">
-    <img class="maple-chat-item-box" src="{item_box}" alt="">
+    <img class="maple-chat-overlay" src="{chat_overlay}" alt="">
     <div class="maple-chat-thread">{thread_html}</div>
 </section>
 """,
         unsafe_allow_html=True,
+    )
+    user_message_count = sum(1 for message in visible_messages if message.get("role") == "user")
+    components.html(
+        f"""
+<script>
+(() => {{
+  const userMessageCount = {user_message_count};
+  const storageKey = "mapleChatLastUserMessageCount";
+  const getThread = () => {{
+    try {{
+      return window.parent.document.querySelector(".maple-chat-thread");
+    }} catch {{
+      return null;
+    }}
+  }};
+
+  const scrollThreadToBottom = () => {{
+    const thread = getThread();
+    if (!thread) return false;
+    thread.scrollTop = thread.scrollHeight;
+    const anchor = thread.querySelector(".maple-chat-scroll-anchor");
+    if (anchor) {{
+      anchor.scrollIntoView({{ block: "end" }});
+    }}
+    return true;
+  }};
+
+  const previousCount = Number(window.parent.sessionStorage.getItem(storageKey) || "0");
+  window.parent.sessionStorage.setItem(storageKey, String(userMessageCount));
+  if (userMessageCount > previousCount) {{
+    let attempts = 0;
+    const timer = window.setInterval(() => {{
+      attempts += 1;
+      const didScroll = scrollThreadToBottom();
+      if (didScroll || attempts >= 20) {{
+        window.clearInterval(timer);
+      }}
+    }}, 50);
+  }}
+}})();
+</script>
+""",
+        height=1,
     )

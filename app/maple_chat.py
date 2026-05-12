@@ -23,8 +23,6 @@ from app.common.chat_memory import (  # noqa: E402
     compact_agent_history,
 )
 from app.common.chat_render import (  # noqa: E402
-    ASSISTANT_AVATAR_PATH,
-    USER_AVATAR_PATH,
     render_messages,
     render_style,
     render_top_navigation,
@@ -262,7 +260,7 @@ def main() -> None:
     render_style()
     render_global_bgm()
     render_messages()
-    render_top_navigation(active_menu_key="chat")
+    render_top_navigation(active_menu_key="home")
     handle_user_input()
 
 
