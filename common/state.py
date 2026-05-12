@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, TypeAlias, TypedDict
+from typing import Literal, TypeAlias, TypedDict
 
-if TYPE_CHECKING:
-    from langchain_core.messages import BaseMessage
+from langchain_core.messages import BaseMessage
 
 from common.domain import (
     ActionPlan,

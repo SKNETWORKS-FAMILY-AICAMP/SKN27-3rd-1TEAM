@@ -124,7 +124,7 @@ def start_new_chat(user_input: str) -> None:
 
 @st.cache_resource(show_spinner=False)
 def load_graph() -> Any:
-    from src.agents.graph import maple_chat_graph
+    from src.graph import maple_chat_graph
 
     return maple_chat_graph()
 
