@@ -1,7 +1,7 @@
 # **SKN27-3rd-1TEAM**
 
 > SK Networks Family AI Camp 27기 3차 프로젝트<br>
-> 개발기간: 2026년 5월 1일 ~ 15일
+> 개발기간: 2026년 5월 1일 ~ 5월 15일
 
 <br>
 
@@ -17,9 +17,10 @@
 6. [데이터 파이프라인 및 DB 적재](#6-데이터-파이프라인-및-db-적재)
 7. [RAG](#7-rag)
 8. [테스트 및 결과](#8-테스트-및-결과)
-9. [향후 서비스 방향](#9-향후-서비스-방향)
-10. [결론](#10-결론)
-11. [회고](#11-회고)
+9. [기대효과](#9-기대효과)
+10. [향후 서비스 방향](#10-향후-서비스-방향)
+11. [결론](#11-결론)
+12. [회고](#12-회고)
 <br>
 
 ---
@@ -36,12 +37,12 @@
 
 <table align="center" width="100%">
   <tr>
-    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjkx/MDAxNzc4NTQ5NDA4NTc0.cnTP4PF4Nz-8UGwFn_CXJQaJUXIji15cbNW0wpFsMiAg.icCiq5u6YkOzz9nxp6vIWaWboOW9uTjX-AX8K61Opxkg.PNG/%EB%AF%BC%EA%B2%BD.png?type=w966" width="120" /></td>
-    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjcw/MDAxNzc4NTQ5MTg3MTY5.bHkTnoOp-9iDDw-YbKw9jKQ5_bac11sezRm-lrheJL4g.N-6uXIGrJMGk2-juJYNFoYaYV8VSkckI93RAkl1w9v8g.PNG/%ED%99%98%EC%84%B1.png?type=w966" width="120" /></td>
+    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTM0/MDAxNzc4NTY3NTIwNTQy.6ECPAikO0Ck6-lZ1lbHFiFqW-FETjoKtejST7mvzvnEg.SsxzaHkqK1xzuTmai_n5iUoihOIJU4fR7TF5aSg8_Ycg.PNG/%EB%AF%BC%EA%B2%BD.png?type=w966" width="120" /></td>
+    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNDQg/MDAxNzc4NTY3NTIwNTM4.2nYqX-zhrk5TjjuTcfPgr98xAG5M8UtfmxZ94o3vDx4g.qtHiWA0FNzLi02SzGNOdvHVMnbnDof7yd-vo0A6Be0Ig.PNG/%ED%99%98%EC%84%B1.png?type=w966" width="120" /></td>
     <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNDcg/MDAxNzc4NTQ5NDA4NTgw.rZ9cgCSeEpMVC3dJ2WHiH8DFLIcrKNO9a9DgYid17b0g.FALhYg9kQFMBVns57WmZ7RqgFJf-oabxo3fQ8DHygPUg.PNG/%EC%A3%BC%EC%98%81.png?type=w966" width="120" /></td>
-    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNjkg/MDAxNzc4NTQ5NDA4NTc4._nkaKuDn_rcIyyYuq2LTZLGRa8IrjjWghZhMqcMXnJ0g.JbreH108Zcd60-c_aWDK_s9u0UTTBmlUkbWakfjIZrog.PNG/%EB%8F%99%ED%98%81.png?type=w966" width="120" /></td>
-    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfOTAg/MDAxNzc4NTQ5NDA4NTc3.cvc6yjqrlaD9JxR4Z71pdHMhsEIeSolrFyNgdPd9veEg.l-CfQQymXseJQ81Bwen7pWJ8J_LU59FKeOx1P8VleL4g.PNG/%EC%9E%AC%EC%9B%85.png?type=w966" width="120" /></td>
-  </tr>
+    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTcx/MDAxNzc4NTY3NTIwNTQ1._MZw2BbJ1MGGS3TO2_JtesX8WzMq_ZiZghNbh_KZJFsg.rpmPlQIWLxpf1Y_jODPo80NnFRyNpR-hK7XK5rb6Vd0g.PNG/%EB%8F%99%ED%98%81.png?type=w966" width="120" /></td>
+    <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjYz/MDAxNzc4NTY3NTIwNTY3.41rdzabZe6qLyj6dWHi8JBFHOlDs39Fl2QtbjDg_8Bog.bF7ZhfKe9GvKIoB0ofOl-Ce_BLEW1oXEct6QpKKgS_0g.PNG/%EC%9E%AC%EC%9B%85.png?type=w966" width="120" /></td>
+    </tr>
   <tr>
     <td align="center"><b>김민경</b></td>
     <td align="center"><b>권환성</b></td>
@@ -145,17 +146,6 @@
 - `maple_chatbot_final_dataset.csv` 기준 총 3,567행, 25개 컬럼, 약 70MB 규모
 - 모든 행 `rag_ready=True`, 즉시 임베딩 및 검색 인덱싱 가능
 
-### 기대 효과
-
-- 공식/위키/API/추천 룰 통합을 통한 답변 일관성 강화
-- 신뢰도/출처 메타데이터 기반 근거 추적성 확보
-- 실시간 API 연동을 통한 캐릭터 분석, 보스 추천, 장비 성장 추천 확장
-- PostgreSQL/PGVector와 Neo4j 역할 분리를 통한 문서 검색 및 관계 탐색 병행
-
-<br>
-
----
-
 # 3. 기술 스택 및 사용 모델
 
 ## 기술 스택 및 사용한 모델
@@ -239,24 +229,6 @@
 
 ## 아키텍처
 
-```mermaid
-flowchart TD
-    Q["사용자 질문"] --> S["Supervisor Agent"]
-    S --> R["Research Agent"]
-    S --> A["Analytics Agent"]
-    S --> C["Calculator Agent"]
-    R --> RAG["RAG<br/>DB / Graph / Web"]
-    R --> S
-    A --> S
-    C --> S
-    S --> F["Final Answer Agent"]
-    F --> E{"Evaluation"}
-    E -->|is_pass == True| ANS["최종 답변"]
-    E -->|is_pass == False| F
-    E -->|질문과 무관| S
-```
-
-## Supervisor Agent
 
 <div align="center">
   <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNzMg/MDAxNzc4NTUzNjI4NDUw.3DXmgy8mnPk07cvRurvxsLJXSnRyUQEBtL_Bf36SP00g.b4jhoN5ztgciBwoKHpogyFrx0GVXFDlAwVAOnH_Bpzog.PNG/supervisor_agent_%EC%9D%B4%EB%AF%B8%EC%A7%80.png?type=w966" width="820" />
@@ -330,67 +302,7 @@ SKN27-3rd-1TEAM/
   <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfODEg/MDAxNzc4NTUxODMxMDUz.omFvrzuIS2pPhnV8DwNo4Xsq-BdTG7afQSjWICKsmDYg.SSQ_bi_BPMdEbLt9OEPjsz7l9kSDEMtKBEcTaygGJIUg.PNG/ERD_4st_2.png?type=w966" width="820" />
 </div>
 
-## 화면 설계서
 
-#### 1. 참고 구조
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTg2/MDAxNzc4NTUxNDQyMzg0.GxswLfd-wZG00WtrTd0hD0aBQW-4VjP9uP7zEu-lPAsg.BQleKsPRD6OeZYiM9BR5UcuOPSBIA1wVU-tRBAZAz-Qg.PNG/1._%EC%B0%B8%EA%B3%A0%EA%B5%AC%EC%A1%B0.png?type=w966" width="760" />
-</div>
-
-#### 2. 홈
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfOTMg/MDAxNzc4NTUxNDQyMzg2.d2Jv4z4xGlqdmMz9C7sq_YKou3UUXhLi1N8U57TWzaEg.YonLlYgxVQBNkD-mdtHKI8nDoBRW5StClmQ1zLslp1Ag.PNG/2._%ED%99%88.png?type=w966" width="760" />
-</div>
-
-#### 3. 메이플 봇
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTIx/MDAxNzc4NTUxNDQyMzg1.nfkb-wFserIH-_4q8blTLHfn4mYrJDX9EgA6818nIKkg.aUfw9GliNZkTfRMZfNUoE1Y0hkE7f2LxvqPmw2KVOZ0g.PNG/3._%EB%A9%94%EC%9D%B4%ED%94%8C%EB%B4%87.png?type=w966" width="760" />
-</div>
-
-#### 4. 내 캐릭터
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjQg/MDAxNzc4NTUxNDQyMzg0.7jQUhxDFLZA1wRAZtE-Kv-UiulvE3w6hU_LVf9k2J6gg.AltDf5yczGf0TE8_Ms-OtoRF9AJRPaTEqD3d7JbIb-Mg.PNG/4._%EB%82%B4_%EC%BA%90%EB%A6%AD%ED%84%B0.png?type=w966" width="760" />
-</div>
-
-#### 5. 보스컷
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjY1/MDAxNzc4NTUxNDQyMzg2.5wDyTU0Q1bvhruSj36BfRe1Aw_Mn4WAZesnNen11ZrQg.84Z3S_nq0EgiyIszQZW0WLdtubqpa8F8rpUC8mmvKaYg.PNG/5._%EB%B3%B4%EC%8A%A4%EC%BB%B7.png?type=w966" width="760" />
-</div>
-
-#### 6. 성장플랜
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTQ0/MDAxNzc4NTUxNDQyNTYz.eth9bMoUbRgqdOAD0ZYjOibLx65kfGlQggN5_0KnQlIg.MhuEjRrZCa1gV2AwuMvs3_8hq2t9OZ2qhwd381DqAd0g.PNG/6._%EC%84%B1%EC%9E%A5%ED%94%8C%EB%9E%9C.png?type=w966" width="760" />
-</div>
-
-#### 7. 스타포스
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTkw/MDAxNzc4NTUxNDQyNTc4.Rp7NL9BZM9j0qRUpGbpnJVncYJOpSzPt-nqSpSjqe88g.IJrJkrGx-oqUZkmgn1xCMXizgnarm2tltiF6FVJjqE4g.PNG/7._%EC%8A%A4%ED%83%80%ED%8F%AC%EC%8A%A4.png?type=w966" width="760" />
-</div>
-
-#### 8. 큐브
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjU5/MDAxNzc4NTUxNDQyNTgw.wL4bWLmA4pIxUU-rikD_Y7_UvcvRtRlbMXRuIgUIXgog.muaYRuVbM9au7IWgpsquKPgmZkq--GPur1Y7VTFY07wg.PNG/8._%ED%81%90%EB%B8%8C.png?type=w966" width="760" />
-</div>
-
-#### 9. 랭킹
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMzMg/MDAxNzc4NTUxNDQyNTgz.aDwvnQyG8ta44EzWTnJZiQZn8cTmQMDVdAMk8fl9NMgg.tiG7T9Z6PFnF8BF2uOi_Lem7v8DfDJ7yS7pHvJXVwu0g.PNG/9._%EB%9E%AD%ED%82%B9.png?type=w966" width="760" />
-</div>
-
-#### 10. 히스토리
-
-<div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfOTgg/MDAxNzc4NTUxNDQyMzgy.zS6bEITWPjks-kEaooKs2bW1okorAYRtcYA0LxTD1Ssg.-l7DtfyfqceAkqAWN3-GYUs2yRAgtEqaIPcB3lz361wg.PNG/10._%ED%9E%88%EC%8A%A4%ED%86%A0%EB%A6%AC.png?type=w966" width="760" />
-</div>
 
 ## Agent 역할
 
@@ -403,15 +315,13 @@ SKN27-3rd-1TEAM/
 | Final Answer Agent | 각 Agent 결과를 종합하여 사용자 답변 생성 |
 | Evaluation | 최종 답변의 적절성, 문맥 일치성, 근거 충실성 검증 |
 
-## Agent 책임 분리 기준
+## RAG 역할
 
 | 영역 | 책임 |
 |---|---|
 | DB Search RAG | 답변 생성이 아닌 근거 검색 |
 | Web Search RAG | 최신 공식 웹 문서 검색 |
 | GraphDB RAG | 보스, 직업, 장비, 보상 관계 조회 |
-| Final Answer Agent | 검색/분석/계산 결과 종합 |
-| Evaluation | 답변 품질, 문맥 일치성, 근거 충실성 검증 |
 
 ## GraphDB 지식 구조
 
@@ -426,120 +336,6 @@ SKN27-3rd-1TEAM/
 | Reward | 보상 정보 |
 | Source | 문서 출처 연결 |
 
-## Analytics Agent 흐름도
-
-```mermaid
-flowchart TD
-    A["AgentState 입력"] --> B["analytics_agent()"]
-    B --> C{"target_boss 있음?"}
-    C -- "있음" --> D["단일 보스 분석"]
-    C -- "없음" --> E["fallback으로 user_query에서 보스명 추출"]
-    E --> F{"보스명 추출됨?"}
-    F -- "있음" --> D
-    F -- "없음" --> G["추천 가능 보스 탐색"]
-
-    D --> H["_extract_character_input()"]
-    G --> H
-
-    H --> I["state.character_profile"]
-    H --> J["state.stat_summary"]
-    H --> K["state.equipment_summary"]
-
-    D --> L["analyze_boss_readiness @tool"]
-    G --> M["find_available_bosses @tool"]
-
-    L --> N["Neo4j 보스 요구 스펙 조회"]
-    M --> O["Neo4j 전체 보스 요구 스펙 조회"]
-
-    N --> P["_analyze_boss_row()"]
-    O --> P
-
-    P --> Q["스탯 ratio 계산"]
-    Q --> R["가중치 기반 challenge_fit_score 계산"]
-    R --> S["recommended / challengeable / risky / difficult 판정"]
-    S --> T["bottleneck_analysis 생성"]
-    T --> U["recommended_actions 생성"]
-
-    U --> V["growth_report 생성"]
-    V --> W["tool_results['analystic'] 저장"]
-
-    W --> X{"분석 결과 사용 가능?"}
-    X -- "예" --> Y["create_agent()로 LLM 보강"]
-    X -- "아니오" --> Z["실패 상태 반환"]
-
-    Y --> AA["llm_interpretation / 보강 actions 병합"]
-    AA --> AB["최종 AgentState 반환"]
-    Z --> AB
-```
-
-## Calculator Agent 흐름도
-
-```mermaid
-flowchart TD
-    A["AgentState 입력"] --> B["calculator_agent()"]
-    B --> C["run_calculator()"]
-    C --> D["입력 state 검증"]
-
-    D --> E["_extract_character_input()"]
-    E --> F["state.character_stats"]
-    E --> G["state.equipment_items"]
-    E --> H["state.union_status"]
-    E --> I["state.character_profile"]
-
-    E --> J["simulate_damage_score @tool"]
-    J --> K["상대 딜 점수 damage_score 계산"]
-
-    E --> L["summarize_equipment_contribution @tool"]
-    L --> M["장비별 기여도 / 스타포스 / 약한 슬롯 계산"]
-
-    K --> N["estimate_growth_cost_period @tool"]
-    M --> N
-    N --> O["성장 비용 / 기간 / 예상 CP 증가량 추정"]
-
-    K --> P["calculate_bottleneck_scores @tool"]
-    M --> P
-    O --> P
-    P --> Q["성장 병목 점수 계산"]
-
-    Q --> R["state 갱신"]
-    R --> S["stat_summary"]
-    R --> T["equipment_summary"]
-    R --> U["bottleneck_analysis"]
-    R --> V["tool_results['calculator']"]
-
-    V --> W{"계산 결과 사용 가능?"}
-    W -- "예" --> X["create_agent()로 LLM 보강"]
-    W -- "아니오" --> Y["실패 state 반환"]
-
-    X --> Z["llm_interpretation 병합"]
-    Z --> AA["최종 AgentState 반환"]
-    Y --> AA
-```
-
-## Final Answer Agent 흐름도
-
-```mermaid
-flowchart TD
-    A["AgentState 수신"] --> B["validate_agent_inputs('final_answer')"]
-    B --> C["근거 후보 수집<br/>context, retrieved_docs, tool_results"]
-    C --> D["출처 중복 제거<br/>url/title 기준 병합"]
-    D --> E["신뢰도 정렬<br/>HIGH > MEDIUM > LOW"]
-    E --> F["최신성 정렬<br/>HIGH > MEDIUM > UNKNOWN > LOW"]
-    F --> G["질문 관련도 확인<br/>score, intent, keyword"]
-    G --> H{"근거 충분 여부"}
-
-    H -->|"충분"| I["공통 프롬프트 원칙 반영"]
-    H -->|"부족"| J["근거 부족 메시지 생성<br/>추측 금지"]
-
-    I --> K["draft_answer 생성"]
-    J --> K
-    K --> L["출처/단계 로그 구성"]
-    L --> M["final_answer 확정"]
-    M --> N["validation_passed, confidence_score 기록"]
-    N --> O["validate_agent_outputs('final_answer')"]
-```
-
-<br>
 
 ---
 
@@ -721,7 +517,21 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 
 ---
 
-# 9. 향후 서비스 방향
+# 9. 기대효과
+
+- 유저는 공식 공지, 위키, 추천 룰, 캐릭터 정보를 따로 찾아다니지 않고 한 화면에서 필요한 정보를 확인할 수 있어 정보 탐색 시간을 줄일 수 있다.
+- 캐릭터 상태를 기준으로 현재 스펙의 강점과 부족한 부분을 파악할 수 있어 막연한 성장보다 개인화된 성장 방향을 세울 수 있다.
+- 장비, 스탯, 보스 도전 가능성에 대한 근거 기반 답변을 제공받아 메소, 재료, 시간 등 게임 내 자원을 더 효율적으로 사용할 수 있다.
+- 보스 컷, 장비 성장 우선순위, 이벤트 정보 등을 함께 확인함으로써 성장 과정에서의 시행착오를 줄이고 의사결정 부담을 낮출 수 있다.
+- 신규 및 복귀 유저는 복잡하게 흩어진 메이플스토리 정보를 빠르게 이해할 수 있어 게임 진입 장벽을 낮출 수 있다.
+- 답변에 사용된 출처와 최신성 정보를 함께 확인할 수 있어 커뮤니티 정보에만 의존할 때보다 신뢰도 높은 판단을 할 수 있다.
+- 챗봇과 미니게임을 함께 제공하여 단순 정보 검색을 넘어 더 편하게 머물 수 있는 서비스 경험을 제공할 수 있다.
+
+<br>
+
+---
+
+# 10. 향후 서비스 방향
 
 - NEXON Open API 실시간 연동을 통해 캐릭터명 기반 개인화 추천 고도화
 - 보스 컷, 장비 성장 수치, 보상 가치 기준에 대한 팀 검수 및 최신화
@@ -733,7 +543,7 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 
 ---
 
-# 10. 결론
+# 11. 결론
 
 - 메이플스토리 공식 API, 공식 문서, 위키 문서, 추천 룰 데이터 통합
 - RAG 기반 챗봇의 검색 근거 체계화
@@ -751,7 +561,7 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 
 ---
 
-# 11. 회고
+# 12. 회고
 
 ## 김민경
 
