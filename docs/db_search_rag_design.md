@@ -175,13 +175,14 @@ GraphDB는 문서 유사도 검색을 대체하는 저장소가 아니라 PGVect
 
 ### 현재 DB 적재 현황
 
-2026-05-10 기준 Docker PostgreSQL 컨테이너 `maplestory-postgres`의 `mapledb`에서 확인한 값은 다음과 같다.
+2026-05-12 기준 Docker PostgreSQL 컨테이너 `maplestory-postgres`의 `mapledb`에서 확인한 값은 다음과 같다.
 
 | 항목 | 값 |
 | --- | ---: |
 | `documents` | 3567 |
 | `document_chunks` | 10069 |
 | `document_embeddings` | 10069 |
+| `wiki_entities` | 1328 |
 | 미임베딩 chunk | 0 |
 | embedding model | `google/embeddinggemma-300m` |
 | vector dimension | 768 |
@@ -193,7 +194,9 @@ select 'documents' as name, count(*) from documents
 union all
 select 'document_chunks', count(*) from document_chunks
 union all
-select 'document_embeddings', count(*) from document_embeddings;
+select 'document_embeddings', count(*) from document_embeddings
+union all
+select 'wiki_entities', count(*) from wiki_entities;
 
 select embedding_model, count(*)
 from document_embeddings
@@ -255,6 +258,27 @@ excluded collection_scope:
 
 원본 추적을 위해 `documents` 테이블에는 전체 CSV row를 유지하지만, 검색 품질을 위해 PGVector에는 답변 근거로 사용할 문서형 데이터만 임베딩했다.
 
+### wiki_entities 1차 색인
+
+`wiki_entities`는 PGVector 검색용 임베딩이 아니라 위키 문서에서 보스, 몬스터, 아이템, 스킬, 퀘스트, 맵 같은 게임 엔티티를 구조적으로 찾기 위한 색인 테이블이다.
+
+위키 문서 1,338건 중 제목과 본문 패턴으로 타입을 추정할 수 있는 1,328건을 적재했다. 타입이 애매한 10건은 잘못된 엔티티 색인을 피하기 위해 제외했다.
+
+| entity_type | count |
+| --- | ---: |
+| `map` | 747 |
+| `boss` | 359 |
+| `item` | 156 |
+| `monster` | 39 |
+| `skill` | 14 |
+| `quest` | 13 |
+
+재현 SQL은 다음 파일에 둔다.
+
+```text
+database/postgres/load_wiki_entities.sql
+```
+
 ## 관련 테이블
 
 DB Search RAG는 다음 테이블을 사용한다.
@@ -267,7 +291,7 @@ DB Search RAG는 다음 테이블을 사용한다.
 | `document_embeddings` | PGVector embedding |
 | `tags` | 문서 태그 |
 | `document_tags` | 문서-태그 연결 |
-| `wiki_entities` | 위키 문서에서 추출 가능한 엔티티 |
+| `wiki_entities` | 위키 문서에서 1차 추출한 게임 엔티티 색인 |
 
 현재 검색의 핵심 조인은 다음 구조다.
 
@@ -323,6 +347,7 @@ PGVector 검색은 cosine distance 기반으로 동작한다. chunk 수가 늘�
 | `database/postgres/schema.sql` | PostgreSQL + PGVector schema |
 | `database/postgres/load_mapleqa_dataset.py` | CSV -> RDB/chunk 적재 |
 | `database/postgres/embed_document_chunks.py` | chunk -> embedding 적재 |
+| `database/postgres/load_wiki_entities.sql` | wiki 문서 -> 엔티티 1차 색인 적재 |
 
 ## 검색 모드
 
@@ -330,7 +355,7 @@ PGVector 검색은 cosine distance 기반으로 동작한다. chunk 수가 늘�
 
 | mode | 설명 |
 | --- | --- |
-| `text` | PostgreSQL full-text + `ILIKE` 기반 키워드 검색 |
+| `text` | PostgreSQL full-text + `ILIKE` 기반 키워드 검색, `wiki_entities` 엔티티 색인 검색 |
 | `vector` | PGVector cosine distance 기반 의미 검색 |
 | `hybrid` | vector 검색과 keyword 검색 결과를 통합 |
 | `auto` | query embedding이 있으면 hybrid, 없으면 text 검색 |
@@ -365,6 +390,7 @@ C:\dev\course\course_LLM\5. RAG\1. colab\4. KAG(GraphRAG)\2. GraphRAG\2. kag_wit
 Vector Search + Keyword Search
   -> score normalization
   -> weighted fusion
+  -> wiki_entities entity search
   -> rerank
   -> optional GraphDB Search
   -> DB result + Graph result merge
@@ -428,12 +454,13 @@ DEFAULT_CANDIDATE_MULTIPLIER = 3
 
 `retrieval_method`는 어떤 검색 방식으로 선택되었는지 나타낸다.
 
-`entity_type`은 GraphDB 결과에서 사용한다. 예를 들어 단일 엔티티 출처는 `Boss`, 관계 fact는 `Boss->Reward`처럼 들어간다. PGVector/keyword 결과에서는 `None`일 수 있다.
+`entity_type`은 GraphDB 결과와 `wiki_entities` 색인 결과에서 사용한다. 예를 들어 Graph 관계 fact는 `Boss->Reward`, 위키 색인 결과는 `boss`, `item`, `map`처럼 들어간다. 일반 PGVector/keyword 결과에서는 `None`일 수 있다.
 
 | 값 | 의미 |
 | --- | --- |
 | `vector` | 벡터 검색에서만 선택 |
 | `keyword` | 키워드 검색에서만 선택 |
+| `entity` | `wiki_entities` 엔티티 색인에서 선택 |
 | `keyword+vector` | 두 검색 방식 모두에서 선택 |
 | `graph` | Neo4j GraphDB 검색에서 선택 |
 

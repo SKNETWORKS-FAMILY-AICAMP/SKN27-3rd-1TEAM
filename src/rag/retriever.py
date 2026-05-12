@@ -216,6 +216,17 @@ class PGVectorDBRetriever:
         top_k: int = 5,
         reliability_filter: ReliabilityFilter = "ALL",
     ) -> list[DBSearchResult]:
+        candidate_k = max(top_k * DEFAULT_CANDIDATE_MULTIPLIER, top_k)
+        chunk_results = self._chunk_text_search(query, candidate_k, reliability_filter)
+        entity_results = self.entity_search(query, candidate_k, reliability_filter)
+        return _merge_ranked_results([*chunk_results, *entity_results], top_k)
+
+    def _chunk_text_search(
+        self,
+        query: str,
+        top_k: int = 5,
+        reliability_filter: ReliabilityFilter = "ALL",
+    ) -> list[DBSearchResult]:
         trust_sql, trust_params = _trust_clause(reliability_filter)
         token_patterns = [f"%{term}%" for term in _search_terms(query)]
         token_score_sql, token_score_params = _token_score_sql(token_patterns)
@@ -282,6 +293,97 @@ class PGVectorDBRetriever:
         ]
         return self._fetch(sql, params, retrieval_method="keyword")
 
+    def entity_search(
+        self,
+        query: str,
+        top_k: int = 5,
+        reliability_filter: ReliabilityFilter = "ALL",
+    ) -> list[DBSearchResult]:
+        trust_sql, trust_params = _trust_clause(reliability_filter)
+        terms = _search_terms(query)
+        token_patterns = [f"%{term}%" for term in terms]
+        token_score_sql, token_score_params = _entity_token_score_sql(token_patterns)
+        normalized_query = " ".join(query.strip().lower().split())
+        like_query = f"%{query}%"
+        entity_type_like = f"%{normalized_query}%"
+        sql = f"""
+            SELECT
+                'wiki_entity::' || we.id::text AS chunk_id,
+                d.doc_id AS document_id,
+                we.entity_name || ' (' || we.entity_type || ')' AS title,
+                concat_ws(
+                    E'\\n',
+                    'Wiki entity index',
+                    'entity_type: ' || we.entity_type,
+                    'entity_name: ' || we.entity_name,
+                    CASE
+                        WHEN we.level IS NOT NULL THEN 'level: ' || we.level::text
+                        ELSE NULL
+                    END,
+                    'category: ' || coalesce(we.category, d.category, 'unknown'),
+                    'summary: ' || coalesce(we.description, d.text_preview, '')
+                ) AS content,
+                d.source_url,
+                d.trust_level AS reliability,
+                d.category,
+                d.collection_scope,
+                d.source_type,
+                d.trust_level,
+                NULL::int AS chunk_index,
+                NULL::text AS embedding_model,
+                we.entity_type,
+                (
+                    CASE WHEN we.normalized_name = %s THEN 3.0 ELSE 0 END
+                    + CASE WHEN we.entity_name ILIKE %s OR d.title ILIKE %s THEN 1.5 ELSE 0 END
+                    + CASE WHEN we.entity_type ILIKE %s THEN 0.5 ELSE 0 END
+                    + CASE WHEN coalesce(we.description, '') ILIKE %s THEN 0.5 ELSE 0 END
+                    {token_score_sql}
+                ) AS score
+            FROM wiki_entities we
+            JOIN documents d ON d.id = we.document_id
+            WHERE d.rag_ready = true
+              {trust_sql}
+              AND (
+                  we.normalized_name = %s
+                  OR we.entity_name ILIKE %s
+                  OR we.normalized_name ILIKE %s
+                  OR we.entity_type ILIKE %s
+                  OR coalesce(we.description, '') ILIKE %s
+                  OR d.title ILIKE %s
+                  OR we.entity_name ILIKE ANY(%s)
+                  OR d.title ILIKE ANY(%s)
+              )
+            ORDER BY score DESC,
+                CASE d.trust_level
+                    WHEN 'S' THEN 1
+                    WHEN 'A' THEN 2
+                    WHEN 'B' THEN 3
+                    WHEN 'C' THEN 4
+                    ELSE 5
+                END,
+                we.entity_name ASC
+            LIMIT %s
+        """
+        params = [
+            normalized_query,
+            like_query,
+            like_query,
+            entity_type_like,
+            like_query,
+            *token_score_params,
+            *trust_params,
+            normalized_query,
+            like_query,
+            like_query,
+            entity_type_like,
+            like_query,
+            like_query,
+            token_patterns,
+            token_patterns,
+            top_k,
+        ]
+        return self._fetch(sql, params, retrieval_method="entity")
+
     def build_context(self, results: Iterable[DBSearchResult]) -> str:
         blocks = []
         for index, result in enumerate(results, start=1):
@@ -323,6 +425,7 @@ class PGVectorDBRetriever:
                 trust_level=row.get("trust_level"),
                 chunk_index=row.get("chunk_index"),
                 embedding_model=row.get("embedding_model"),
+                entity_type=row.get("entity_type"),
             )
             for row in rows
         ]
@@ -490,6 +593,28 @@ def merge_db_and_graph_results(
     )[:top_k]
 
 
+def _merge_ranked_results(
+    results: Sequence[DBSearchResult],
+    top_k: int,
+) -> list[DBSearchResult]:
+    merged: dict[str, DBSearchResult] = {}
+    for result in results:
+        current = merged.get(result.chunk_id)
+        if current is None or result.score > current.score:
+            merged[result.chunk_id] = result
+
+    return sorted(
+        merged.values(),
+        key=lambda result: (
+            result.score,
+            _trust_priority(result.reliability),
+            _retrieval_priority(result.retrieval_method),
+            result.title,
+        ),
+        reverse=True,
+    )[:top_k]
+
+
 def _database_url() -> str:
     load_dotenv()
     return os.getenv("POSTGRES_URI") or os.getenv("DATABASE_URL") or (
@@ -541,6 +666,29 @@ def _token_score_sql(token_patterns: Sequence[str]) -> tuple[str, list[object]]:
             """
         )
         params.extend([_pattern, _pattern])
+    return "".join(sql_parts), params
+
+
+def _entity_token_score_sql(token_patterns: Sequence[str]) -> tuple[str, list[object]]:
+    if not token_patterns:
+        return "", []
+
+    sql_parts = []
+    params: list[object] = []
+    for _pattern in token_patterns:
+        sql_parts.append(
+            """
+                    + CASE
+                        WHEN we.entity_name ILIKE %s
+                          OR we.normalized_name ILIKE %s
+                          OR coalesce(we.description, '') ILIKE %s
+                          OR d.title ILIKE %s
+                        THEN 0.1
+                        ELSE 0
+                      END
+            """
+        )
+        params.extend([_pattern, _pattern, _pattern, _pattern])
     return "".join(sql_parts), params
 
 

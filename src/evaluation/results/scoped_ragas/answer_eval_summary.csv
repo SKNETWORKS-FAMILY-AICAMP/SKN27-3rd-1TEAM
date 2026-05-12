@@ -1,0 +1,4 @@
+rag_type,has_answer,has_context,has_source_citation,context_overlap,says_insufficient_info,rule_passed
+graph,1.0,1.0,1.0,1.0,0.0,1.0
+pgvector,1.0,1.0,1.0,1.0,0.0,1.0
+web,1.0,1.0,1.0,1.0,0.0,1.0
