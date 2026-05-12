@@ -1,7 +1,7 @@
 # **SKN27-3rd-1TEAM**
 
 > SK Networks Family AI Camp 27기 3차 프로젝트<br>
-> 개발기간: 2026년 5월 1일 ~ 15일
+> 개발기간: 2026년 5월 1일 ~ 5월 15일
 
 <br>
 
@@ -42,7 +42,7 @@
     <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfNDcg/MDAxNzc4NTQ5NDA4NTgw.rZ9cgCSeEpMVC3dJ2WHiH8DFLIcrKNO9a9DgYid17b0g.FALhYg9kQFMBVns57WmZ7RqgFJf-oabxo3fQ8DHygPUg.PNG/%EC%A3%BC%EC%98%81.png?type=w966" width="120" /></td>
     <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMTcx/MDAxNzc4NTY3NTIwNTQ1._MZw2BbJ1MGGS3TO2_JtesX8WzMq_ZiZghNbh_KZJFsg.rpmPlQIWLxpf1Y_jODPo80NnFRyNpR-hK7XK5rb6Vd0g.PNG/%EB%8F%99%ED%98%81.png?type=w966" width="120" /></td>
     <td align="center"><img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjYz/MDAxNzc4NTY3NTIwNTY3.41rdzabZe6qLyj6dWHi8JBFHOlDs39Fl2QtbjDg_8Bog.bF7ZhfKe9GvKIoB0ofOl-Ce_BLEW1oXEct6QpKKgS_0g.PNG/%EC%9E%AC%EC%9B%85.png?type=w966" width="120" /></td>
-  </tr>
+    </tr>
   <tr>
     <td align="center"><b>김민경</b></td>
     <td align="center"><b>권환성</b></td>
