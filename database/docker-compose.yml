@@ -74,6 +74,7 @@ services:
           # cypher-shell로 Neo4j에 접속해 RETURN 1 쿼리가 성공하는지 확인합니다.
           "cypher-shell -a bolt://localhost:7687 -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-admin123} 'RETURN 1'"
         ]
+        
       # 헬스체크를 10초마다 실행합니다.
       interval: 10s
       # 헬스체크 응답 대기 시간은 10초입니다.
