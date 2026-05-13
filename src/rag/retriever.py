@@ -465,12 +465,6 @@ class Neo4jGraphRetriever:
         driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
         try:
             with driver.session(database=self.database) as session:
-                source_rows = session.run(
-                    _GRAPH_SOURCE_MENTION_QUERY,
-                    terms=terms,
-                    reliability_filter=reliability_filter,
-                    limit=max(top_k * 2, top_k),
-                ).data()
                 relation_rows = session.run(
                     _GRAPH_RELATION_FACT_QUERY,
                     terms=terms,
@@ -480,9 +474,6 @@ class Neo4jGraphRetriever:
             driver.close()
 
         results = [
-            _graph_source_row_to_result(row, terms)
-            for row in source_rows
-        ] + [
             _graph_relation_row_to_result(row, terms)
             for row in relation_rows
         ]
@@ -692,34 +683,6 @@ def _entity_token_score_sql(token_patterns: Sequence[str]) -> tuple[str, list[ob
     return "".join(sql_parts), params
 
 
-_GRAPH_SOURCE_MENTION_QUERY = """
-MATCH (entity)-[:MENTIONED_IN]->(s:Source)
-WHERE any(term IN $terms WHERE
-    toLower(coalesce(entity.name, '')) CONTAINS term OR
-    toLower(coalesce(entity.code, '')) CONTAINS term OR
-    toLower(coalesce(entity.description, '')) CONTAINS term OR
-    toLower(coalesce(s.title, '')) CONTAINS term OR
-    toLower(coalesce(properties(s).text_preview, '')) CONTAINS term OR
-    toLower(coalesce(s.category, '')) CONTAINS term
-)
-AND (
-    $reliability_filter = 'ALL'
-    OR coalesce(s.reliability, '') = 'HIGH'
-    OR coalesce(s.trust_level, '') IN ['S', 'A']
-)
-RETURN
-    coalesce(s.source_id, elementId(s)) AS graph_id,
-    labels(entity)[0] AS entity_type,
-    coalesce(entity.name, entity.code, entity.boss_name, 'unknown') AS entity_name,
-    coalesce(s.title, coalesce(entity.name, entity.code, 'Graph source')) AS title,
-    s.url AS source_url,
-    coalesce(s.trust_level, s.reliability) AS reliability,
-    s.category AS category,
-    properties(s).text_preview AS text_preview
-LIMIT $limit
-"""
-
-
 _GRAPH_RELATION_FACT_QUERY = """
 MATCH (start)-[rel]->(finish)
 WHERE any(term IN $terms WHERE
@@ -731,6 +694,7 @@ WHERE any(term IN $terms WHERE
     toLower(coalesce(finish.description, '')) CONTAINS term OR
     toLower(coalesce(finish.boss_name, '')) CONTAINS term
 )
+AND type(rel) <> 'MENTIONED_IN'
 RETURN
     elementId(start) + ':' + type(rel) + ':' + elementId(finish) AS graph_id,
     labels(start)[0] AS start_type,
@@ -742,33 +706,6 @@ RETURN
     properties(finish) AS end_props
 LIMIT $limit
 """
-
-
-def _graph_source_row_to_result(
-    row: dict[str, Any],
-    terms: list[str],
-) -> GraphSearchResult:
-    entity_name = row.get("entity_name") or "unknown"
-    entity_type = row.get("entity_type") or "Graph"
-    title = row.get("title") or f"{entity_type}: {entity_name}"
-    text_preview = row.get("text_preview") or ""
-    category = row.get("category") or "unknown"
-    content = (
-        f"Graph source mention\n"
-        f"entity_type: {entity_type}\n"
-        f"entity_name: {entity_name}\n"
-        f"category: {category}\n"
-        f"summary: {text_preview}"
-    )
-    return GraphSearchResult(
-        graph_id=f"graph::source::{row.get('graph_id')}",
-        title=title,
-        content=content,
-        source_url=row.get("source_url"),
-        reliability=row.get("reliability"),
-        score=_score_graph_text(" ".join([title, entity_name, text_preview, category]), terms),
-        entity_type=entity_type,
-    )
 
 
 def _graph_relation_row_to_result(
