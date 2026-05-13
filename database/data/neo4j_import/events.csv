@@ -1,22 +1,22 @@
-﻿"event_id","name","event_type","target_user","start_date","end_date"
-"event_bdd636de4b667dab6ea1","하이퍼 버닝","growth","new_returning","",""
-"event_8ab61b5e966577cc18a0","코인샵 이벤트","reward","all","",""
-"event_54aee1ad5de80a0da8d9","썬데이 메이플","boost","all","",""
-"event_ff6d8bb6870e1cdb7162","VIP 사우나","official_event","all","",""
-"event_c69840f6ab8d2660602a","버닝 BEYOND","official_event","all","",""
-"event_9abb39790f89d98731a2","하이퍼 버닝 MAX","official_event","all","",""
-"event_af3eded264b4fef0b025","하이퍼 버닝 부스터를 드려요!","official_event","all","",""
-"event_6054fe0f0829dedaa719","[이벤트 샵] 기프트 티켓 상점","official_event","all","",""
-"event_8b37283afcfe2091dd2e","[이벤트 스킬] 메이플 스위츠","official_event","all","",""
-"event_0264f367e320d089d8d4","[체인지 버닝] 드림 샤드샵","official_event","all","",""
-"event_77b8d8d7b970834d6fe5","[체인지 버닝] 몽환의 시련","official_event","all","",""
-"event_989948d69c084c09404e","수정 [체인지 버닝] 악몽의 숲","official_event","all","",""
-"event_0c6a8b7c4f9667ee4301","수정2 [체인지 버닝] 몽환의 장비 & 몽환의 결정","official_event","all","",""
-"event_dd701edbc958dd689c86","수정2 [체인지 버닝] 루시드 드림","official_event","all","",""
-"event_4915aef2c3981dca4dfe","[출석 이벤트] 마스코트 퍼레이드","official_event","all","",""
-"event_a7ac70a202b4200c9437","[체인지 버닝] 루시드","official_event","all","",""
-"event_457b62a136be2b70ffef","진의 신비한 정원","official_event","all","",""
-"event_f0dea2904fc141b16af0","HAPPY MAPLE DAY in LotteWorld","official_event","all","",""
-"event_aa703e43d019d007f760","프리미엄PC방 접속보상 이벤트","official_event","all","",""
-"event_d10c37a65a1e93e1efdf","[사냥 이벤트] 악몽의 메아리","official_event","all","",""
-"event_68c4490a2fd15fdda803","[어린이날] 메이플 몬스터즈","official_event","all","",""
+﻿event_id,name,event_type,target_user,start_date,end_date
+event_bdd636de4b667dab6ea1,하이퍼 버닝,growth,new_returning,,
+event_8ab61b5e966577cc18a0,코인샵 이벤트,reward,all,,
+event_54aee1ad5de80a0da8d9,썬데이 메이플,boost,all,,
+event_ff6d8bb6870e1cdb7162,VIP 사우나,official_event,all,,
+event_c69840f6ab8d2660602a,버닝 BEYOND,official_event,all,,
+event_9abb39790f89d98731a2,하이퍼 버닝 MAX,official_event,all,,
+event_af3eded264b4fef0b025,하이퍼 버닝 부스터를 드려요!,official_event,all,,
+event_6054fe0f0829dedaa719,[이벤트 샵] 기프트 티켓 상점,official_event,all,,
+event_8b37283afcfe2091dd2e,[이벤트 스킬] 메이플 스위츠,official_event,all,,
+event_0264f367e320d089d8d4,[체인지 버닝] 드림 샤드샵,official_event,all,,
+event_77b8d8d7b970834d6fe5,[체인지 버닝] 몽환의 시련,official_event,all,,
+event_989948d69c084c09404e,수정 [체인지 버닝] 악몽의 숲,official_event,all,,
+event_0c6a8b7c4f9667ee4301,수정2 [체인지 버닝] 몽환의 장비 & 몽환의 결정,official_event,all,,
+event_dd701edbc958dd689c86,수정2 [체인지 버닝] 루시드 드림,official_event,all,,
+event_4915aef2c3981dca4dfe,[출석 이벤트] 마스코트 퍼레이드,official_event,all,,
+event_a7ac70a202b4200c9437,[체인지 버닝] 루시드,official_event,all,,
+event_457b62a136be2b70ffef,진의 신비한 정원,official_event,all,,
+event_f0dea2904fc141b16af0,HAPPY MAPLE DAY in LotteWorld,official_event,all,,
+event_aa703e43d019d007f760,프리미엄PC방 접속보상 이벤트,official_event,all,,
+event_d10c37a65a1e93e1efdf,[사냥 이벤트] 악몽의 메아리,official_event,all,,
+event_68c4490a2fd15fdda803,[어린이날] 메이플 몬스터즈,official_event,all,,

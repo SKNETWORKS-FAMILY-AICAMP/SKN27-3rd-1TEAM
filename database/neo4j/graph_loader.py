@@ -69,8 +69,10 @@ def create_constraints(session):
         "CREATE CONSTRAINT job_id IF NOT EXISTS FOR (n:Job) REQUIRE n.job_id IS UNIQUE",
         "CREATE CONSTRAINT stat_type_id IF NOT EXISTS FOR (n:StatType) REQUIRE n.stat_type_id IS UNIQUE",
         "CREATE CONSTRAINT boss_id IF NOT EXISTS FOR (n:Boss) REQUIRE n.boss_id IS UNIQUE",
+        "CREATE CONSTRAINT boss_alias_id IF NOT EXISTS FOR (n:BossAlias) REQUIRE n.alias_id IS UNIQUE",
         "CREATE CONSTRAINT stat_requirement_id IF NOT EXISTS FOR (n:StatRequirement) REQUIRE n.requirement_id IS UNIQUE",
         "CREATE CONSTRAINT equipment_catalog_id IF NOT EXISTS FOR (n:EquipmentCatalog) REQUIRE n.equipment_id IS UNIQUE",
+        "CREATE CONSTRAINT equipment_rule_id IF NOT EXISTS FOR (n:EquipmentRule) REQUIRE n.rule_id IS UNIQUE",
         "CREATE CONSTRAINT set_effect_id IF NOT EXISTS FOR (n:SetEffect) REQUIRE n.set_effect_id IS UNIQUE",
         "CREATE CONSTRAINT event_id IF NOT EXISTS FOR (n:Event) REQUIRE n.event_id IS UNIQUE",
         "CREATE CONSTRAINT reward_id IF NOT EXISTS FOR (n:Reward) REQUIRE n.reward_id IS UNIQUE",
@@ -117,6 +119,16 @@ def load_nodes(session):
             """,
         ),
         (
+            "boss_aliases.csv",
+            """
+            UNWIND $rows AS row
+            MERGE (n:BossAlias {alias_id: row.alias_id})
+            SET n.name = row.name,
+                n.normalized_name = row.normalized_name,
+                n.locale = row.locale
+            """,
+        ),
+        (
             "stat_requirements.csv",
             """
             UNWIND $rows AS row
@@ -142,6 +154,52 @@ def load_nodes(session):
                 n.item_type = row.item_type,
                 n.level_limit = row.level_limit,
                 n.set_name = row.set_name
+            """,
+        ),
+        (
+            "equipment_rules.csv",
+            """
+            UNWIND $rows AS row
+            MERGE (n:EquipmentRule {rule_id: row.rule_id})
+            SET n.name = row.name,
+                n.rule_type = row.rule_type,
+                n.rule_file = row.rule_file,
+                n.stage = row.stage,
+                n.level_range = row.level_range,
+                n.job_group = row.job_group,
+                n.item_slot = row.item_slot,
+                n.current_tier = row.current_tier,
+                n.recommended_tier = row.recommended_tier,
+                n.item_tier = row.item_tier,
+                n.minimum_starforce = row.minimum_starforce,
+                n.recommended_starforce = row.recommended_starforce,
+                n.stop_point = row.stop_point,
+                n.potential_grade = row.potential_grade,
+                n.option_type = row.option_type,
+                n.priority = row.priority,
+                n.priority_rank = row.priority_rank,
+                n.valid_options = row.valid_options,
+                n.bad_options = row.bad_options,
+                n.target_grade = row.target_grade,
+                n.additional_potential = row.additional_potential,
+                n.flame_score = row.flame_score,
+                n.minimum_score = row.minimum_score,
+                n.recommended_score = row.recommended_score,
+                n.high_score = row.high_score,
+                n.upgrade_priority = row.upgrade_priority,
+                n.condition = row.condition,
+                n.reason = row.reason,
+                n.recommended_action = row.recommended_action,
+                n.api_slot_name = row.api_slot_name,
+                n.standard_slot_name = row.standard_slot_name,
+                n.item_category = row.item_category,
+                n.is_core_slot = row.is_core_slot,
+                n.recommendation_use = row.recommendation_use,
+                n.notes = row.notes,
+                n.calculation_note = row.calculation_note,
+                n.review_status = row.review_status,
+                n.source_id = row.source_id,
+                n.description = row.description
             """,
         ),
         (
@@ -229,6 +287,15 @@ def load_relationships(session):
             MATCH (b:Boss {boss_id: row.boss_id})
             MATCH (r:StatRequirement {requirement_id: row.requirement_id})
             MERGE (b)-[:HAS_REQUIREMENT]->(r)
+            """,
+        ),
+        (
+            "rel_boss_aliases.csv",
+            """
+            UNWIND $rows AS row
+            MATCH (a:BossAlias {alias_id: row.alias_id})
+            MATCH (b:Boss {boss_id: row.boss_id})
+            MERGE (a)-[:ALIAS_OF]->(b)
             """,
         ),
         (
