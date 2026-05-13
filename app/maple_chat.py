@@ -280,10 +280,10 @@ def render_chat_app() -> None:
     render_style()
     render_page_bgm("chat")
     handle_user_input()
-    process_pending_response(rerun=False)
     render_chat_page()
     render_top_navigation(active_menu_key="chat")
     render_bgm_control_button()
+    process_pending_response(rerun=True)
 
 
 def main() -> None:
