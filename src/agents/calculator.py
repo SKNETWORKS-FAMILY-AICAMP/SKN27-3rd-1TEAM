@@ -856,12 +856,12 @@ def calculator_agent(
     """Run calculator node with create_agent tools and return AgentState-compatible fields."""
 
     user_query = state["user_query"]
-    if model is None:
-        model = get_llm()
 
     state = run_calculator(state, daily_meso_budget=daily_meso_budget)
     if _calculator_has_usable_result(state):
         try:
+            if model is None:
+                model = get_llm()
             agent_update = _generate_agent_state_update(state, model)
         except Exception as exc:
             state = _append_state_error(state, f"calculator create_agent state generation failed: {exc}")

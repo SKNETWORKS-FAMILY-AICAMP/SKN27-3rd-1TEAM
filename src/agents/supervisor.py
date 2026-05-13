@@ -175,6 +175,23 @@ feedback: {feedback}
             ordered_plan.append(agent)
 
     plan = ordered_plan
+    forced_research = False
+    try:
+        from src.agents.research_agent import classify_research_route
+
+        research_route = classify_research_route(state.get("user_query", ""))
+        already_completed_agents = state.get("completed_agents", [])
+        if (
+            (research_route.get("use_graph") or research_route.get("use_web"))
+            and "research" not in plan
+            and "research" not in already_completed_agents
+            and completed_agent != "research"
+        ):
+            plan.insert(0, "research")
+            forced_research = True
+    except Exception as exc:
+        errors = [*errors, f"supervisor research route fallback failed: {exc}"]
+
     if not plan and state.get("next_agent") in ["research", "analystic", "calculator", "final_answer"]:
         # plan이 비어도 이전 next_agent가 있으면 기존 라우팅을 이어감
         plan = [state["next_agent"]]
@@ -189,7 +206,11 @@ feedback: {feedback}
         # feedback 없이 정상 진행 중이면 이미 실행한 agent를 다시 실행하지 않도록 제거
         plan = plan[1:]
 
-    next_agent = response_dict.get("next_agent") or plan[0]
+    next_agent = (
+        "research"
+        if forced_research
+        else response_dict.get("next_agent") or plan[0]
+    )
     if next_agent not in plan:
         next_agent = plan[0]
 
