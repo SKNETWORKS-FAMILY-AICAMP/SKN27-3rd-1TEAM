@@ -455,8 +455,8 @@ flowchart LR
 | 항목 | 값 |
 |---|---:|
 | documents | 3,567 |
-| document_chunks | 10,025 |
-| document_embeddings | 10,025 |
+| document_chunks | 11,599 |
+| document_embeddings | 11,599 |
 | wiki_entities | 1,328 |
 | 미임베딩 chunk | 0 |
 | embedding model | `google/embeddinggemma-300m` |

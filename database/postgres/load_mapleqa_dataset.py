@@ -24,7 +24,28 @@ from common.logging_config import set_logging
 logger = set_logging()
 
 VECTOR_EXCLUDED_SCOPES = {"api_static_sample"}
-OFFICIAL_COMMENT_BLOCK_RE = re.compile(r"(?:\s*-{5,})?\s*댓글\s+\d+\s+.*$", re.DOTALL)
+COMMENT_TEXT = "\ub313\uae00"
+REGISTER_TEXT = "\ub4f1\ub85d"
+OFFICIAL_COMMENT_BLOCK_RE = re.compile(
+    rf"(?:\s*-{{5,}})?\s*{COMMENT_TEXT}\s+\d+\s+.*$",
+    re.DOTALL,
+)
+COMMENT_FORM_RE = re.compile(
+    rf"{COMMENT_TEXT}\s*\n.*?(?=\n\s*관련 이벤트 목록|$)",
+    re.DOTALL,
+)
+COMMENT_DATE_RE = re.compile(
+    rf"\d{{4}}\.\d{{2}}\.\d{{2}}\s+\d{{2}}:\d{{2}}\s*{REGISTER_TEXT}.*$",
+    re.DOTALL,
+)
+EVENT_DATE_RANGE_RE = re.compile(
+    r"(\d{4}\.\d{2}\.\d{2})\s*(?:\([^)]+\))?\s*~\s*(\d{4}\.\d{2}\.\d{2})"
+)
+PARAGRAPH_BOUNDARY_RE = re.compile(r"\n{2,}|(?=\n\s*(?:[-■※]|\d+[.)]\s))")
+SENTENCE_BOUNDARY_RE = re.compile(
+    r"(?<=[.!?\u3002\uff01\uff1f])\s+"
+    r"|(?<=[\uac00-\ud7a3][\ub2e4\uc694\uc8e0\uc74c\ub428\ud568])\s+"
+)
 
 DEFAULT_DATASET = (
     Path(__file__).resolve().parents[1]
@@ -75,13 +96,48 @@ def normalize_tag(value: str) -> str:
     return " ".join(value.strip().lower().split())
 
 
+def truncate_preview(value: str, limit: int = 1000) -> str:
+    value = " ".join((value or "").split())
+    if len(value) <= limit:
+        return value
+    preview = value[:limit]
+    last_sentence = max(preview.rfind(mark) for mark in (".", "!", "?", "。", "！", "？"))
+    if last_sentence >= limit // 2:
+        return preview[: last_sentence + 1].strip()
+    last_space = preview.rfind(" ")
+    if last_space >= limit // 2:
+        return preview[:last_space].strip()
+    return preview.strip()
+
+
+def strip_official_comments(text: str) -> str:
+    text = COMMENT_FORM_RE.sub("", text or "")
+    text = COMMENT_DATE_RE.sub("", text)
+    text = OFFICIAL_COMMENT_BLOCK_RE.sub("", text)
+    return text.strip()
+
+
+def official_event_fallback(row: dict[str, str], original: str, cleaned: str) -> str:
+    if row.get("category") != "official_event" or cleaned.strip():
+        return cleaned
+
+    parts = [f"공식 이벤트: {row.get('title') or row['doc_id']}"]
+    date_match = EVENT_DATE_RANGE_RE.search(original)
+    if date_match:
+        parts.append(f"이벤트 기간: {date_match.group(1)} ~ {date_match.group(2)}")
+    if row.get("source_url"):
+        parts.append(f"원문 URL: {row['source_url']}")
+    parts.append("원문 본문 텍스트가 충분히 추출되지 않아 제목, 기간, 출처 정보를 기반으로 보존한 공식 이벤트 문서입니다.")
+    return "\n".join(parts)
+
+
 def clean_rag_text(row: dict[str, str]) -> str:
     text = row.get("rag_text") or row.get("text_preview") or ""
     if (
         row.get("source_type") == "official"
         and row.get("collection_scope") == "official_document_collection"
     ):
-        text = OFFICIAL_COMMENT_BLOCK_RE.sub("", text)
+        text = official_event_fallback(row, text, strip_official_comments(text))
     return text.strip()
 
 
@@ -107,19 +163,91 @@ def source_id_for(row: dict[str, str]) -> str:
     return f"mapleqa_{digest}"
 
 
+def chunk_units(text: str, chunk_size: int) -> list[tuple[int, int]]:
+    units: list[tuple[int, int]] = []
+    paragraph_start = 0
+    for match in PARAGRAPH_BOUNDARY_RE.finditer(text):
+        paragraph_end = match.start()
+        if paragraph_end > paragraph_start:
+            units.extend(sentence_units(text, paragraph_start, paragraph_end, chunk_size))
+        paragraph_start = match.end() if match.end() > match.start() else match.start()
+    if paragraph_start < len(text):
+        units.extend(sentence_units(text, paragraph_start, len(text), chunk_size))
+    return units
+
+
+def sentence_units(text: str, start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
+    if end - start <= chunk_size:
+        return [(start, end)]
+
+    units: list[tuple[int, int]] = []
+    sentence_start = start
+    segment = text[start:end]
+    for match in SENTENCE_BOUNDARY_RE.finditer(segment):
+        sentence_end = start + match.end()
+        if sentence_end > sentence_start:
+            units.extend(word_units(text, sentence_start, sentence_end, chunk_size))
+        sentence_start = sentence_end
+    if sentence_start < end:
+        units.extend(word_units(text, sentence_start, end, chunk_size))
+    return units
+
+
+def word_units(text: str, start: int, end: int, chunk_size: int) -> list[tuple[int, int]]:
+    if end - start <= chunk_size:
+        return [(start, end)]
+
+    units: list[tuple[int, int]] = []
+    for match in re.finditer(r"\S+\s*", text[start:end]):
+        word_start = start + match.start()
+        word_end = start + match.end()
+        while word_end - word_start > chunk_size:
+            units.append((word_start, word_start + chunk_size))
+            word_start += chunk_size
+        if word_end > word_start:
+            units.append((word_start, word_end))
+    return units
+
+
 def chunks(text: str, chunk_size: int, overlap: int) -> Iterable[tuple[int, str, int, int]]:
     if chunk_size <= overlap:
         raise ValueError("chunk_size must be greater than overlap")
 
-    start = 0
     index = 0
     text = text or ""
-    while start < len(text):
-        end = min(start + chunk_size, len(text))
-        yield index, text[start:end], start, end
-        if end == len(text):
-            break
-        start = end - overlap
+    units = chunk_units(text, chunk_size)
+    current: list[tuple[int, int]] = []
+
+    for unit_start, unit_end in units:
+        if not current:
+            current.append((unit_start, unit_end))
+            continue
+
+        if unit_end - current[0][0] <= chunk_size:
+            current.append((unit_start, unit_end))
+            continue
+
+        start, end = current[0][0], current[-1][1]
+        content = text[start:end].strip()
+        if content:
+            yield index, content, start, end
+            index += 1
+
+        overlap_units: list[tuple[int, int]] = []
+        for previous in reversed(current):
+            overlap_units.insert(0, previous)
+            if end - previous[0] >= overlap:
+                break
+        while overlap_units and unit_end - overlap_units[0][0] > chunk_size:
+            overlap_units.pop(0)
+
+        current = overlap_units + [(unit_start, unit_end)]
+
+    if current:
+        start, end = current[0][0], current[-1][1]
+        content = text[start:end].strip()
+        if content:
+            yield index, content, start, end
         index += 1
 
 
@@ -212,8 +340,8 @@ def upsert_document(cur, row: dict[str, str], source_id: str, content: str) -> s
             row.get("trust_level") or None,
             row.get("language") or "ko",
             row.get("content_format") or None,
-            parse_int(row.get("text_length")),
-            row.get("text_preview") or None,
+            len(content),
+            truncate_preview(content) or None,
             content,
             parse_bool(row.get("rag_ready")),
             parse_bool(row.get("is_final_keep")),
@@ -395,8 +523,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Load MapleQA handoff CSV into PostgreSQL.")
     parser.add_argument("--dataset", type=Path, default=DEFAULT_DATASET)
     parser.add_argument("--dsn", default=database_url())
-    parser.add_argument("--chunk-size", type=int, default=1800)
-    parser.add_argument("--overlap", type=int, default=200)
+    parser.add_argument("--chunk-size", type=int, default=1805)
+    parser.add_argument("--overlap", type=int, default=255)
     parser.add_argument("--commit-every", type=int, default=200)
     parser.add_argument("--skip-schema", action="store_true")
     args = parser.parse_args()
