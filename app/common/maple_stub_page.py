@@ -4,15 +4,19 @@ from html import escape
 
 import streamlit as st
 
-from app.common.bgm import render_global_bgm
+from app.common.bgm import render_page_bgm
 from app.common.chat_render import render_style, render_top_navigation
 
 
 def render_stub_body(
-    *, title: str, body: str, active_menu_key: str | None = None
+    *,
+    title: str,
+    body: str,
+    active_menu_key: str | None = None,
+    bgm_page_key: str | None = None,
 ) -> None:
     render_style()
-    render_global_bgm()
+    render_page_bgm(bgm_page_key or active_menu_key)
     render_top_navigation(active_menu_key=active_menu_key)
     t = escape(title)
     b = escape(body).replace("\n", "<br>")

@@ -187,6 +187,10 @@ def evaluate_final_answer_record(
         has_reference=bool(reference.strip()),
         question_overlap_threshold=question_overlap_threshold,
         reference_overlap_threshold=reference_overlap_threshold,
+    ) or (
+        bool(contexts)
+        and context_overlap >= context_overlap_threshold
+        and has_answer
     )
     grounded_in_context = (
         bool(contexts) and context_overlap >= context_overlap_threshold
@@ -607,6 +611,12 @@ def normalize_source_reliability(value: Any) -> str:
     reliability = str(value or "LOW").strip().upper()
     if reliability in {"HIGH", "MEDIUM", "LOW"}:
         return reliability
+    if reliability in {"S", "A"}:
+        return "HIGH"
+    if reliability == "B":
+        return "MEDIUM"
+    if reliability == "C":
+        return "LOW"
     return "INVALID"
 
 

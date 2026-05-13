@@ -17,7 +17,7 @@ for path in (PROJECT_ROOT, SRC_ROOT):
         sys.path.insert(0, str(path))
 
 
-from app.common.bgm import render_global_bgm  # noqa: E402
+from app.common.bgm import render_page_bgm  # noqa: E402
 from app.common.chat_memory import (  # noqa: E402
     build_agent_messages,
     compact_agent_history,
@@ -214,7 +214,6 @@ def append_agent_turn(user_input: str, answer: str) -> None:
         ]
     )
 
-
 def handle_user_input() -> None:
     user_input = st.chat_input("Type your question here...")
     if not user_input:
@@ -232,7 +231,7 @@ def handle_user_input() -> None:
         save_current_chat()
 
 
-def process_pending_response() -> None:
+def process_pending_response(rerun: bool = True) -> None:
     user_input = st.session_state.pending_user_input
     if not user_input:
         return
@@ -249,7 +248,8 @@ def process_pending_response() -> None:
     append_agent_turn(user_input, answer)
     st.session_state.pending_user_input = None
     save_current_chat()
-    st.rerun()
+    if rerun:
+        st.rerun()
 
 
 def main() -> None:
@@ -258,7 +258,7 @@ def main() -> None:
     init_session_state()
     st.session_state.active_page = "home"
     render_style()
-    render_global_bgm()
+    render_page_bgm("home")
     render_messages()
     render_top_navigation(active_menu_key="home")
     handle_user_input()

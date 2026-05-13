@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from html import escape
+import json
 
 import streamlit as st
 import streamlit.components.v1 as components
 
 from app.common.chat_style import (
     ASSISTANT_AVATAR_PATH,
+    CHAT_BACKGROUND_PATH,
     CHAT_BACKGROUND_OVERLAY_PATH,
     USER_AVATAR_PATH,
     image_to_data_uri,
@@ -25,9 +27,9 @@ MENU_ITEMS = (
 # 홈 화면 프롬프트 칩입니다.
 # 튜플 형식: 위젯 키, 버튼 라벨, 채팅에 넣을 프롬프트 문구.
 PROMPT_CHIPS = (
-    ("chip_story", "✣ Tell me a story", "메이플스토리 초보 모험가를 위한 짧은 모험 이야기를 들려줘."),
-    ("chip_debug", "<> Help me debug code", "지금 메이플 가이드 챗봇 코드에서 확인해야 할 디버깅 포인트를 알려줘."),
-    ("chip_quantum", "◉ Explain quantum physics", "양자 물리를 메이플스토리 비유로 쉽게 설명해줘."),
+    ("chip_growth", "성장 루트 추천", "메이플스토리 캐릭터 성장 루트를 추천해줘."),
+    ("chip_boss", "보스컷 알려줘", "지금 스펙으로 갈 만한 보스와 보스컷을 알려줘."),
+    ("chip_starforce", "스타포스 가이드", "스타포스 강화 우선순위와 주의할 점을 알려줘."),
 )
 
 
@@ -55,6 +57,13 @@ def _queue_prompt(prompt: str) -> None:
     st.rerun()
 
 
+def _submit_home_prompt() -> None:
+    prompt = st.session_state.get("home_prompt_input", "").strip()
+    if prompt:
+        st.session_state.home_prompt_to_queue = prompt
+    st.session_state.home_prompt_input = ""
+
+
 def render_top_navigation(active_menu_key: str | None = "chat") -> None:
     """고정 상단 내비게이션과 홈 배지를 렌더링합니다."""
     # 고정 메뉴 배경입니다. 크기와 색상은 CSS에서 조정합니다.
@@ -65,9 +74,9 @@ def render_top_navigation(active_menu_key: str | None = "chat") -> None:
         if st.button("Home", key="home_badge_button", type="tertiary", use_container_width=True):
             st.switch_page("maple_chat.py")
 
-    # 큰 홈 로고 버튼입니다. 채팅/서브 페이지에서는 CSS로 숨깁니다.
+    # 큰 홈 로고 이미지입니다. 채팅/서브 페이지에서는 CSS로 숨깁니다.
     with st.container(key="maple-brand-bar"):
-        st.button("Maple AI", key="brand_home", type="tertiary", use_container_width=True)
+        st.markdown('<div class="maple-brand-logo" aria-label="Maple AI"></div>', unsafe_allow_html=True)
 
     # 중앙 내비게이션 메뉴입니다. 활성 버튼은 primary 타입으로 스타일을 구분합니다.
     with st.container(key="maple-nav-bar"):
@@ -108,6 +117,18 @@ def render_messages() -> None:
         unsafe_allow_html=True,
     )
 
+    with st.container(key="maple-home-input"):
+        st.text_input(
+            "질문 입력",
+            key="home_prompt_input",
+            placeholder="궁금한 메이플 정보를 물어보세요",
+            label_visibility="collapsed",
+            on_change=_submit_home_prompt,
+        )
+        prompt = st.session_state.pop("home_prompt_to_queue", None)
+        if prompt:
+            _queue_prompt(prompt)
+
     # 프롬프트 칩은 입력창 근처에 배치되도록 hero 뒤에 렌더링합니다.
     render_prompt_buttons()
 
@@ -121,6 +142,7 @@ def render_chat_page() -> None:
     # 커스텀 HTML에서 바로 쓸 수 있도록 아바타 이미지를 data URI로 변환합니다.
     assistant_avatar = image_to_data_uri(ASSISTANT_AVATAR_PATH)
     user_avatar = image_to_data_uri(USER_AVATAR_PATH)
+    chat_background = image_to_data_uri(CHAT_BACKGROUND_PATH)
     chat_overlay = image_to_data_uri(CHAT_BACKGROUND_OVERLAY_PATH)
 
     if visible_messages:
@@ -142,6 +164,16 @@ def render_chat_page() -> None:
                 f'<div class="maple-chat-bubble {role}">{content}</div>'
                 f"</div>"
             )
+        if st.session_state.get("pending_user_input"):
+            html_messages.append(
+                '<div class="maple-chat-row assistant maple-chat-thinking-row">'
+                f'<img class="maple-chat-avatar" src="{assistant_avatar}" alt="">'
+                '<div class="maple-chat-bubble assistant maple-chat-thinking">'
+                '<span class="maple-thinking-spinner"></span>'
+                '<span>답변 생성 중입니다...</span>'
+                "</div>"
+                "</div>"
+            )
         thread_html = "".join(html_messages) + '<div class="maple-chat-scroll-anchor"></div>'
     else:
         # 아직 표시할 대화가 없을 때 보여주는 빈 상태 문구입니다.
@@ -153,12 +185,14 @@ def render_chat_page() -> None:
         f"""
 <div class="maple-chat-page-marker"></div>
 <section class="maple-chat-page">
+    <canvas class="maple-portal-canvas" aria-hidden="true"></canvas>
     <img class="maple-chat-overlay" src="{chat_overlay}" alt="">
     <div class="maple-chat-thread">{thread_html}</div>
 </section>
 """,
         unsafe_allow_html=True,
     )
+
     user_message_count = sum(1 for message in visible_messages if message.get("role") == "user")
     components.html(
         f"""
@@ -202,3 +236,91 @@ def render_chat_page() -> None:
 """,
         height=1,
     )
+
+    portal_script = """
+<script>
+(() => {
+  const parentWindow = window.parent;
+  const parentDocument = parentWindow.document;
+  if (parentWindow.__maplePortalFrame) {
+    parentWindow.cancelAnimationFrame(parentWindow.__maplePortalFrame);
+    parentWindow.__maplePortalFrame = null;
+  }
+
+  const canvas = parentDocument.querySelector(".maple-portal-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+  img.src = __CHAT_BACKGROUND_SRC__;
+
+  const draw = (time) => {
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || !img.naturalWidth || !img.naturalHeight) {
+      parentWindow.__maplePortalFrame = parentWindow.requestAnimationFrame(draw);
+      return;
+    }
+
+    const dpr = Math.min(parentWindow.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.round(rect.width * dpr));
+    const height = Math.max(1, Math.round(rect.height * dpr));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    ctx.beginPath();
+    ctx.ellipse(rect.width * 0.5, rect.height * 0.51, rect.width * 0.39, rect.height * 0.48, 0, 0, Math.PI * 2);
+    ctx.clip();
+
+    const viewportW = parentWindow.innerWidth;
+    const viewportH = parentWindow.innerHeight;
+    const bgScale = Math.max(viewportW / img.naturalWidth, viewportH / img.naturalHeight);
+    const bgW = img.naturalWidth * bgScale;
+    const bgH = img.naturalHeight * bgScale;
+    const bgLeft = (viewportW - bgW) / 2;
+    const bgTop = (viewportH - bgH) / 2 - 16;
+
+    const sourceX = (rect.left - bgLeft) / bgScale;
+    const sourceY = (rect.top - bgTop) / bgScale;
+    const sourceW = rect.width / bgScale;
+    const sourceH = rect.height / bgScale;
+    const lines = Math.ceil(rect.height);
+
+    for (let y = 0; y < lines; y += 1) {
+      const ratio = y / Math.max(1, rect.height);
+      const sourceLineY = sourceY + ratio * sourceH;
+      const wave =
+        Math.sin(y * 0.13 + time * 0.0048) * 2.2 +
+        Math.sin(y * 0.31 + time * 0.0028) * 0.9;
+      const pulse = Math.sin(time * 0.002 + ratio * 6.2) * 0.45;
+      ctx.drawImage(
+        img,
+        sourceX,
+        sourceLineY,
+        sourceW,
+        sourceH / Math.max(1, rect.height) + 0.7 / bgScale,
+        wave + pulse,
+        y,
+        rect.width,
+        1.7
+      );
+    }
+
+    ctx.restore();
+    parentWindow.__maplePortalFrame = parentWindow.requestAnimationFrame(draw);
+  };
+
+  img.onload = () => {
+    parentWindow.__maplePortalFrame = parentWindow.requestAnimationFrame(draw);
+  };
+  if (img.complete) {
+    parentWindow.__maplePortalFrame = parentWindow.requestAnimationFrame(draw);
+  }
+})();
+</script>
+""".replace("__CHAT_BACKGROUND_SRC__", json.dumps(chat_background))
+    components.html(portal_script, height=1, scrolling=False)

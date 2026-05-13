@@ -1,7 +1,7 @@
 import json
 
 from common.state import AgentState, AgentName
-from common.get_model import get_model
+from common.get_model import get_llm
 from common.prompt import master_prompt
 
 TASK_TYPES = {
@@ -57,7 +57,7 @@ def has_character_analysis_state(state: AgentState) -> bool:
 
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
-    llm = get_model()
+    llm = get_llm()
 
     existing_plan = state.get("plan") or []
     feedback = state.get("feedback", "")

@@ -64,21 +64,35 @@ def get_maple_chat_css() -> str:
     --muted: #8d8580;
     --violet: #7869ff;
     --chat-bg-ratio: 1.982438;
+    --chat-bg-w: max(100vw, calc(100vh * var(--chat-bg-ratio)));
+    --chat-bg-h: max(100vh, calc(100vw / var(--chat-bg-ratio)));
+    --chat-bg-left: calc((100vw - var(--chat-bg-w)) / 2);
+    --chat-bg-top: calc((100vh - var(--chat-bg-h)) / 2 - 1rem);
+    --home-title-w: min(56rem, calc(100vw - 2rem));
+    --home-input-w: min(46rem, calc(100vw - 3.5rem));
+    --home-title-center-y: 37vh;
+    --home-title-h: 16rem;
     --chat-overlay-ratio: 1.789157;
-    --chat-overlay-h: min(calc(100vh - 5.4rem), calc(100vw / var(--chat-overlay-ratio) * 0.9));
+    --chat-page-pad: 1rem;
+    --chat-overlay-h: min(calc(100vh - 5.4rem), calc((100vw - var(--chat-page-pad)) / var(--chat-overlay-ratio)));
     --chat-overlay-w: calc(var(--chat-overlay-h) * var(--chat-overlay-ratio));
     --chat-overlay-left: calc((100vw - var(--chat-overlay-w)) / 2);
     --chat-overlay-top: calc(4.1rem + ((100vh - 4.1rem - var(--chat-overlay-h)) / 2));
-    --chat-panel-left: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.593);
-    --chat-panel-right: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.966);
-    --chat-panel-top: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.125);
-    --chat-panel-bottom: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.895);
-    --chat-input-left: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.596);
-    --chat-input-right: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.886);
-    --chat-input-top: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.887);
-    --chat-input-h: calc(var(--chat-overlay-h) * 0.043);
-    --chat-enter-left: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.899);
-    --chat-enter-right: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.958);
+    /* 우측 흰 패널 - 가장 큰 첫번째 박스 (채팅창 영역) */
+    --chat-panel-left: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.595);
+    --chat-panel-right: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.984 - 7px);
+    --chat-panel-top: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.128);
+    --chat-panel-bottom: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.890);
+    /* 두번째 박스 - 채팅창 바로 아래, ENTER 왼쪽의 입력창 */
+    --chat-input-left: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.595);
+    --chat-input-right: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.875);
+    --chat-input-top: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.902 - 10px);
+    --chat-input-h: calc(var(--chat-overlay-h) * 0.052);
+    /* ENTER 회색 사각형 (전송 버튼 클릭 영역) */
+    --chat-enter-left: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.880);
+    --chat-enter-right: calc(var(--chat-overlay-left) + var(--chat-overlay-w) * 0.948);
+    --chat-enter-top: calc(var(--chat-overlay-top) + var(--chat-overlay-h) * 0.908);
+    --chat-enter-h: calc(var(--chat-overlay-h) * 0.046);
 }
 
 html,
@@ -130,7 +144,13 @@ footer {
     inset: 0;
     pointer-events: none;
     background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.58)),
+        linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.08) 0%,
+            rgba(0, 0, 0, 0.16) 45%,
+            rgba(0, 0, 0, 0.72) 68%,
+            rgba(0, 0, 0, 0.96) 100%
+        ),
         url("__BACKGROUND_IMAGE__") center / cover no-repeat;
     z-index: 0;
 }
@@ -230,27 +250,26 @@ footer {
 
 .st-key-maple-brand-bar {
     position: fixed !important;
-    top: 39vh !important;
+    top: var(--home-title-center-y) !important;
     left: 50% !important;
-    width: min(56rem, calc(100vw - 2rem)) !important;
+    width: var(--home-title-w) !important;
     transform: translate(-50%, -50%) !important;
     z-index: 45 !important;
 }
 
-.st-key-maple-brand-bar button {
-    width: min(56rem, calc(100vw - 2rem)) !important;
-    min-height: 16rem !important;
-    height: 16rem !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    border: 0 !important;
+.st-key-maple-brand-bar .maple-brand-logo {
+    display: block;
+    width: var(--home-title-w) !important;
+    min-height: var(--home-title-h) !important;
+    height: var(--home-title-h) !important;
     background: url("__HOME_BUTTON__") center / contain no-repeat !important;
-    box-shadow: none !important;
+    pointer-events: none;
 }
 
-.st-key-maple-brand-bar button * {
-    color: transparent !important;
-    font-size: 0 !important;
+.st-key-maple-brand-bar [data-testid="stMarkdownContainer"] {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .maple-hero {
@@ -259,9 +278,92 @@ footer {
 
 .maple-title,
 .maple-input-space,
-.st-key-maple-chip-row,
 .maple-message-panel {
     display: none !important;
+}
+
+.st-key-maple-home-input {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    top: calc(var(--home-title-center-y) + (var(--home-title-h) / 2) - 0.25rem) !important;
+    bottom: auto !important;
+    width: var(--home-input-w) !important;
+    max-width: var(--home-input-w) !important;
+    padding: 0 !important;
+    transform: translateX(-50%) !important;
+    z-index: 65 !important;
+}
+
+.st-key-maple-home-input [data-testid="stVerticalBlock"],
+.st-key-maple-home-input [data-testid="stElementContainer"],
+.st-key-maple-home-input div[data-testid="stTextInput"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.st-key-maple-home-input [data-testid="stTextInputRootElement"] {
+    min-height: 3.1rem !important;
+    border: 1px solid rgba(255, 200, 137, 0.62) !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.39) !important;
+    background-color: rgba(0, 0, 0, 0.39) !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+}
+
+.st-key-maple-home-input [data-baseweb="input"],
+.st-key-maple-home-input [data-testid="stTextInputRootElement"] > div {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.st-key-maple-home-input input {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #fff7e8 !important;
+    caret-color: var(--orange) !important;
+    font-size: 0.92rem !important;
+}
+
+.st-key-maple-home-input input::placeholder {
+    color: rgba(255, 247, 232, 0.78) !important;
+}
+
+.st-key-maple-chip-row {
+    position: fixed !important;
+    left: 50% !important;
+    top: calc(var(--home-title-center-y) + (var(--home-title-h) / 2) + 3.65rem) !important;
+    bottom: auto !important;
+    width: min(44rem, calc(100vw - 3rem)) !important;
+    transform: translateX(-50%) !important;
+    z-index: 60 !important;
+}
+
+.st-key-maple-chip-row [data-testid="stHorizontalBlock"] {
+    gap: 0.7rem !important;
+}
+
+.st-key-maple-chip-row button {
+    min-height: 2.7rem !important;
+    height: 2.7rem !important;
+    padding: 0 0.8rem !important;
+    border: 1px solid rgba(255, 200, 137, 0.42) !important;
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.42) !important;
+    color: #ffe8c6 !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28) !important;
+    font-family: "MaplestoryBold", Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+}
+
+.st-key-maple-chip-row button:hover {
+    border-color: rgba(255, 200, 137, 0.72) !important;
+    background: rgba(70, 43, 18, 0.58) !important;
 }
 
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker)::before,
@@ -286,6 +388,22 @@ footer {
         #020202;
 }
 
+.maple-portal-canvas {
+    position: fixed;
+    left: calc(var(--chat-bg-left) + var(--chat-bg-w) * 0.149);
+    top: calc(var(--chat-bg-top) + var(--chat-bg-h) * 0.735);
+    width: calc(var(--chat-bg-w) * 0.064);
+    height: calc(var(--chat-bg-h) * 0.158);
+    pointer-events: none;
+    z-index: 11;
+    border-radius: 50%;
+    opacity: 0.74;
+    transform: translate(-50%, -50%) translateZ(0);
+    filter: saturate(1.02) brightness(1.01);
+    mask-image: radial-gradient(ellipse at center, black 40%, rgba(0, 0, 0, 0.58) 63%, transparent 92%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 40%, rgba(0, 0, 0, 0.58) 63%, transparent 92%);
+}
+
 .maple-chat-overlay {
     position: fixed;
     left: var(--chat-overlay-left);
@@ -302,15 +420,13 @@ footer {
     left: var(--chat-panel-left);
     right: calc(100vw - var(--chat-panel-right));
     top: var(--chat-panel-top);
-    bottom: calc(100vh - var(--chat-input-top) + var(--chat-overlay-h) * 0.01);
+    bottom: calc(100vh - var(--chat-panel-bottom));
     z-index: 20;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     overflow-y: auto;
     padding: calc(var(--chat-overlay-h) * 0.012) calc(var(--chat-overlay-w) * 0.012);
-    outline: 2px dashed rgba(100, 200, 255, 0.9);
-    outline-offset: 0;
     scrollbar-width: thin;
     scrollbar-color: rgba(105, 105, 105, 0.45) transparent;
 }
@@ -327,10 +443,10 @@ footer {
 }
 
 .maple-chat-avatar {
-    width: calc(var(--chat-overlay-h) * 0.03);
-    height: calc(var(--chat-overlay-h) * 0.03);
-    flex: 0 0 calc(var(--chat-overlay-h) * 0.03);
-    border-radius: 5px;
+    width: calc(var(--chat-overlay-h) * 0.05);
+    height: calc(var(--chat-overlay-h) * 0.05);
+    flex: 0 0 calc(var(--chat-overlay-h) * 0.05);
+    border-radius: 6px;
     object-fit: cover;
 }
 
@@ -338,17 +454,40 @@ footer {
     width: fit-content;
     max-width: min(24rem, 86%);
     margin: 0;
-    padding: calc(var(--chat-overlay-h) * 0.007) calc(var(--chat-overlay-w) * 0.007);
+    padding: calc(var(--chat-overlay-h) * 0.009) calc(var(--chat-overlay-w) * 0.008);
     border: 1px solid rgba(125, 125, 125, 0.24);
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.48);
     color: #3d3b39;
-    font-size: calc(var(--chat-overlay-h) * 0.014);
-    line-height: 1.45;
+    font-size: calc(var(--chat-overlay-h) * 0.02);
+    line-height: 1.5;
 }
 
 .maple-chat-bubble.user {
     background: rgba(222, 244, 218, 0.56);
+}
+
+.maple-chat-thinking {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--chat-overlay-w) * 0.006);
+    color: #3d3b39;
+}
+
+.maple-thinking-spinner {
+    width: calc(var(--chat-overlay-h) * 0.024);
+    height: calc(var(--chat-overlay-h) * 0.024);
+    border: 2px solid rgba(90, 164, 214, 0.28);
+    border-top-color: rgba(90, 164, 214, 0.96);
+    border-radius: 50%;
+    animation: maple-thinking-spin 0.8s linear infinite;
+    flex: 0 0 auto;
+}
+
+@keyframes maple-thinking-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .maple-chat-scroll-anchor {
@@ -366,8 +505,10 @@ footer {
     max-width: calc(var(--chat-input-right) - var(--chat-input-left)) !important;
     padding: 0 !important;
     transform: none !important;
+    border: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+    backdrop-filter: none;
     z-index: 30 !important;
 }
 
@@ -386,14 +527,13 @@ footer {
     min-height: var(--chat-input-h) !important;
     height: var(--chat-input-h) !important;
     max-height: var(--chat-input-h) !important;
-    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border: 0 !important;
     border-radius: 6px !important;
-    background: rgba(252, 248, 242, 0.9) !important;
+    background: transparent !important;
     box-shadow: none !important;
     overflow: hidden !important;
 }
 
-[data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) div[data-testid="stChatInput"] div,
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) div[data-testid="stChatInput"] [data-baseweb="textarea"],
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) div[data-testid="stChatInput"] [data-baseweb="base-input"] {
     background: transparent !important;
@@ -402,9 +542,9 @@ footer {
 
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) div[data-testid="stChatInput"] textarea {
     min-height: var(--chat-input-h) !important;
-    height: var(--chat-input-h) +50px !important;
+    height: var(--chat-input-h) !important;
     max-height: var(--chat-input-h) !important;
-    padding: calc(var(--chat-input-h) * 0.22) calc(var(--chat-overlay-w) * 0.001) 15 !important;
+    padding: calc(var(--chat-input-h) * 0.22) calc(var(--chat-overlay-w) * 0.005) !important;
     color: #2f2c2a !important;
     font-size: calc(var(--chat-overlay-h) * 0.02) !important;
     line-height: calc(var(--chat-overlay-h) * 0.019) !important;
@@ -422,11 +562,11 @@ footer {
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) div[data-testid="stChatInput"] button {
     position: fixed !important;
     left: var(--chat-enter-left) !important;
-    top: var(--chat-input-top) -50px !important;
+    top: var(--chat-enter-top) !important;
     width: calc(var(--chat-enter-right) - var(--chat-enter-left)) !important;
     min-width: calc(var(--chat-enter-right) - var(--chat-enter-left)) !important;
-    height: var(--chat-input-h) !important;
-    min-height: var(--chat-input-h) !important;
+    height: var(--chat-enter-h) !important;
+    min-height: var(--chat-enter-h) !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
@@ -434,8 +574,6 @@ footer {
     background: transparent !important;
     box-shadow: none !important;
     opacity: 1 !important;
-    outline: 2px dashed rgba(255, 55, 55, 0.95) !important;
-    outline-offset: 0 !important;
     cursor: pointer !important;
     z-index: 40 !important;
 }
@@ -453,7 +591,10 @@ footer {
 
 @media (max-width: 760px) {
     :root {
-        --chat-overlay-h: min(calc(100vh - 5.4rem), calc(100vw / var(--chat-overlay-ratio) * 1.18));
+        --home-input-w: calc(100vw - 2rem);
+        --home-title-center-y: 34vh;
+        --home-title-h: 12rem;
+        --chat-page-pad: 0.5rem;
     }
 
     .st-key-maple-nav-bar {
@@ -462,6 +603,23 @@ footer {
 
     .st-key-maple-nav-bar button {
         font-size: 0.58rem !important;
+    }
+
+    .st-key-maple-chip-row {
+        top: calc(var(--home-title-center-y) + (var(--home-title-h) / 2) + 3.45rem) !important;
+        bottom: auto !important;
+        width: calc(100vw - 2rem) !important;
+    }
+
+    .st-key-maple-chip-row [data-testid="stHorizontalBlock"] {
+        flex-direction: column !important;
+        gap: 0.45rem !important;
+    }
+
+    .st-key-maple-chip-row button {
+        height: 2.35rem !important;
+        min-height: 2.35rem !important;
+        font-size: 0.68rem !important;
     }
 }
 </style>
