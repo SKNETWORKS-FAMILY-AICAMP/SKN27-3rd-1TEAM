@@ -1,38 +1,45 @@
-
 from __future__ import annotations
 
-import os
+import json
 
 import streamlit as st
 import streamlit.components.v1 as components
 
-from app.common.youtube_embed import render_youtube_embed
+from app.common.youtube_embed import render_youtube_embed, youtube_embed_url
 
 
-DEFAULT_YOUTUBE_BGM = "VtvcSMZcEdE"
+DEFAULT_YOUTUBE_BGM_URL = "https://www.youtube.com/watch?v=VtvcSMZcEdE"
+
+# 페이지별 YouTube URL 또는 video id를 여기에 직접 넣습니다.
+PAGE_YOUTUBE_BGM_URLS = {
+    "home": "https://www.youtube.com/watch?v=iHFSl7p9ajE",
+    "chat": "https://www.youtube.com/watch?v=FcgCvoXQXTQ",
+    "lounge": DEFAULT_YOUTUBE_BGM_URL,
+    "models": DEFAULT_YOUTUBE_BGM_URL,
+    "history": DEFAULT_YOUTUBE_BGM_URL,
+    "party": DEFAULT_YOUTUBE_BGM_URL,
+    "quest": DEFAULT_YOUTUBE_BGM_URL,
+    "settings": DEFAULT_YOUTUBE_BGM_URL,
+}
 
 
-def get_youtube_bgm_video_id(page_key: str | None = None) -> str | None:
+def get_youtube_bgm_source(page_key: str | None = None) -> str | None:
     if page_key:
-        page_env_key = f"MAPLE_YOUTUBE_BGM_{page_key.upper()}"
-        page_bgm = os.environ.get(page_env_key)
+        page_bgm = PAGE_YOUTUBE_BGM_URLS.get(page_key)
         if page_bgm is not None:
             return page_bgm.strip() or None
 
-    env_bgm = os.environ.get("MAPLE_YOUTUBE_BGM")
-    if env_bgm is None:
-        return DEFAULT_YOUTUBE_BGM
-    return env_bgm.strip() or None
+    return DEFAULT_YOUTUBE_BGM_URL
 
 
 def render_bgm_sidebar(page_key: str | None = None) -> None:
-    video_id = get_youtube_bgm_video_id(page_key)
-    if not video_id:
+    video_source = get_youtube_bgm_source(page_key)
+    if not video_source:
         return
 
     st.caption("BGM")
     render_youtube_embed(
-        video_id,
+        video_source,
         height=120,
         muted=False,
         loop=True,
@@ -41,18 +48,102 @@ def render_bgm_sidebar(page_key: str | None = None) -> None:
 
 
 def render_page_bgm(page_key: str | None = None) -> None:
-    """Render hidden autoplay BGM for pages that use the shared layout."""
-    video_id = get_youtube_bgm_video_id(page_key)
-    if not video_id:
+    """Prepare the page BGM player and keep it paused until the user presses play."""
+    video_source = get_youtube_bgm_source(page_key)
+    if not video_source:
         return
 
-    render_youtube_embed(
-        video_id,
-        height=1,
+    paused_src = youtube_embed_url(
+        video_source,
+        autoplay=False,
         muted=True,
         loop=True,
         controls=False,
-        hidden=True,
+    )
+    playing_src = youtube_embed_url(
+        video_source,
+        autoplay=True,
+        muted=False,
+        loop=True,
+        controls=False,
+    )
+
+    components.html(
+        f"""
+<script>
+(() => {{
+  const parentDoc = window.parent.document;
+  const parentWin = window.parent;
+  const STORAGE_KEY = "mapleBgmState";
+  const WRAP_ID = "maple-bgm-player-wrap";
+  const IFRAME_ID = "maple-bgm-player";
+  const pausedSrc = {json.dumps(paused_src)};
+  const playingSrc = {json.dumps(playing_src)};
+  const isPlaying = parentWin.sessionStorage.getItem(STORAGE_KEY) === "playing";
+  const currentSrc = isPlaying ? playingSrc : pausedSrc;
+
+  let wrapper = parentDoc.getElementById(WRAP_ID);
+  if (!wrapper) {{
+    wrapper = parentDoc.createElement("div");
+    wrapper.id = WRAP_ID;
+    Object.assign(wrapper.style, {{
+      position: "fixed",
+      left: "-9999px",
+      bottom: "0",
+      width: "1px",
+      height: "1px",
+      overflow: "hidden",
+      opacity: "0",
+      pointerEvents: "none",
+    }});
+    parentDoc.body.appendChild(wrapper);
+  }}
+
+  let iframe = parentDoc.getElementById(IFRAME_ID);
+  if (!iframe) {{
+    iframe = parentDoc.createElement("iframe");
+    iframe.id = IFRAME_ID;
+    iframe.width = "1";
+    iframe.height = "1";
+    iframe.title = "BGM";
+    iframe.frameBorder = "0";
+    iframe.allow = "autoplay; encrypted-media";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.style.display = "block";
+    wrapper.appendChild(iframe);
+  }}
+
+  iframe.dataset.pausedSrc = pausedSrc;
+  iframe.dataset.playingSrc = playingSrc;
+  if (iframe.src !== currentSrc) {{
+    iframe.src = currentSrc;
+  }}
+
+  const sendCommand = (func, args = []) => {{
+    if (!iframe.contentWindow) return;
+    iframe.contentWindow.postMessage(
+      JSON.stringify({{ event: "command", func, args }}),
+      "*"
+    );
+  }};
+
+  const applyState = () => {{
+    if (parentWin.sessionStorage.getItem(STORAGE_KEY) === "playing") {{
+      sendCommand("unMute");
+      sendCommand("setVolume", [80]);
+      sendCommand("playVideo");
+    }} else {{
+      sendCommand("pauseVideo");
+    }}
+  }};
+
+  [250, 900, 1900, 3500].forEach((delay) => {{
+    parentWin.setTimeout(applyState, delay);
+  }});
+}})();
+</script>
+""",
+        height=0,
     )
 
 
@@ -62,11 +153,7 @@ def render_global_bgm() -> None:
 
 
 def render_bgm_control_button() -> None:
-    """페이지 상단 우측에 BGM 재생/일시정지 버튼을 띄웁니다.
-
-    버튼 상태는 sessionStorage("mapleBgmState")에 저장되므로 페이지를
-    이동해도 동일한 재생/일시정지 상태가 유지됩니다.
-    """
+    """Render the fixed BGM play/pause button shared by non-game pages."""
     components.html(
         """
 <script>
@@ -75,26 +162,18 @@ def render_bgm_control_button() -> None:
   const parentWin = window.parent;
   const STORAGE_KEY = "mapleBgmState";
   const BTN_ID = "maple-bgm-toggle";
+  const IFRAME_ID = "maple-bgm-player";
 
   const ICON_PLAY = "▶";
   const ICON_PAUSE = "⏸";
 
   const getState = () => parentWin.sessionStorage.getItem(STORAGE_KEY) || "paused";
   const setState = (state) => parentWin.sessionStorage.setItem(STORAGE_KEY, state);
-
-  const findBgmIframe = () => {
-    const iframes = parentDoc.querySelectorAll('iframe[src*="youtube.com/embed"]');
-    for (const frame of iframes) {
-      const wrapper = frame.parentElement;
-      const style = wrapper ? wrapper.getAttribute("style") || "" : "";
-      if (style.includes("-9999")) return frame;
-    }
-    return iframes[iframes.length - 1] || null;
-  };
+  const findBgmIframe = () => parentDoc.getElementById(IFRAME_ID);
 
   const sendCommand = (func, args = []) => {
     const iframe = findBgmIframe();
-    if (!iframe || !iframe.contentWindow) return false;
+    if (!iframe?.contentWindow) return false;
     try {
       iframe.contentWindow.postMessage(
         JSON.stringify({ event: "command", func, args }),
@@ -107,7 +186,15 @@ def render_bgm_control_button() -> None:
   };
 
   const applyState = () => {
+    const iframe = findBgmIframe();
+    if (!iframe) return;
+
     if (getState() === "playing") {
+      if (iframe.dataset.playingSrc && iframe.src !== iframe.dataset.playingSrc) {
+        iframe.src = iframe.dataset.playingSrc;
+        parentWin.setTimeout(applyState, 350);
+        return;
+      }
       sendCommand("unMute");
       sendCommand("setVolume", [80]);
       sendCommand("playVideo");
@@ -116,7 +203,6 @@ def render_bgm_control_button() -> None:
     }
   };
 
-  // 기존 버튼 제거(재실행 시 중복 방지)
   const existing = parentDoc.getElementById(BTN_ID);
   if (existing) existing.remove();
 
@@ -167,7 +253,6 @@ def render_bgm_control_button() -> None:
   parentDoc.body.appendChild(btn);
   updateButtonUi();
 
-  // 새 iframe 로딩 타이밍을 고려해 상태를 여러 번 적용합니다.
   [250, 900, 1900, 3500].forEach((delay) => {
     parentWin.setTimeout(applyState, delay);
   });

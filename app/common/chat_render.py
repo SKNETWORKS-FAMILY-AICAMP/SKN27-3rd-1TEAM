@@ -14,6 +14,7 @@ from app.common.chat_style import (
     image_to_data_uri,
     render_style,
 )
+from app.common.markdown_render import markdown_to_html
 
 
 # 상단 내비게이션 항목입니다.
@@ -31,6 +32,7 @@ PROMPT_CHIPS = (
     ("chip_boss", "보스컷 알려줘", "지금 스펙으로 갈 만한 보스와 보스컷을 알려줘."),
     ("chip_starforce", "스타포스 가이드", "스타포스 강화 우선순위와 주의할 점을 알려줘."),
 )
+VISIBLE_MESSAGE_LIMIT = 20
 
 
 def _queue_prompt(prompt: str) -> None:
@@ -66,6 +68,30 @@ def _submit_home_prompt() -> None:
 
 def render_top_navigation(active_menu_key: str | None = "chat") -> None:
     """고정 상단 내비게이션과 홈 배지를 렌더링합니다."""
+    if active_menu_key == "game":
+        components.html(
+            """
+<script>
+(() => {
+  const parentDoc = window.parent.document;
+  const button = parentDoc.getElementById("maple-bgm-toggle");
+  if (button) button.remove();
+
+  const frame = parentDoc.getElementById("maple-bgm-player");
+  if (frame?.contentWindow) {
+    frame.contentWindow.postMessage(
+      JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
+      "*"
+    );
+  }
+  const wrapper = parentDoc.getElementById("maple-bgm-player-wrap");
+  if (wrapper) wrapper.remove();
+})();
+</script>
+""",
+            height=0,
+        )
+
     # 고정 메뉴 배경입니다. 크기와 색상은 CSS에서 조정합니다.
     st.markdown('<div class="maple-nav-bg"></div>', unsafe_allow_html=True)
 
@@ -135,11 +161,9 @@ def render_messages() -> None:
 
 def render_chat_page() -> None:
     """채팅 캔버스, 아바타, 메시지 말풍선을 렌더링합니다."""
-    # 첫 메시지는 숨겨진 시스템/초기 컨텍스트로 취급하므로 표시하지 않습니다.
     messages = st.session_state.get("messages", [])
     visible_messages = messages[1:]
 
-    # 커스텀 HTML에서 바로 쓸 수 있도록 아바타 이미지를 data URI로 변환합니다.
     assistant_avatar = image_to_data_uri(ASSISTANT_AVATAR_PATH)
     user_avatar = image_to_data_uri(USER_AVATAR_PATH)
     chat_background = image_to_data_uri(CHAT_BACKGROUND_PATH)
@@ -147,23 +171,22 @@ def render_chat_page() -> None:
 
     if visible_messages:
         html_messages = []
-
-        # 긴 대화에서도 화면과 렌더링이 무거워지지 않도록 최근 메시지만 표시합니다.
-        for message in visible_messages[-20:]:
+        for message in visible_messages[-VISIBLE_MESSAGE_LIMIT:]:
             raw_role = str(message.get("role", "assistant"))
             role = "user" if raw_role == "user" else "assistant"
-
-            # HTML 삽입 전에 내용을 이스케이프하고 줄바꿈은 유지합니다.
-            content = escape(str(message.get("content", ""))).replace("\n", "<br>")
+            raw_content = str(message.get("content", ""))
+            if role == "assistant":
+                content = markdown_to_html(raw_content)
+            else:
+                content = escape(raw_content).replace("\n", "<br>")
             avatar = user_avatar if role == "user" else assistant_avatar
-
-            # role 클래스는 CSS에서 좌우 정렬과 말풍선 색상을 결정합니다.
             html_messages.append(
                 f'<div class="maple-chat-row {role}">'
                 f'<img class="maple-chat-avatar" src="{avatar}" alt="">'
                 f'<div class="maple-chat-bubble {role}">{content}</div>'
                 f"</div>"
             )
+
         if st.session_state.get("pending_user_input"):
             html_messages.append(
                 '<div class="maple-chat-row assistant maple-chat-thinking-row">'
@@ -176,11 +199,8 @@ def render_chat_page() -> None:
             )
         thread_html = "".join(html_messages) + '<div class="maple-chat-scroll-anchor"></div>'
     else:
-        # 아직 표시할 대화가 없을 때 보여주는 빈 상태 문구입니다.
         thread_html = ""
 
-    # marker는 CSS의 :has(...)로 채팅 페이지 여부를 감지하게 해줍니다.
-    # section은 고정 채팅 배경이고, 안쪽 div는 스크롤되는 메시지 영역입니다.
     st.markdown(
         f"""
 <div class="maple-chat-page-marker"></div>

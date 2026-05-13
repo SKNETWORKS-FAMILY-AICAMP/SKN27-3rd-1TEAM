@@ -63,6 +63,7 @@ def render_youtube_embed(
     video_source: str,
     *,
     height: int = 88,
+    autoplay: bool = True,
     muted: bool = True,
     loop: bool = False,
     controls: bool = False,
@@ -73,7 +74,7 @@ def render_youtube_embed(
     start_muted = muted or unlock_on_interaction
     src = youtube_embed_url(
         video_source,
-        autoplay=True,
+        autoplay=autoplay,
         muted=start_muted,
         controls=controls,
         loop=loop,

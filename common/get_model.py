@@ -1,5 +1,5 @@
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-#from langchain_groq import ChatGroq
+from langchain_openai import OpenAIEmbeddings
+from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -11,9 +11,9 @@ def get_embedding_model() -> OpenAIEmbeddings:
     return emb
 
 
-def get_llm() -> ChatOpenAI:
-    llm = ChatOpenAI(
-        model="gpt-5.4-mini",
+def get_llm() -> ChatGroq:
+    llm = ChatGroq(
+        model="openai/gpt-oss-120b",
         temperature=0.2,
     )
     return llm

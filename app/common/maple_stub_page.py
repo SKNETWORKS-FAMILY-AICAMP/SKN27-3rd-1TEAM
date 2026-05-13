@@ -8,13 +8,26 @@ from app.common.bgm import render_bgm_control_button, render_page_bgm
 from app.common.chat_render import render_style, render_top_navigation
 
 
-def render_stub_body(
+STUB_PAGE_CONFIG = {
+    "layout": "wide",
+    "initial_sidebar_state": "collapsed",
+}
+
+
+def render_stub_page(
     *,
+    page_title: str,
+    page_icon: str,
     title: str,
     body: str,
     active_menu_key: str | None = None,
     bgm_page_key: str | None = None,
 ) -> None:
+    st.set_page_config(
+        page_title=page_title,
+        page_icon=page_icon,
+        **STUB_PAGE_CONFIG,
+    )
     render_style()
     render_page_bgm(bgm_page_key or active_menu_key)
     render_top_navigation(active_menu_key=active_menu_key)

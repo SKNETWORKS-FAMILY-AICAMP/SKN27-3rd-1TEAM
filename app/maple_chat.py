@@ -23,6 +23,7 @@ from app.common.chat_memory import (  # noqa: E402
     compact_agent_history,
 )
 from app.common.chat_render import (  # noqa: E402
+    render_chat_page,
     render_messages,
     render_style,
     render_top_navigation,
@@ -45,23 +46,48 @@ WELCOME_MESSAGE = {
 }
 
 ANSWER_KEYS = ("final_answer", "answer", "analysis", "draft_answer")
+CHAT_STATE_KEYS = (
+    "messages",
+    "agent_messages",
+    "agent_memory_summary",
+    "agent_errors",
+    "pending_user_input",
+)
+SESSION_DEFAULTS = {
+    "chat_sessions": [],
+    "current_chat_id": None,
+}
+
+
+def new_chat_state(user_input: str | None = None) -> dict[str, Any]:
+    messages = [WELCOME_MESSAGE.copy()]
+    if user_input is not None:
+        messages.append({"role": "user", "content": user_input})
+
+    return {
+        "messages": messages,
+        "agent_messages": [],
+        "agent_memory_summary": "",
+        "agent_errors": [],
+        "pending_user_input": user_input,
+    }
+
+
+def apply_chat_state(chat_state: dict[str, Any]) -> None:
+    default_state = new_chat_state()
+    for key in CHAT_STATE_KEYS:
+        value = chat_state.get(key, default_state[key])
+        st.session_state[key] = deepcopy(value)
 
 
 def init_session_state() -> None:
-    if "messages" not in st.session_state:
-        st.session_state.messages = [WELCOME_MESSAGE.copy()]
-    if "agent_messages" not in st.session_state:
-        st.session_state.agent_messages = []
-    if "agent_memory_summary" not in st.session_state:
-        st.session_state.agent_memory_summary = ""
-    if "agent_errors" not in st.session_state:
-        st.session_state.agent_errors = []
-    if "pending_user_input" not in st.session_state:
-        st.session_state.pending_user_input = None
-    if "chat_sessions" not in st.session_state:
-        st.session_state.chat_sessions = []
-    if "current_chat_id" not in st.session_state:
-        st.session_state.current_chat_id = None
+    for key, value in new_chat_state().items():
+        if key not in st.session_state:
+            st.session_state[key] = deepcopy(value)
+
+    for key, value in SESSION_DEFAULTS.items():
+        if key not in st.session_state:
+            st.session_state[key] = deepcopy(value)
 
 
 def make_chat_title(user_input: str) -> str:
@@ -78,11 +104,8 @@ def save_current_chat() -> None:
 
     for session in st.session_state.chat_sessions:
         if session["id"] == chat_id:
-            session["messages"] = deepcopy(st.session_state.messages)
-            session["agent_messages"] = deepcopy(st.session_state.agent_messages)
-            session["agent_memory_summary"] = st.session_state.agent_memory_summary
-            session["agent_errors"] = list(st.session_state.agent_errors)
-            session["pending_user_input"] = st.session_state.pending_user_input
+            for key in CHAT_STATE_KEYS:
+                session[key] = deepcopy(st.session_state.get(key))
             return
 
 
@@ -91,11 +114,7 @@ def load_chat_session(chat_id: str) -> None:
     for session in st.session_state.chat_sessions:
         if session["id"] == chat_id:
             st.session_state.current_chat_id = chat_id
-            st.session_state.messages = deepcopy(session["messages"])
-            st.session_state.agent_messages = deepcopy(session["agent_messages"])
-            st.session_state.agent_memory_summary = session["agent_memory_summary"]
-            st.session_state.agent_errors = list(session["agent_errors"])
-            st.session_state.pending_user_input = session.get("pending_user_input")
+            apply_chat_state(session)
             return
 
 
@@ -104,20 +123,12 @@ def start_new_chat(user_input: str) -> None:
     session = {
         "id": chat_id,
         "title": make_chat_title(user_input),
-        "messages": [WELCOME_MESSAGE.copy(), {"role": "user", "content": user_input}],
-        "agent_messages": [],
-        "agent_memory_summary": "",
-        "agent_errors": [],
-        "pending_user_input": user_input,
         "created_at": time.time(),
+        **new_chat_state(user_input),
     }
     st.session_state.chat_sessions.insert(0, session)
     st.session_state.current_chat_id = chat_id
-    st.session_state.messages = deepcopy(session["messages"])
-    st.session_state.agent_messages = []
-    st.session_state.agent_memory_summary = ""
-    st.session_state.agent_errors = []
-    st.session_state.pending_user_input = user_input
+    apply_chat_state(session)
 
 
 @st.cache_resource(show_spinner=False)
@@ -200,10 +211,7 @@ def get_assistant_response(user_input: str) -> str:
 
 
 def reset_chat() -> None:
-    st.session_state.messages = [WELCOME_MESSAGE.copy()]
-    st.session_state.agent_messages = []
-    st.session_state.agent_memory_summary = ""
-    st.session_state.agent_errors = []
+    apply_chat_state(new_chat_state())
 
 
 def append_agent_turn(user_input: str, answer: str) -> None:
@@ -213,6 +221,7 @@ def append_agent_turn(user_input: str, answer: str) -> None:
             {"role": "assistant", "content": answer},
         ]
     )
+
 
 def handle_user_input() -> None:
     user_input = st.chat_input("Type your question here...")
@@ -252,9 +261,7 @@ def process_pending_response(rerun: bool = True) -> None:
         st.rerun()
 
 
-def main() -> None:
-    st.set_page_config(**PAGE_CONFIG)
-
+def render_home_app() -> None:
     init_session_state()
     st.session_state.active_page = "home"
     render_style()
@@ -262,6 +269,26 @@ def main() -> None:
     render_messages()
     render_top_navigation(active_menu_key="home")
     render_bgm_control_button()
+
+
+def render_chat_app() -> None:
+    init_session_state()
+    st.session_state.active_page = "chat"
+    if not st.session_state.get("current_chat_id") and st.session_state.chat_sessions:
+        load_chat_session(st.session_state.chat_sessions[0]["id"])
+
+    render_style()
+    render_page_bgm("chat")
+    handle_user_input()
+    process_pending_response(rerun=False)
+    render_chat_page()
+    render_top_navigation(active_menu_key="chat")
+    render_bgm_control_button()
+
+
+def main() -> None:
+    st.set_page_config(**PAGE_CONFIG)
+    render_home_app()
 
 
 if __name__ == "__main__":

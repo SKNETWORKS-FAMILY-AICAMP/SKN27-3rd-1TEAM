@@ -1,35 +1,25 @@
 from __future__ import annotations
 
-import base64
 from pathlib import Path
 
 import streamlit as st
 
+from app.common.assets import asset_path, path_to_data_uri
 
-ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
-ASSISTANT_AVATAR_PATH = ASSET_DIR / "assistant_avatar.png"
-USER_AVATAR_PATH = ASSET_DIR / "user_avatar.png"
-BACKGROUND_PATH = ASSET_DIR / "background_home.png"
-CHAT_BACKGROUND_PATH = ASSET_DIR / "chat_background.png"
-CHAT_BACKGROUND_OVERLAY_PATH = ASSET_DIR / "chat_background2.png"
-HOME_BUTTON_PATH = ASSET_DIR / "home_button.png"
-HOME_BADGE_PATH = ASSET_DIR / "home_button2.png"
-MAPLESTORY_BOLD_PATH = ASSET_DIR / "Maplestory-Bold.ttf"
-MAPLESTORY_LIGHT_PATH = ASSET_DIR / "Maplestory-Light.ttf"
+
+ASSISTANT_AVATAR_PATH = asset_path("assistant_avatar.png")
+USER_AVATAR_PATH = asset_path("user_avatar.png")
+BACKGROUND_PATH = asset_path("background_home.png")
+CHAT_BACKGROUND_PATH = asset_path("chat_background.png")
+CHAT_BACKGROUND_OVERLAY_PATH = asset_path("chat_background2.png")
+HOME_BUTTON_PATH = asset_path("home_button.png")
+HOME_BADGE_PATH = asset_path("home_button2.png")
+MAPLESTORY_BOLD_PATH = asset_path("Maplestory-Bold.ttf")
+MAPLESTORY_LIGHT_PATH = asset_path("Maplestory-Light.ttf")
 
 
 def image_to_data_uri(path: Path) -> str:
-    if not path.exists():
-        return ""
-
-    suffix = path.suffix.lower()
-    if suffix == ".png":
-        mime = "image/png"
-    elif suffix in {".ttf", ".otf"}:
-        mime = "font/ttf"
-    else:
-        mime = "image/jpeg"
-    return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode('ascii')}"
+    return path_to_data_uri(path, default_mime="image/jpeg")
 
 
 def get_maple_chat_css() -> str:
@@ -478,6 +468,60 @@ footer {
 
 .maple-chat-bubble.user {
     background: rgba(222, 244, 218, 0.56);
+}
+
+.maple-chat-bubble p,
+.maple-chat-bubble ul,
+.maple-chat-bubble ol,
+.maple-chat-bubble pre,
+.maple-chat-bubble h1,
+.maple-chat-bubble h2,
+.maple-chat-bubble h3 {
+    margin: 0 0 0.45rem;
+}
+
+.maple-chat-bubble > :last-child {
+    margin-bottom: 0;
+}
+
+.maple-chat-bubble h1,
+.maple-chat-bubble h2,
+.maple-chat-bubble h3 {
+    color: #2f2c2a;
+    font-family: "MaplestoryBold", Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 1em;
+    line-height: 1.35;
+}
+
+.maple-chat-bubble ul,
+.maple-chat-bubble ol {
+    padding-left: 1.05rem;
+}
+
+.maple-chat-bubble code {
+    padding: 0.05rem 0.22rem;
+    border-radius: 4px;
+    background: rgba(47, 44, 42, 0.12);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+    font-size: 0.92em;
+}
+
+.maple-chat-bubble pre {
+    overflow-x: auto;
+    padding: 0.45rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(47, 44, 42, 0.12);
+}
+
+.maple-chat-bubble pre code {
+    padding: 0;
+    background: transparent;
+    white-space: pre;
+}
+
+.maple-chat-bubble a {
+    color: #255f9f;
+    text-decoration: underline;
 }
 
 .maple-chat-thinking {

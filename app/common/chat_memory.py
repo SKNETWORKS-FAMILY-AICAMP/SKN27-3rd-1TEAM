@@ -9,6 +9,10 @@ MAX_AGENT_HISTORY_MESSAGES = 12
 SUMMARY_TRIGGER_MESSAGES = 16
 SUMMARY_KEEP_RECENT_MESSAGES = 8
 SUMMARY_FALLBACK_LIMIT = 3000
+SUMMARY_ROLE_LABELS = {
+    "user": "사용자",
+    "assistant": "어시스턴트",
+}
 
 SUMMARY_PROMPT_TEMPLATE = """
 다음은 메이플스토리 상담 챗봇의 이전 대화입니다.
@@ -35,8 +39,8 @@ SUMMARY_PROMPT_TEMPLATE = """
 def format_messages_for_summary(messages: list[dict[str, str]]) -> str:
     lines = []
     for message in messages:
-        speaker = "사용자" if message["role"] == "user" else "어시스턴트"
-        lines.append(f"{speaker}: {message['content']}")
+        speaker = SUMMARY_ROLE_LABELS.get(message.get("role"), "어시스턴트")
+        lines.append(f"{speaker}: {message.get('content', '')}")
     return "\n".join(lines)
 
 
