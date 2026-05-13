@@ -51,6 +51,58 @@ RULE_CATEGORIES = {
     "class_6th_hexa_priority",
 }
 
+EQUIPMENT_RULE_TYPE_BY_FILE = {
+    "equipment_progression_rules.csv": "progression",
+    "equipment_slot_priority.csv": "slot_priority",
+    "potential_option_rules.csv": "potential",
+    "flame_score_rules.csv": "flame_score",
+    "starforce_target_rules.csv": "starforce",
+    "api_equipment_slot_mapping.csv": "slot_mapping",
+}
+
+EQUIPMENT_RULE_HEADERS = [
+    "rule_id",
+    "name",
+    "rule_type",
+    "rule_file",
+    "stage",
+    "level_range",
+    "job_group",
+    "item_slot",
+    "current_tier",
+    "recommended_tier",
+    "item_tier",
+    "minimum_starforce",
+    "recommended_starforce",
+    "stop_point",
+    "potential_grade",
+    "option_type",
+    "priority",
+    "priority_rank",
+    "valid_options",
+    "bad_options",
+    "target_grade",
+    "additional_potential",
+    "flame_score",
+    "minimum_score",
+    "recommended_score",
+    "high_score",
+    "upgrade_priority",
+    "condition",
+    "reason",
+    "recommended_action",
+    "api_slot_name",
+    "standard_slot_name",
+    "item_category",
+    "is_core_slot",
+    "recommendation_use",
+    "notes",
+    "calculation_note",
+    "review_status",
+    "source_id",
+    "description",
+]
+
 
 STAT_TYPES = [
     ("STR", "str_val", "CharacterStatDetail.str_val / StatPackage.str_val"),
@@ -101,6 +153,46 @@ BOSSES = [
     ("진 힐라", "Normal", 250, "weekly", "고난도 주간 보스"),
     ("검은 마법사", "Hard", 255, "monthly", "최종장 보스"),
 ]
+
+BOSS_ALIAS_SEEDS = {
+    "Zakum": ("자쿰", "카오스 자쿰"),
+    "Hilla": ("힐라",),
+    "Pink Bean": ("핑크빈",),
+    "Cygnus": ("시그너스",),
+    "Papulatus": ("파풀라투스", "파풀"),
+    "Von Leon": ("반 레온", "반레온"),
+    "Magnus": ("매그너스",),
+    "Von Bon": ("반반",),
+    "Pierre": ("피에르",),
+    "Crimson Queen": ("블러디 퀸", "블러디퀸"),
+    "Vellum": ("벨룸",),
+    "Akechi Mitsuhide": ("아케치 미츠히데", "아케치"),
+    "Lotus": ("스우",),
+    "Damien": ("데미안",),
+    "Lucid": ("루시드",),
+    "Will": ("윌",),
+    "Gloom": ("더스크",),
+    "Guard Captain Darknell": ("듄켈", "더스크의 수문장 듄켈"),
+    "Verus Hilla": ("진 힐라", "진힐라"),
+    "Black Mage": ("검은 마법사", "검마"),
+    "Seren": ("세렌", "선택받은 세렌"),
+    "Kalos": ("칼로스", "감시자 칼로스"),
+    "Kaling": ("카링",),
+    "Limbo": ("림보",),
+}
+
+DRAFT_BOSS_CANONICAL_NAMES = {
+    "자쿰": "Zakum",
+    "카오스 자쿰": "Zakum",
+    "노멀 스우": "Lotus",
+    "노멀 데미안": "Damien",
+    "노멀 루시드": "Lucid",
+    "하드 루시드": "Lucid",
+    "노멀 윌": "Will",
+    "하드 윌": "Will",
+    "진 힐라": "Verus Hilla",
+    "검은 마법사": "Black Mage",
+}
 
 STAT_REQUIREMENTS = [
     ("자쿰", 90, 0, 0, 0, 0, 0),
@@ -241,6 +333,12 @@ def parse_rule_fields(text):
         "dataset_type",
         "boss",
         "difficulty",
+        "phase",
+        "main pattern",
+        "danger level",
+        "required control",
+        "survival tip",
+        "common death reason",
         "minimum level",
         "recommended level",
         "required force",
@@ -255,18 +353,43 @@ def parse_rule_fields(text):
         "notes",
         "stage",
         "level range",
+        "level_range",
         "job group",
+        "job_group",
         "slot",
+        "item_slot",
         "current tier",
         "recommended tier",
+        "item_tier",
         "starforce",
+        "minimum_starforce",
+        "recommended_starforce",
+        "stop_point",
         "potential grade",
+        "option_type",
         "priority",
+        "priority_rank",
+        "valid_options",
+        "bad_options",
+        "target_grade",
         "additional potential",
+        "additional_potential",
         "flame score",
+        "minimum_score",
+        "recommended_score",
+        "high_score",
         "upgrade priority",
         "condition",
         "reason",
+        "recommended_action",
+        "api_slot_name",
+        "standard_slot_name",
+        "item_category",
+        "is_core_slot",
+        "recommendation_use",
+        "calculation_note",
+        "risk_note",
+        "why",
         "reward_source",
         "content_type",
         "item_or_reward",
@@ -323,6 +446,77 @@ def write_csv(file_name, rows, headers):
         writer = csv.DictWriter(f, fieldnames=headers, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
+
+
+def normalize_alias_name(value):
+    return "".join(str(value or "").lower().split())
+
+
+def is_korean_text(value):
+    return any("가" <= char <= "힣" for char in str(value or ""))
+
+
+def build_boss_alias_graph(bosses):
+    aliases = {}
+    alias_relations = []
+    relation_keys = set()
+
+    def add_alias(alias_name, boss_id):
+        alias_name = str(alias_name or "").strip()
+        if not alias_name or not boss_id:
+            return
+        normalized_name = normalize_alias_name(alias_name)
+        locale = "ko" if is_korean_text(alias_name) else "en"
+        alias_id = "boss_alias_" + stable_id(normalized_name, locale)
+        aliases.setdefault(
+            alias_id,
+            {
+                "alias_id": alias_id,
+                "name": alias_name,
+                "normalized_name": normalized_name,
+                "locale": locale,
+            },
+        )
+        relation_key = (alias_id, boss_id)
+        if relation_key not in relation_keys:
+            alias_relations.append({"alias_id": alias_id, "boss_id": boss_id})
+            relation_keys.add(relation_key)
+
+    for boss in bosses:
+        boss_name = boss.get("name")
+        boss_id = boss.get("boss_id")
+        add_alias(boss_name, boss_id)
+        for alias_name in BOSS_ALIAS_SEEDS.get(boss_name, ()):
+            add_alias(alias_name, boss_id)
+
+    return list(aliases.values()), alias_relations
+
+
+def remove_shadowed_draft_bosses(bosses, requirements):
+    canonical_names = {row.get("name") for row in bosses}
+    shadowed_draft_names = {
+        draft_name
+        for draft_name, canonical_name in DRAFT_BOSS_CANONICAL_NAMES.items()
+        if canonical_name in canonical_names
+    }
+    if not shadowed_draft_names:
+        return bosses, requirements
+
+    return (
+        [
+            row
+            for row in bosses
+            if row.get("name") not in shadowed_draft_names
+        ],
+        [
+            row
+            for row in requirements
+            if not (
+                row.get("boss_name") in shadowed_draft_names
+                and row.get("confidence") == "draft"
+            )
+        ],
+    )
 
 
 def detect_set_name(item_name):
@@ -491,6 +685,7 @@ def build_handoff_graph_rows(handoff_rows):
     bosses = []
     requirements = []
     equipment = []
+    equipment_rules = []
     rewards = []
     jobs = []
     boss_requirements = []
@@ -501,6 +696,7 @@ def build_handoff_graph_rows(handoff_rows):
     seen_bosses = set()
     seen_requirements = set()
     seen_equipment = set()
+    seen_equipment_rules = set()
     seen_rewards = set()
     seen_jobs = set()
     seen_mentions = set()
@@ -529,7 +725,6 @@ def build_handoff_graph_rows(handoff_rows):
                         "name": primary_name,
                         "event_type": "official_event",
                         "target_user": "all",
-                        "description": text_preview(row.get("rag_text") or title, 300),
                         "start_date": "",
                         "end_date": "",
                     }
@@ -538,10 +733,12 @@ def build_handoff_graph_rows(handoff_rows):
             add_mention(source_id, "Event", event_id)
 
         if category in {"official_notice", "official_update", "testworld_update"}:
-            # 공식 문서는 Source로 보관하고, 제목/본문에서 핵심 엔티티를 탐지해 MENTIONED_IN으로 연결한다.
+            # 공식 문서는 Source 노드로만 보관한다.
             continue
 
         if category == "boss_recommendation_rule":
+            if fields.get("rule_file") == "boss_phase_mechanics.csv":
+                continue
             boss_name = fields.get("boss") or primary_name
             difficulty = fields.get("difficulty") or ""
             if boss_name:
@@ -582,44 +779,65 @@ def build_handoff_graph_rows(handoff_rows):
                 add_mention(source_id, "Boss", boss_id)
 
         if category == "equipment_growth_rule":
-            slot = fields.get("slot") or primary_name
-            tier = fields.get("recommended tier") or fields.get("current tier") or title
-            equipment_name = f"{tier} {slot}".strip()
-            if equipment_name:
-                equipment_id = "equipment_" + stable_id(equipment_name, slot, category)
-                if equipment_id not in seen_equipment:
-                    equipment.append(
-                        {
-                            "equipment_id": equipment_id,
-                            "name": equipment_name,
-                            "part": slot,
-                            "slot": slot,
-                            "item_type": "equipment_growth_rule",
-                            "level_limit": extract_number(fields.get("level range")),
-                            "set_name": "",
-                        }
-                    )
-                    seen_equipment.add(equipment_id)
-                add_mention(source_id, "EquipmentCatalog", equipment_id)
+            rule_id = "equipment_rule_" + clean_handoff_id(row.get("unified_id") or title)
+            rule_file = fields.get("rule_file", "")
+            rule_type = EQUIPMENT_RULE_TYPE_BY_FILE.get(rule_file, "equipment_growth_rule")
+            item_slot = fields.get("item_slot") or fields.get("slot") or fields.get("standard_slot_name") or primary_name
+            stage = fields.get("stage", "")
+            name = title or " ".join(part for part in [stage, item_slot, rule_type] if part)
+            if rule_id and rule_id not in seen_equipment_rules:
+                equipment_rules.append(
+                    {
+                        "rule_id": rule_id,
+                        "name": name,
+                        "rule_type": rule_type,
+                        "rule_file": rule_file,
+                        "stage": stage,
+                        "level_range": fields.get("level range") or fields.get("level_range", ""),
+                        "job_group": fields.get("job group") or fields.get("job_group", ""),
+                        "item_slot": item_slot,
+                        "current_tier": fields.get("current tier", ""),
+                        "recommended_tier": fields.get("recommended tier", ""),
+                        "item_tier": fields.get("item_tier", ""),
+                        "minimum_starforce": extract_named_number(fields.get("starforce"), "minimum")
+                        or extract_number(fields.get("minimum_starforce")),
+                        "recommended_starforce": extract_named_number(fields.get("starforce"), "target")
+                        or extract_number(fields.get("recommended_starforce")),
+                        "stop_point": fields.get("stop_point", ""),
+                        "potential_grade": fields.get("potential grade", ""),
+                        "option_type": fields.get("option_type", ""),
+                        "priority": fields.get("priority", ""),
+                        "priority_rank": fields.get("priority_rank", ""),
+                        "valid_options": fields.get("valid_options", ""),
+                        "bad_options": fields.get("bad_options", ""),
+                        "target_grade": fields.get("target_grade", ""),
+                        "additional_potential": fields.get("additional potential")
+                        or fields.get("additional_potential", ""),
+                        "flame_score": fields.get("flame score", ""),
+                        "minimum_score": fields.get("minimum_score", ""),
+                        "recommended_score": fields.get("recommended_score", ""),
+                        "high_score": fields.get("high_score", ""),
+                        "upgrade_priority": fields.get("upgrade priority", ""),
+                        "condition": fields.get("condition", ""),
+                        "reason": fields.get("reason") or fields.get("why", ""),
+                        "recommended_action": fields.get("recommended_action", ""),
+                        "api_slot_name": fields.get("api_slot_name", ""),
+                        "standard_slot_name": fields.get("standard_slot_name", ""),
+                        "item_category": fields.get("item_category", ""),
+                        "is_core_slot": fields.get("is_core_slot", ""),
+                        "recommendation_use": fields.get("recommendation_use", ""),
+                        "notes": fields.get("notes") or fields.get("risk_note", ""),
+                        "calculation_note": fields.get("calculation_note", ""),
+                        "review_status": fields.get("review_status", ""),
+                        "source_id": source_id,
+                        "description": text_preview(row.get("rag_text"), 500),
+                    }
+                )
+                seen_equipment_rules.add(rule_id)
 
         if category == "reward_priority_rule":
             boss_name = fields.get("reward_source") or primary_name
             reward_name = fields.get("item_or_reward") or title
-            if boss_name:
-                boss_id = "boss_" + stable_id(boss_name, "")
-                if boss_id not in seen_bosses:
-                    bosses.append(
-                        {
-                            "boss_id": boss_id,
-                            "name": boss_name,
-                            "difficulty": "",
-                            "required_level": "",
-                            "boss_type": "boss",
-                            "description": text_preview(row.get("rag_text"), 300),
-                        }
-                    )
-                    seen_bosses.add(boss_id)
-                add_mention(source_id, "Boss", boss_id)
             if reward_name:
                 reward_id = "reward_" + stable_id(reward_name)
                 if reward_id not in seen_rewards:
@@ -634,11 +852,6 @@ def build_handoff_graph_rows(handoff_rows):
                     )
                     seen_rewards.add(reward_id)
                 add_mention(source_id, "Reward", reward_id)
-                if boss_name:
-                    rel_key = (boss_id, reward_id)
-                    if rel_key not in seen_boss_rewards:
-                        boss_rewards.append({"boss_id": boss_id, "reward_id": reward_id})
-                        seen_boss_rewards.add(rel_key)
 
         if category in {"class_5th_core_priority", "class_6th_hexa_priority"}:
             job_name = fields.get("class_name") or primary_name
@@ -662,6 +875,7 @@ def build_handoff_graph_rows(handoff_rows):
         "bosses": bosses,
         "requirements": requirements,
         "equipment": equipment,
+        "equipment_rules": equipment_rules,
         "rewards": rewards,
         "jobs": jobs,
         "boss_requirements": boss_requirements,
@@ -765,7 +979,6 @@ def main():
             "name": name,
             "event_type": event_type,
             "target_user": target_user,
-            "description": description,
             "start_date": "",
             "end_date": "",
         }
@@ -797,26 +1010,31 @@ def main():
     append_unique_by_id(bosses, handoff_graph["bosses"], "boss_id")
     append_unique_by_id(requirements, handoff_graph["requirements"], "requirement_id")
     append_unique_by_id(equipment, handoff_graph["equipment"], "equipment_id")
+    equipment_rules = handoff_graph["equipment_rules"]
     append_unique_by_id(events, handoff_graph["events"], "event_id")
     append_unique_by_id(rewards, handoff_graph["rewards"], "reward_id")
+    bosses, requirements = remove_shadowed_draft_bosses(bosses, requirements)
 
     boss_by_name = {row["name"]: row for row in bosses}
     reward_by_name = {row["name"]: row for row in rewards}
     content_by_name = {row["name"]: row for row in contents}
     set_by_name = {row["name"]: row for row in set_effects}
     stat_by_code = {row["code"]: row for row in stat_types}
+    boss_aliases, boss_alias_relations = build_boss_alias_graph(bosses)
 
     write_csv("stat_types.csv", stat_types, ["stat_type_id", "code", "domain_field", "description"])
     write_csv("jobs.csv", jobs, ["job_id", "name", "job_group", "main_stat", "description"])
     write_csv("bosses.csv", bosses, ["boss_id", "name", "difficulty", "required_level", "boss_type", "description"])
+    write_csv("boss_aliases.csv", boss_aliases, ["alias_id", "name", "normalized_name", "locale"])
     write_csv(
         "stat_requirements.csv",
         requirements,
         ["requirement_id", "boss_name", "level", "main_stat", "arcane_force", "boss_damage", "ignore_def", "authentic_force", "confidence"],
     )
     write_csv("equipment_catalog.csv", equipment, ["equipment_id", "name", "part", "slot", "item_type", "level_limit", "set_name"])
+    write_csv("equipment_rules.csv", equipment_rules, EQUIPMENT_RULE_HEADERS)
     write_csv("set_effects.csv", set_effects, ["set_effect_id", "name", "set_type", "description"])
-    write_csv("events.csv", events, ["event_id", "name", "event_type", "target_user", "description", "start_date", "end_date"])
+    write_csv("events.csv", events, ["event_id", "name", "event_type", "target_user", "start_date", "end_date"])
     write_csv("rewards.csv", rewards, ["reward_id", "name", "reward_type", "value_type", "description"])
     write_csv("contents.csv", contents, ["content_id", "name", "content_type", "reset_cycle", "description"])
     write_csv(
@@ -894,37 +1112,14 @@ def main():
         for content_name in content_names:
             event_contents.append({"event_id": event["event_id"], "content_id": content_by_name[content_name]["content_id"]})
 
-    source_mentions = build_source_mentions(
-        sources,
-        [
-            ("StatType", stat_types, "stat_type_id", "code"),
-            ("Job", jobs, "job_id", "name"),
-            ("Boss", bosses, "boss_id", "name"),
-            ("EquipmentCatalog", equipment, "equipment_id", "name"),
-            ("SetEffect", set_effects, "set_effect_id", "name"),
-            ("Event", events, "event_id", "name"),
-            ("Reward", rewards, "reward_id", "name"),
-            ("Content", contents, "content_id", "name"),
-        ],
-    )
-    source_mentions.extend(handoff_graph["source_mentions"])
-    seen_mentions = {(row["source_id"], row["entity_label"], row["entity_id"]) for row in source_mentions}
-    for source_id in ["source_domain", "source_openapi"]:
-        for stat_type in stat_types:
-            key = (source_id, "StatType", stat_type["stat_type_id"])
-            if key not in seen_mentions:
-                source_mentions.append({"source_id": source_id, "entity_label": "StatType", "entity_id": stat_type["stat_type_id"]})
-                seen_mentions.add(key)
-
     write_csv("rel_job_main_stats.csv", unique_rows(job_main_stats, ["job_id", "stat_type_id"]), ["job_id", "stat_type_id"])
+    write_csv("rel_boss_aliases.csv", unique_rows(boss_alias_relations, ["alias_id", "boss_id"]), ["alias_id", "boss_id"])
     write_csv("rel_boss_requirements.csv", unique_rows(boss_requirements, ["boss_id", "requirement_id"]), ["boss_id", "requirement_id"])
     write_csv("rel_requirement_stats.csv", unique_rows(requirement_stats, ["requirement_id", "stat_type_id"]), ["requirement_id", "stat_type_id", "value"])
     write_csv("rel_equipment_set_effects.csv", unique_rows(equipment_set_effects, ["equipment_id", "set_effect_id"]), ["equipment_id", "set_effect_id"])
     write_csv("rel_boss_rewards.csv", unique_rows(boss_rewards, ["boss_id", "reward_id"]), ["boss_id", "reward_id"])
     write_csv("rel_event_rewards.csv", unique_rows(event_rewards, ["event_id", "reward_id"]), ["event_id", "reward_id"])
     write_csv("rel_event_contents.csv", unique_rows(event_contents, ["event_id", "content_id"]), ["event_id", "content_id"])
-    write_csv("rel_source_mentions.csv", unique_rows(source_mentions, ["source_id", "entity_label", "entity_id"]), ["source_id", "entity_label", "entity_id"])
-
     manifest = [
         {"file_name": path.name, "row_count": sum(1 for _ in path.open("r", encoding="utf-8-sig")) - 1}
         for path in sorted(OUT_DIR.glob("*.csv"))

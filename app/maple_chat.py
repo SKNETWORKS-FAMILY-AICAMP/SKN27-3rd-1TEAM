@@ -17,7 +17,7 @@ for path in (PROJECT_ROOT, SRC_ROOT):
         sys.path.insert(0, str(path))
 
 
-from app.common.bgm import render_page_bgm  # noqa: E402
+from app.common.bgm import render_bgm_control_button, render_page_bgm  # noqa: E402
 from app.common.chat_memory import (  # noqa: E402
     build_agent_messages,
     compact_agent_history,
@@ -261,7 +261,7 @@ def main() -> None:
     render_page_bgm("home")
     render_messages()
     render_top_navigation(active_menu_key="home")
-    handle_user_input()
+    render_bgm_control_button()
 
 
 if __name__ == "__main__":

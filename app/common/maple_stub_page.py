@@ -4,7 +4,7 @@ from html import escape
 
 import streamlit as st
 
-from app.common.bgm import render_page_bgm
+from app.common.bgm import render_bgm_control_button, render_page_bgm
 from app.common.chat_render import render_style, render_top_navigation
 
 
@@ -18,6 +18,7 @@ def render_stub_body(
     render_style()
     render_page_bgm(bgm_page_key or active_menu_key)
     render_top_navigation(active_menu_key=active_menu_key)
+    render_bgm_control_button()
     t = escape(title)
     b = escape(body).replace("\n", "<br>")
     st.markdown(

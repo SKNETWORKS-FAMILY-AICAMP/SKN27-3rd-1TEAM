@@ -46,11 +46,12 @@ RETURN b.name AS boss,
        collect(DISTINCT r.name) AS rewards
 ORDER BY b.required_level, b.name;
 
-// 문서 출처가 언급한 지식 노드 조회
-MATCH (n)-[:MENTIONED_IN]->(s:Source)
+// 문서 출처 조회
+MATCH (s:Source)
 RETURN s.title AS source,
-       labels(n)[0] AS entity_type,
-       coalesce(n.name, n.code) AS entity_name
+       s.category AS category,
+       s.url AS source_url,
+       s.trust_level AS trust_level
 LIMIT 50;
 
 // 추가 데이터셋에서 선별한 보스 추천 요구 스펙 조회
@@ -65,20 +66,20 @@ RETURN b.name AS boss,
 ORDER BY b.name, b.difficulty
 LIMIT 20;
 
-// 공식 이벤트와 출처 조회
-MATCH (e:Event {event_type: "official_event"})-[:MENTIONED_IN]->(s:Source)
+// 공식 이벤트 조회
+MATCH (e:Event {event_type: "official_event"})
 RETURN e.name AS event,
-       s.url AS source_url,
-       s.trust_level AS trust_level
+       e.target_user AS target_user,
+       e.start_date AS start_date,
+       e.end_date AS end_date
 ORDER BY e.name
 LIMIT 20;
 
-// 직업별 5차/6차 강화 우선순위 출처 조회
-MATCH (j:Job)-[:MENTIONED_IN]->(s:Source)
+// 5차/6차 강화 우선순위 출처 조회
+MATCH (s:Source)
 WHERE s.category IN ["class_5th_core_priority", "class_6th_hexa_priority"]
-RETURN j.name AS job,
-       s.category AS category,
+RETURN s.category AS category,
        s.title AS source_title,
        s.text_preview AS summary
-ORDER BY j.name, s.category
+ORDER BY s.category, s.title
 LIMIT 20;

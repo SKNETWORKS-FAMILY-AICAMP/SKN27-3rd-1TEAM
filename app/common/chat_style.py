@@ -373,7 +373,20 @@ footer {
 
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) .st-key-maple-brand-bar,
 [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .st-key-maple-brand-bar,
+[data-testid="stAppViewContainer"]:has(.maple-sub-page-marker) .st-key-maple-brand-bar,
 [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .st-key-maple-home-badge {
+    display: none !important;
+}
+
+[data-testid="stAppViewContainer"]:has(.maple-sub-page-marker) .st-key-maple-home-input,
+[data-testid="stAppViewContainer"]:has(.maple-sub-page-marker) .st-key-maple-chip-row,
+[data-testid="stAppViewContainer"]:has(.maple-sub-page-marker) .maple-hero,
+[data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) .st-key-maple-home-input,
+[data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) .st-key-maple-chip-row,
+[data-testid="stAppViewContainer"]:has(.maple-chat-page-marker) .maple-hero,
+[data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .st-key-maple-home-input,
+[data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .st-key-maple-chip-row,
+[data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .maple-hero {
     display: none !important;
 }
 
@@ -390,10 +403,10 @@ footer {
 
 .maple-portal-canvas {
     position: fixed;
-    left: calc(var(--chat-bg-left) + var(--chat-bg-w) * 0.149);
-    top: calc(var(--chat-bg-top) + var(--chat-bg-h) * 0.735);
+    left: calc(var(--chat-bg-left) + var(--chat-bg-w) * 0.140);
+    top: calc(var(--chat-bg-top) + var(--chat-bg-h) * 0.724);
     width: calc(var(--chat-bg-w) * 0.064);
-    height: calc(var(--chat-bg-h) * 0.158);
+    height: calc(var(--chat-bg-h) * 0.180);
     pointer-events: none;
     z-index: 11;
     border-radius: 50%;

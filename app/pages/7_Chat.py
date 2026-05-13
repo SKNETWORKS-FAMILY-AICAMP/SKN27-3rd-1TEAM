@@ -11,7 +11,7 @@ from app.common.chat_render import (  # noqa: E402
     render_style,
     render_top_navigation,
 )
-from app.common.bgm import render_page_bgm  # noqa: E402
+from app.common.bgm import render_bgm_control_button, render_page_bgm  # noqa: E402
 from app.maple_chat import (  # noqa: E402
     PAGE_CONFIG,
     handle_user_input,
@@ -33,3 +33,4 @@ handle_user_input()
 process_pending_response(rerun=False)
 render_chat_page()
 render_top_navigation(active_menu_key="chat")
+render_bgm_control_button()

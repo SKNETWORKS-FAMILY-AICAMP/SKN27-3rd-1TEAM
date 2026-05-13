@@ -11,6 +11,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 - 직업
 - 보스
 - 장비 카탈로그
+- 장비 성장/강화 규칙
 - 세트 효과
 - 스탯 요구조건
 - 이벤트
@@ -26,10 +27,12 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 |---|---|---|
 | `Job` | 메이플스토리 직업 | `job_id`, `name`, `job_group`, `main_stat`, `description` |
 | `Boss` | 보스 몬스터 | `boss_id`, `name`, `difficulty`, `boss_type`, `required_level`, `description` |
+| `BossAlias` | 보스 한글명/영문명/축약어 별칭 | `alias_id`, `name`, `normalized_name`, `locale` |
 | `EquipmentCatalog` | 장비 카탈로그 | `equipment_id`, `name`, `part`, `slot`, `item_type`, `level_limit`, `set_name` |
+| `EquipmentRule` | 장비 성장/강화/잠재/추옵/슬롯 매핑 규칙 | `rule_id`, `name`, `rule_type`, `rule_file`, `stage`, `level_range`, `item_slot`, `current_tier`, `recommended_tier`, `minimum_starforce`, `recommended_starforce`, `potential_grade`, `priority`, `flame_score`, `recommended_action`, `review_status` |
 | `SetEffect` | 장비 세트 효과 | `set_effect_id`, `name`, `set_type`, `description` |
 | `StatRequirement` | 보스/콘텐츠 요구 스펙 | `requirement_id`, `boss_name`, `level`, `main_stat`, `boss_damage`, `ignore_def`, `arcane_force`, `authentic_force`, `confidence` |
-| `Event` | 이벤트 정보 | `event_id`, `name`, `event_type`, `start_date`, `end_date`, `target_user`, `description` |
+| `Event` | 이벤트 정보 | `event_id`, `name`, `event_type`, `start_date`, `end_date`, `target_user` |
 | `Reward` | 보상 정보 | `reward_id`, `name`, `reward_type`, `value_type`, `description` |
 | `Content` | 일일/주간/성장 콘텐츠 | `content_id`, `name`, `content_type`, `reset_cycle`, `description` |
 | `Source` | RAG/문서 출처 | `source_id`, `title`, `category`, `source_type`, `relative_path`, `url`, `trust_level`, `collected_at`, `text_preview`, `reliability` (`HIGH`, `MEDIUM`, `LOW`) |
@@ -40,6 +43,7 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | 관계 | 시작 노드 | 끝 노드 | 의미 |
 |---|---|---|---|
 | `USES_MAIN_STAT` | `Job` | `StatType` | 직업이 주스탯으로 사용하는 스탯 |
+| `ALIAS_OF` | `BossAlias` | `Boss` | 보스의 한글명, 영문명, 축약어가 실제 보스 노드를 가리킴 |
 | `RECOMMENDED_FOR_JOB` | `EquipmentCatalog` | `Job` | 특정 장비가 직업군/직업에게 추천됨 |
 | `PART_OF_SET` | `EquipmentCatalog` | `SetEffect` | 장비가 특정 세트 효과에 포함됨 |
 | `HAS_REQUIREMENT` | `Boss` | `StatRequirement` | 보스가 요구 스펙을 가짐 |
@@ -48,7 +52,6 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | `RELATED_CONTENT` | `Event` | `Content` | 이벤트와 관련된 콘텐츠 |
 | `HELPS_GROWTH` | `Event` | `Content` | 이벤트가 성장 콘텐츠 수행에 도움 |
 | `REQUIRES_STAT` | `StatRequirement` | `StatType` | 요구 조건이 어떤 domain.py 스탯 필드를 기준으로 하는지 표시 |
-| `MENTIONED_IN` | `StatType/Job/Boss/EquipmentCatalog/Event/Content/Reward` | `Source` | 문서 출처에서 엔티티가 언급됨 |
 
 ## 4. 추가 데이터 선별 기준
 
@@ -60,17 +63,21 @@ GraphDB는 `common/domain.py`의 분석 모델이 필요로 하는 판단 근거
 | 최종 사용 여부 | `is_final_keep=True`, `rag_ready=True` 데이터만 사용 |
 | 포함 데이터 | `official_event`, `official_notice`, `official_update`, `testworld_update`, `boss_recommendation_rule`, `equipment_growth_rule`, `reward_priority_rule`, `class_5th_core_priority`, `class_6th_hexa_priority` |
 | 제외 데이터 | `character_*`, `user_union*`, `ranking_*` 등 유저 실시간 상태 또는 샘플 API 데이터 |
-| 적재 방향 | 새 복잡한 도메인 노드를 늘리기보다 `Job`, `Boss`, `EquipmentCatalog`, `Event`, `Reward`, `Source`에 연결 |
+| 적재 방향 | 실제 장비는 `EquipmentCatalog`에 저장하고, 장비 성장/강화/잠재/추옵/슬롯 매핑 규칙은 `EquipmentRule`로 분리 |
 
 추가 데이터의 주요 활용 관계는 다음과 같다.
 
 ```text
 (Boss)-[:HAS_REQUIREMENT]->(StatRequirement)
+(BossAlias)-[:ALIAS_OF]->(Boss)
 (Boss)-[:DROPS_REWARD]->(Reward)
-(Job)-[:MENTIONED_IN]->(Source)
-(EquipmentCatalog)-[:MENTIONED_IN]->(Source)
-(Event)-[:MENTIONED_IN]->(Source)
+(Event)-[:PROVIDES_REWARD]->(Reward)
+(Event)-[:RELATED_CONTENT]->(Content)
 ```
+
+`BossAlias`는 코드에서 특정 보스명을 조건문으로 분기하지 않기 위해 둔다. 예를 들어 사용자가 `검마`, `검은 마법사`, `Black Mage` 중 어떤 표현으로 질문해도 `ALIAS_OF` 관계를 통해 같은 보스 지식으로 연결한다.
+
+`EquipmentRule`은 실제 장비 아이템이 아니라 장비 성장 판단에 필요한 규칙 지식이다. 1차 구축에서는 별도 노드로 저장하고, 팀 검증 후 직업군, 장비 슬롯, 콘텐츠 단계와 연결하는 관계를 확장한다.
 
 ## 5. domain.py와의 연결
 
@@ -122,15 +129,14 @@ RETURN e.name, r.name, r.reward_type;
 
 ```cypher
 MATCH (b:Boss)-[:HAS_REQUIREMENT]->(r:StatRequirement)
-MATCH (b)-[:MENTIONED_IN]->(s:Source)
 WHERE r.confidence <> "draft"
-RETURN b.name, b.difficulty, r.level, r.main_stat, s.title
+RETURN b.name, b.difficulty, r.level, r.main_stat
 LIMIT 10;
 ```
 
 ```cypher
-MATCH (e:Event {event_type: "official_event"})-[:MENTIONED_IN]->(s:Source)
-RETURN e.name, s.url, s.trust_level
+MATCH (e:Event {event_type: "official_event"})
+RETURN e.name, e.target_user, e.start_date, e.end_date
 ORDER BY e.name;
 ```
 
@@ -138,7 +144,7 @@ ORDER BY e.name;
 
 현재 seed 데이터는 1차 설계 및 Agent 연동용 기준 데이터이다. 보스 요구 스펙, 이벤트, 보상, 추천 장비 관계는 팀 검증 후 수치와 관계를 보완해야 한다.
 
-공식 문서나 Web RAG가 수집한 문서는 `Source` 노드로 저장하고, 추후 엔티티 추출을 통해 `MENTIONED_IN` 관계를 확장한다.
+공식 문서나 Web RAG가 수집한 문서는 `Source` 노드로 저장하되, 1차 GraphDB 적재에서는 `MENTIONED_IN` 관계를 생성하지 않는다.
 
 
 

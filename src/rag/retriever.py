@@ -20,6 +20,9 @@ DEFAULT_EMBEDDING_MODEL = "google/embeddinggemma-300m"
 DEFAULT_VECTOR_WEIGHT = 0.65
 DEFAULT_TEXT_WEIGHT = 0.35
 DEFAULT_CANDIDATE_MULTIPLIER = 3
+DEFAULT_DB_CONNECT_TIMEOUT_SECONDS = 3
+DEFAULT_NEO4J_CONNECTION_TIMEOUT_SECONDS = 3
+GRAPH_RELIABILITY = "MEDIUM"
 
 
 @dataclass(frozen=True)
@@ -112,7 +115,14 @@ class GraphSearchResult:
 
 
 def get_connection(dsn: str | None = None):
-    conn = psycopg2.connect(dsn or _database_url(), cursor_factory=RealDictCursor)
+    conn = psycopg2.connect(
+        dsn or _database_url(),
+        cursor_factory=RealDictCursor,
+        connect_timeout=_env_int(
+            "POSTGRES_CONNECT_TIMEOUT_SECONDS",
+            DEFAULT_DB_CONNECT_TIMEOUT_SECONDS,
+        ),
+    )
     register_vector(conn)
     return conn
 
@@ -446,6 +456,10 @@ class Neo4jGraphRetriever:
         self.user = user or os.getenv("NEO4J_USER", "neo4j")
         self.password = password or os.getenv("NEO4J_PASSWORD", "admin123")
         self.database = database or os.getenv("NEO4J_DATABASE", "mapledb")
+        self.connection_timeout = _env_int(
+            "NEO4J_CONNECT_TIMEOUT_SECONDS",
+            DEFAULT_NEO4J_CONNECTION_TIMEOUT_SECONDS,
+        )
 
     def search(
         self,
@@ -462,15 +476,20 @@ class Neo4jGraphRetriever:
         except ImportError as exc:
             raise RuntimeError("neo4j package is required for GraphDB search.") from exc
 
-        driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
+        driver = GraphDatabase.driver(
+            self.uri,
+            auth=(self.user, self.password),
+            connection_timeout=self.connection_timeout,
+        )
         try:
             with driver.session(database=self.database) as session:
-                source_rows = session.run(
-                    _GRAPH_SOURCE_MENTION_QUERY,
-                    terms=terms,
-                    reliability_filter=reliability_filter,
-                    limit=max(top_k * 2, top_k),
-                ).data()
+                requirement_rows = []
+                if _is_requirement_query(query):
+                    requirement_rows = session.run(
+                        _GRAPH_BOSS_REQUIREMENT_QUERY,
+                        terms=terms,
+                        limit=max(top_k * 2, top_k),
+                    ).data()
                 relation_rows = session.run(
                     _GRAPH_RELATION_FACT_QUERY,
                     terms=terms,
@@ -480,8 +499,8 @@ class Neo4jGraphRetriever:
             driver.close()
 
         results = [
-            _graph_source_row_to_result(row, terms)
-            for row in source_rows
+            _graph_requirement_row_to_result(row, terms)
+            for row in requirement_rows
         ] + [
             _graph_relation_row_to_result(row, terms)
             for row in relation_rows
@@ -627,6 +646,16 @@ def _database_url() -> str:
     )
 
 
+def _env_int(name: str, default: int) -> int:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 def _trust_clause(reliability_filter: ReliabilityFilter) -> tuple[str, list[object]]:
     if reliability_filter == "HIGH_ONLY":
         return "AND d.trust_level = ANY(%s)", [["S", "A"]]
@@ -692,30 +721,27 @@ def _entity_token_score_sql(token_patterns: Sequence[str]) -> tuple[str, list[ob
     return "".join(sql_parts), params
 
 
-_GRAPH_SOURCE_MENTION_QUERY = """
-MATCH (entity)-[:MENTIONED_IN]->(s:Source)
+_GRAPH_BOSS_REQUIREMENT_QUERY = """
+MATCH (boss:Boss)-[:HAS_REQUIREMENT]->(requirement:StatRequirement)
+OPTIONAL MATCH (alias:BossAlias)-[:ALIAS_OF]->(boss)
+WITH boss, requirement, collect(DISTINCT alias) AS aliases
 WHERE any(term IN $terms WHERE
-    toLower(coalesce(entity.name, '')) CONTAINS term OR
-    toLower(coalesce(entity.code, '')) CONTAINS term OR
-    toLower(coalesce(entity.description, '')) CONTAINS term OR
-    toLower(coalesce(s.title, '')) CONTAINS term OR
-    toLower(coalesce(properties(s).text_preview, '')) CONTAINS term OR
-    toLower(coalesce(s.category, '')) CONTAINS term
-)
-AND (
-    $reliability_filter = 'ALL'
-    OR coalesce(s.reliability, '') = 'HIGH'
-    OR coalesce(s.trust_level, '') IN ['S', 'A']
+    toLower(coalesce(boss.name, '')) CONTAINS term OR
+    toLower(coalesce(requirement.boss_name, '')) CONTAINS term OR
+    any(alias IN aliases WHERE
+        toLower(coalesce(alias.name, '')) CONTAINS term OR
+        toLower(coalesce(alias.normalized_name, '')) CONTAINS term
+    )
 )
 RETURN
-    coalesce(s.source_id, elementId(s)) AS graph_id,
-    labels(entity)[0] AS entity_type,
-    coalesce(entity.name, entity.code, entity.boss_name, 'unknown') AS entity_name,
-    coalesce(s.title, coalesce(entity.name, entity.code, 'Graph source')) AS title,
-    s.url AS source_url,
-    coalesce(s.trust_level, s.reliability) AS reliability,
-    s.category AS category,
-    properties(s).text_preview AS text_preview
+    elementId(boss) + ':HAS_REQUIREMENT:' + elementId(requirement) AS graph_id,
+    boss.name AS boss_name,
+    boss.difficulty AS difficulty,
+    boss.required_level AS required_level,
+    boss.boss_type AS boss_type,
+    properties(boss) AS boss_props,
+    properties(requirement) AS requirement_props,
+    [alias IN aliases WHERE alias.name IS NOT NULL | alias.name] AS aliases
 LIMIT $limit
 """
 
@@ -731,6 +757,7 @@ WHERE any(term IN $terms WHERE
     toLower(coalesce(finish.description, '')) CONTAINS term OR
     toLower(coalesce(finish.boss_name, '')) CONTAINS term
 )
+AND type(rel) <> 'MENTIONED_IN'
 RETURN
     elementId(start) + ':' + type(rel) + ':' + elementId(finish) AS graph_id,
     labels(start)[0] AS start_type,
@@ -744,30 +771,41 @@ LIMIT $limit
 """
 
 
-def _graph_source_row_to_result(
+def _graph_requirement_row_to_result(
     row: dict[str, Any],
     terms: list[str],
 ) -> GraphSearchResult:
-    entity_name = row.get("entity_name") or "unknown"
-    entity_type = row.get("entity_type") or "Graph"
-    title = row.get("title") or f"{entity_type}: {entity_name}"
-    text_preview = row.get("text_preview") or ""
-    category = row.get("category") or "unknown"
+    boss_name = row.get("boss_name") or "unknown"
+    difficulty = row.get("difficulty") or "unknown"
+    requirement_props = _compact_graph_props(row.get("requirement_props"))
+    boss_props = _compact_graph_props(row.get("boss_props"))
+    aliases = [item for item in row.get("aliases", []) if item]
+    title = f"{boss_name} - HAS_REQUIREMENT"
     content = (
-        f"Graph source mention\n"
-        f"entity_type: {entity_type}\n"
-        f"entity_name: {entity_name}\n"
-        f"category: {category}\n"
-        f"summary: {text_preview}"
+        f"Graph boss requirement fact\n"
+        f"Boss: {boss_name}\n"
+        f"aliases: {', '.join(aliases)}\n"
+        f"difficulty: {difficulty}\n"
+        f"relationship: HAS_REQUIREMENT\n"
+        f"required_level: {requirement_props.get('level') or row.get('required_level') or ''}\n"
+        f"main_stat: {requirement_props.get('main_stat') or ''}\n"
+        f"arcane_force: {requirement_props.get('arcane_force') or ''}\n"
+        f"authentic_force: {requirement_props.get('authentic_force') or ''}\n"
+        f"boss_damage: {requirement_props.get('boss_damage') or ''}\n"
+        f"ignore_def: {requirement_props.get('ignore_def') or ''}\n"
+        f"confidence: {requirement_props.get('confidence') or ''}\n"
+        f"boss_properties: {boss_props}\n"
+        f"requirement_properties: {requirement_props}"
     )
     return GraphSearchResult(
-        graph_id=f"graph::source::{row.get('graph_id')}",
+        graph_id=f"graph::requirement::{row.get('graph_id')}",
         title=title,
         content=content,
-        source_url=row.get("source_url"),
-        reliability=row.get("reliability"),
-        score=_score_graph_text(" ".join([title, entity_name, text_preview, category]), terms),
-        entity_type=entity_type,
+        source_url=None,
+        reliability=GRAPH_RELIABILITY,
+        score=_score_graph_text(f"{title} {content}", terms) + 1.0,
+        entity_type="Boss->StatRequirement",
+        retrieval_method="graph_requirement",
     )
 
 
@@ -794,7 +832,7 @@ def _graph_relation_row_to_result(
         title=title,
         content=content,
         source_url=None,
-        reliability="graph_seed",
+        reliability=GRAPH_RELIABILITY,
         score=_score_graph_text(f"{title} {content}", terms),
         entity_type=f"{start_type}->{end_type}",
     )
@@ -825,6 +863,9 @@ def _score_graph_text(text: str, terms: list[str]) -> float:
 
 def _graph_terms(query: str) -> list[str]:
     terms = []
+    normalized_query = "".join(str(query or "").lower().split())
+    if len(normalized_query) >= 2:
+        terms.append(normalized_query)
     for raw_term in query.replace(",", " ").replace("?", " ").split():
         term = raw_term.strip().lower()
         if len(term) >= 2 and term not in terms:
@@ -832,6 +873,26 @@ def _graph_terms(query: str) -> list[str]:
         if len(terms) >= 8:
             break
     return terms
+
+
+def _is_requirement_query(query: str) -> bool:
+    normalized_query = str(query or "").lower()
+    requirement_keywords = (
+        "필요스펙",
+        "필요 스펙",
+        "요구스펙",
+        "요구 스펙",
+        "스펙컷",
+        "필요조건",
+        "필요 조건",
+        "요구조건",
+        "요구 조건",
+        "입장조건",
+        "입장 조건",
+        "요구",
+        "필요",
+    )
+    return any(keyword in normalized_query for keyword in requirement_keywords)
 
 
 def _compact_graph_props(props: dict[str, Any] | None) -> dict[str, Any]:
