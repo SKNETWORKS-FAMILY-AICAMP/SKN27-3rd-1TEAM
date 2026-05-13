@@ -86,7 +86,7 @@
 - 단순 문서 검색을 넘어선 신뢰도 높은 답변 제공
 
 <div align="center">
-  <img src="https://i.namu.wiki/i/ehlNbGhUGgaZIZbFCpU6VrqrsTh4zeAOux4Se-XnDhN-xQcTMS7DZT6x2uc6gh8eexbpPSKTBsYCD0miM2UzG5UbZeeZ_94ntGLtI7qErkga4I3sotqhdKSo1DExKKf5_yJkqIF5El5fZLs4iSGo4w.webp" width="720" />
+  <img src="https://postfiles.pstatic.net/MjAyNjA1MTNfMjQg/MDAxNzc4NjU5OTY0MDAw.bdplVpwXxkzsZiBYpdsIlnWfPg74-8xprjbuW-3w2WYg.dqxPfq3zPFaV-hGYwESE3C0TDcLncl6kIOKigNc3nRkg.PNG/apdlx.png?type=w966" width="720" />
 </div>
 
 <br>
