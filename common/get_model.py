@@ -1,5 +1,7 @@
 from langchain_openai import OpenAIEmbeddings
 from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def get_embedding_model() -> OpenAIEmbeddings:
