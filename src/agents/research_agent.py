@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from typing import Any, Literal, TypedDict
 
 from common.state import AgentState, RetrievedDocument
@@ -24,6 +26,34 @@ class ResearchRouting(TypedDict):
     web_max_contexts: int
     official_only: bool
     reason: str
+    search_query: str
+    parser_source: str
+
+
+RESEARCH_ROUTE_PARSER_PROMPT = """
+You are a MapleStory Korean research route parser.
+Extract only retrieval strategy for a Research Agent. Do not answer the user.
+Return only one JSON object with these keys:
+- use_db: boolean
+- use_graph: boolean
+- use_web: boolean
+- db_mode: auto | text | vector | hybrid
+- top_k: integer from 1 to 10
+- graph_top_k: integer from 1 to 10
+- web_max_results: integer from 1 to 10
+- web_max_contexts: integer from 1 to 10
+- official_only: boolean
+- search_query: concise Korean search query preserving game terms and character names
+- reason: short snake_case string
+
+Rules:
+- use_db should usually be true for MapleStory knowledge questions.
+- use_graph should be true for structured facts such as bosses, rewards, equipment sets, stats, requirements, drops, jobs, or content relationships.
+- use_web should be true for latest/current/today/recent notices, patches, events, cash shop, test world, market prices, or time-sensitive questions.
+- official_only should be true for official notices, patches, events, and current factual claims.
+- Prefer db_mode hybrid unless the query is a direct keyword lookup where text is enough.
+- Do not invent facts or answer the user.
+""".strip()
 
 GRAPH_KEYWORDS = (
     "boss",
@@ -102,7 +132,127 @@ def classify_research_route(query: str) -> ResearchRouting:
         "web_max_contexts": 5,
         "official_only": True,
         "reason": reason,
+        "search_query": query,
+        "parser_source": "keyword",
     }
+
+
+def parse_research_route_with_llm(query: str) -> ResearchRouting:
+    """Use an LLM to parse the Research Agent retrieval plan."""
+
+    from common.get_model import get_llm
+    from langchain_core.messages import HumanMessage, SystemMessage
+
+    response = get_llm().invoke(
+        [
+            SystemMessage(content=RESEARCH_ROUTE_PARSER_PROMPT),
+            HumanMessage(content=f"User query: {query}\nJSON only:"),
+        ]
+    )
+    content = getattr(response, "content", response)
+    return normalize_research_route_parse(query, parse_json_object(str(content)))
+
+
+def build_research_route(query: str, *, use_llm: bool = True) -> tuple[ResearchRouting, dict[str, Any]]:
+    """Return a research route plus parser metadata for tool_results."""
+
+    fallback_route = classify_research_route(query)
+    if not use_llm:
+        return fallback_route, {"used_llm": False, "fallback_used": False}
+
+    try:
+        route = parse_research_route_with_llm(query)
+    except Exception as exc:
+        return fallback_route, {
+            "used_llm": True,
+            "fallback_used": True,
+            "error": str(exc),
+        }
+
+    route["use_graph"] = route["use_graph"] or fallback_route["use_graph"]
+    route["use_web"] = route["use_web"] or fallback_route["use_web"]
+    if route["use_web"]:
+        route["official_only"] = True
+    route["parser_source"] = "llm"
+    return route, {"used_llm": True, "fallback_used": False}
+
+
+def parse_json_object(text: str) -> dict[str, Any]:
+    """Parse a JSON object, allowing fenced or lightly wrapped LLM output."""
+
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        stripped = re.sub(r"^```(?:json)?\s*", "", stripped, flags=re.IGNORECASE)
+        stripped = re.sub(r"\s*```$", "", stripped).strip()
+
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        match = re.search(r"\{.*\}", stripped, flags=re.DOTALL)
+        if not match:
+            raise
+        parsed = json.loads(match.group(0))
+
+    if not isinstance(parsed, dict):
+        raise ValueError("research route parser returned non-object JSON")
+    return parsed
+
+
+def normalize_research_route_parse(query: str, parsed: dict[str, Any]) -> ResearchRouting:
+    fallback = classify_research_route(query)
+    db_mode = str(parsed.get("db_mode") or fallback["db_mode"]).lower()
+    if db_mode not in {"auto", "text", "vector", "hybrid"}:
+        db_mode = fallback["db_mode"]
+
+    use_graph = coerce_bool(parsed.get("use_graph"), fallback["use_graph"])
+    return {
+        "use_db": coerce_bool(parsed.get("use_db"), fallback["use_db"]) or use_graph,
+        "use_graph": use_graph,
+        "use_web": coerce_bool(parsed.get("use_web"), fallback["use_web"]),
+        "db_mode": db_mode,  # type: ignore[typeddict-item]
+        "top_k": clamp_int(parsed.get("top_k"), fallback["top_k"], 1, 10),
+        "graph_top_k": clamp_int(parsed.get("graph_top_k"), fallback["graph_top_k"], 1, 10),
+        "web_max_results": clamp_int(parsed.get("web_max_results"), fallback["web_max_results"], 1, 10),
+        "web_max_contexts": clamp_int(parsed.get("web_max_contexts"), fallback["web_max_contexts"], 1, 10),
+        "official_only": coerce_bool(parsed.get("official_only"), fallback["official_only"]),
+        "reason": normalize_reason(parsed.get("reason"), fallback["reason"]),
+        "search_query": normalize_search_query(parsed.get("search_query"), query),
+        "parser_source": "llm",
+    }
+
+
+def coerce_bool(value: Any, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return default
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "yes", "y", "1"}:
+            return True
+        if lowered in {"false", "no", "n", "0"}:
+            return False
+    return default
+
+
+def clamp_int(value: Any, default: int, minimum: int, maximum: int) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        number = default
+    return max(minimum, min(maximum, number))
+
+
+def normalize_reason(value: Any, default: str) -> str:
+    reason = re.sub(r"[^0-9A-Za-z_]+", "_", str(value or default).strip().lower())
+    return reason.strip("_") or default
+
+
+def normalize_search_query(value: Any, default: str) -> str:
+    query = str(value or "").strip()
+    return query or default
 
 
 def run_research(
@@ -110,6 +260,7 @@ def run_research(
     *,
     route: ResearchRouting | None = None,
     auto_create_embedding: bool = True,
+    use_llm_parser: bool = True,
 ) -> AgentState:
     """멀티에이전트 그래프에서 호출할 Research Agent 본체입니다.
 
@@ -119,13 +270,20 @@ def run_research(
 
     validate_agent_inputs("research", state)
 
-    route = route or classify_research_route(state["user_query"])
+    parser_result: dict[str, Any] = {"used_llm": False, "fallback_used": False}
+    if route is None:
+        route, parser_result = build_research_route(
+            state["user_query"],
+            use_llm=use_llm_parser,
+        )
 
     docs: list[RetrievedDocument] = []
+    search_query = route.get("search_query") or state["user_query"]
 
     tool_results = dict(state.get("tool_results", {}))
     research_result: dict[str, Any] = {
         "route": route,
+        "parser": parser_result,
         "db_success": False,
         "web_success": False,
         "document_count": 0,
@@ -139,7 +297,7 @@ def run_research(
             from src.rag.db_search import run_db_search_rag
 
             db_response = run_db_search_rag(
-                query=state["user_query"],
+                query=search_query,
                 top_k=route["top_k"],
                 mode=route["db_mode"],
                 auto_create_embedding=auto_create_embedding,
@@ -166,7 +324,7 @@ def run_research(
             from src.rag.web_search import retrieve_for_agent_state
 
             web_state = retrieve_for_agent_state(
-                question=state["user_query"],
+                question=search_query,
                 character_context=state.get("character_profile") or state,
                 official_only=route["official_only"],
                 max_results=route["web_max_results"],
