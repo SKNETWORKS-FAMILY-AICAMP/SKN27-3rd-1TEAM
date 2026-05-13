@@ -1,24 +1,22 @@
 from __future__ import annotations
-import sys
 import os
-import re
 import json
+import re
+import sys
 from datetime import datetime
 
-# 현재 파일(main.py)의 부모의 부모의 부모 폴더를 path에 추가 (project_root 경로)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, "../../"))
 sys.path.append(project_root)
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional
 from dotenv import load_dotenv
 
 
 from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 from neo4j import GraphDatabase
@@ -32,50 +30,78 @@ load_dotenv()
 _BOSS_GRAPH_CONNECTION: Any = None
 _BOSS_GRAPH_DATABASE: Optional[str] = None
 
+_BOSS_DIFFICULTY_KO = {
+    "EASY": "이지",
+    "NORMAL": "노멀",
+    "HARD": "하드",
+    "CHAOS": "카오스",
+    "EXTREME": "익스트림",
+    "이지": "이지",
+    "노말": "노멀",
+    "노멀": "노멀",
+    "하드": "하드",
+    "카오스": "카오스",
+    "익스트림": "익스트림",
+}
 
-class BossStatAnalysisInput(BaseModel):
-    """Input schema matching OpenAPI BossAnalysisRequest plus normalized stats."""
+_CHARACTER_NUMBER_FIELDS = {
+    "combat_power": (("combat_power", "current_combat_power"), int),
+    "attack_power": (("attack_power", "attack"), int),
+    "magic_power": (("magic_power",), int),
+    "boss_damage": (("boss_damage",), float),
+    "ignore_def": (("ignore_def", "ignore_defense", "ied"), float),
+    "crit_rate": (("crit_rate", "critical_rate"), float),
+    "crit_damage": (("crit_damage", "critical_damage"), float),
+    "final_damage": (("final_damage",), float),
+    "arcane_force": (("arcane_force",), int),
+    "authentic_force": (("authentic_force", "sacred_force"), int),
+}
 
+_BOSS_STAT_RULES = (
+    ("level", "required_level", "Character level is below the boss baseline."),
+    ("combat_power", "required_combat_power", "Combat power is below the boss requirement."),
+    ("main_stat", "required_main_stat", "Primary stat is insufficient."),
+    ("attack_or_magic", None, "Attack or magic power is below the boss baseline."),
+    ("boss_damage", "required_boss_damage", "Boss damage is insufficient."),
+    ("ignore_def", "required_ignore_def", "Ignore defense is insufficient."),
+    ("crit_rate", "required_crit_rate", "Critical rate is insufficient."),
+    ("crit_damage", "required_crit_damage", "Critical damage is insufficient."),
+    ("final_damage", "required_final_damage", "Final damage is insufficient."),
+    ("force", None, "Arcane or authentic force is insufficient."),
+    ("starforce", "required_starforce", "Starforce is below the baseline."),
+    ("union_level", "required_union_level", "Union level is below the baseline."),
+)
+
+_BOSS_STATUSES = ("recommended", "challengeable", "risky", "difficult")
+
+
+class CharacterStatsInput(BaseModel):
     character_name: str = Field(..., description="Character name.")
     job_name: str = Field(..., description="Character job or class name.")
     level: int = Field(..., ge=1, description="Character level.")
+    combat_power: int = Field(..., ge=0, description="Current combat power.")
+    main_stat: int = Field(..., ge=0, description="Primary stat value.")
+    attack_power: int = Field(0, ge=0, description="Current attack power.")
+    magic_power: int = Field(0, ge=0, description="Current magic power.")
+    boss_damage: float = Field(0.0, ge=0, description="Boss damage percentage.")
+    ignore_def: float = Field(0.0, ge=0, description="Ignore enemy defense percentage.")
+    crit_rate: float = Field(0.0, ge=0, description="Critical rate percentage.")
+    crit_damage: float = Field(0.0, ge=0, description="Critical damage percentage.")
+    final_damage: float = Field(0.0, ge=0, description="Final damage percentage.")
+    arcane_force: int = Field(0, ge=0, description="Arcane force.")
+    authentic_force: int = Field(0, ge=0, description="Authentic force.")
+    starforce: int = Field(0, ge=0, description="Total starforce.")
+    union_level: int = Field(0, ge=0, description="Union level.")
+
+
+class BossStatAnalysisInput(CharacterStatsInput):
     target_boss: str = Field(..., description="Target boss name.")
-    combat_power: int = Field(..., ge=0, description="Current combat power.")
-    main_stat: int = Field(..., ge=0, description="Primary stat value.")
-    attack_power: int = Field(0, ge=0, description="Current attack power.")
-    magic_power: int = Field(0, ge=0, description="Current magic power.")
-    boss_damage: float = Field(0.0, ge=0, description="Boss damage percentage.")
-    ignore_def: float = Field(0.0, ge=0, description="Ignore enemy defense percentage.")
-    crit_rate: float = Field(0.0, ge=0, description="Critical rate percentage.")
-    crit_damage: float = Field(0.0, ge=0, description="Critical damage percentage.")
-    final_damage: float = Field(0.0, ge=0, description="Final damage percentage.")
-    arcane_force: int = Field(0, ge=0, description="Arcane force.")
-    authentic_force: int = Field(0, ge=0, description="Authentic force.")
-    starforce: int = Field(0, ge=0, description="Total starforce.")
-    union_level: int = Field(0, ge=0, description="Union level.")
 
 
-class AvailableBossesInput(BaseModel):
-    """Input schema for finding all bosses suitable for the current character."""
-
-    character_name: str = Field(..., description="Character name.")
-    job_name: str = Field(..., description="Character job or class name.")
-    level: int = Field(..., ge=1, description="Character level.")
-    combat_power: int = Field(..., ge=0, description="Current combat power.")
-    main_stat: int = Field(..., ge=0, description="Primary stat value.")
-    attack_power: int = Field(0, ge=0, description="Current attack power.")
-    magic_power: int = Field(0, ge=0, description="Current magic power.")
-    boss_damage: float = Field(0.0, ge=0, description="Boss damage percentage.")
-    ignore_def: float = Field(0.0, ge=0, description="Ignore enemy defense percentage.")
-    crit_rate: float = Field(0.0, ge=0, description="Critical rate percentage.")
-    crit_damage: float = Field(0.0, ge=0, description="Critical damage percentage.")
-    final_damage: float = Field(0.0, ge=0, description="Final damage percentage.")
-    arcane_force: int = Field(0, ge=0, description="Arcane force.")
-    authentic_force: int = Field(0, ge=0, description="Authentic force.")
-    starforce: int = Field(0, ge=0, description="Total starforce.")
-    union_level: int = Field(0, ge=0, description="Union level.")
+class AvailableBossesInput(CharacterStatsInput):
     include_risky: bool = Field(True, description="Whether to include risky bosses in the returned list.")
     max_results: int = Field(20, ge=1, le=100, description="Maximum number of bosses to return per group.")
+
 
 def _load_project_env() -> None:
     project_root = Path(__file__).resolve().parents[2]
@@ -84,29 +110,14 @@ def _load_project_env() -> None:
         project_root / "database" / ".env",
         Path(__file__).resolve().parent / ".env",
     ):
-        if not env_path.exists():
-            continue
-        for line in env_path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+        load_dotenv(env_path, override=False)
 
 
 def set_boss_neo4j_connection(connection: Any, database: Optional[str] = None) -> None:
-    """Register the Neo4j driver/session/graph object used by the analytics tool."""
-
     global _BOSS_GRAPH_CONNECTION, _BOSS_GRAPH_DATABASE
     _BOSS_GRAPH_CONNECTION = connection
     if database is not None:
         _BOSS_GRAPH_DATABASE = database
-
-
-def set_boss_db_connection(connection: Any, database: Optional[str] = None) -> None:
-    """Backward-compatible alias for registering the Neo4j boss graph connection."""
-
-    set_boss_neo4j_connection(connection, database=database)
 
 
 def _get_boss_neo4j_connection() -> Any:
@@ -148,6 +159,29 @@ def _number(source: Any, key: str, default: float = 0.0) -> float:
         return default
 
 
+def _format_number(value: Any, digits: int = 2) -> str:
+    if value in (None, ""):
+        return "0"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if number.is_integer():
+        return f"{int(number):,}"
+    return f"{number:,.{digits}f}".rstrip("0").rstrip(".")
+
+
+def _upsert_context_section(context: Any, section_id: str, body: str) -> str:
+    start = f"[{section_id}:start]"
+    end = f"[{section_id}:end]"
+    block = f"{start}\n{body.strip()}\n{end}"
+    text = str(context or "").strip()
+    pattern = rf"{re.escape(start)}[\s\S]*?{re.escape(end)}"
+    if re.search(pattern, text):
+        return re.sub(pattern, block, text).strip()
+    return "\n\n".join(part for part in (text, block) if part).strip()
+
+
 def _record_to_dict(record: Any) -> Dict[str, Any]:
     if record is None:
         return {}
@@ -170,8 +204,6 @@ def _result_to_rows(result: Any) -> List[Dict[str, Any]]:
         result = result[0]
     if hasattr(result, "records"):
         return [_record_to_dict(record) for record in result.records]
-    if isinstance(result, list):
-        return [_record_to_dict(record) for record in result]
     return [_record_to_dict(record) for record in result]
 
 
@@ -220,14 +252,6 @@ def _parse_boss_target(target_boss: str) -> Dict[str, Optional[str]]:
         "익스트림": "EXTREME",
         "extreme": "EXTREME",
     }
-    difficulty_ko = {
-        "EASY": "이지",
-        "NORMAL": "노멀",
-        "HARD": "하드",
-        "CHAOS": "카오스",
-        "EXTREME": "익스트림",
-    }
-
     lowered = normalized.lower()
     difficulty = None
     base_boss = normalized
@@ -241,28 +265,15 @@ def _parse_boss_target(target_boss: str) -> Dict[str, Optional[str]]:
         "target_boss": normalized,
         "base_boss": base_boss,
         "difficulty": difficulty,
-        "difficulty_ko": difficulty_ko.get(difficulty) if difficulty else None,
+        "difficulty_ko": _BOSS_DIFFICULTY_KO.get(difficulty) if difficulty else None,
     }
 
 
 def _boss_difficulty_ko(value: Any) -> Optional[str]:
-    difficulty_map = {
-        "EASY": "이지",
-        "NORMAL": "노멀",
-        "HARD": "하드",
-        "CHAOS": "카오스",
-        "EXTREME": "익스트림",
-        "이지": "이지",
-        "노멀": "노멀",
-        "노말": "노멀",
-        "하드": "하드",
-        "카오스": "카오스",
-        "익스트림": "익스트림",
-    }
     text = str(value or "").strip()
     if not text:
         return None
-    return difficulty_map.get(text.upper()) or difficulty_map.get(text)
+    return _BOSS_DIFFICULTY_KO.get(text.upper()) or _BOSS_DIFFICULTY_KO.get(text)
 
 
 def _normalize_boss_lookup_text(value: Any) -> str:
@@ -396,7 +407,7 @@ def _boss_lookup_score(target_boss: str, row: Dict[str, Any]) -> float:
 
 def _resolve_boss_target_from_neo4j(target_boss: str) -> str:
     try:
-        rows = _fetch_all_boss_requirements()
+        rows = _query_all_boss_requirements()
     except Exception:
         return target_boss
 
@@ -443,27 +454,9 @@ def _clean_boss_requirement_row(row: Dict[str, Any]) -> Dict[str, Any]:
     if not any(_value(row, key) not in {None, ""} for key in requirement_keys):
         return {}
 
-    cleaned = {
-        "boss_name": boss_name,
-        "difficulty": _value(row, "difficulty"),
-        "required_level": _value(row, "required_level"),
-        "required_combat_power": _value(row, "required_combat_power"),
-        "required_main_stat": _value(row, "required_main_stat"),
-        "required_attack_power": _value(row, "required_attack_power"),
-        "required_magic_power": _value(row, "required_magic_power"),
-        "required_boss_damage": _value(row, "required_boss_damage"),
-        "required_ignore_def": _value(row, "required_ignore_def"),
-        "required_crit_rate": _value(row, "required_crit_rate"),
-        "required_crit_damage": _value(row, "required_crit_damage"),
-        "required_final_damage": _value(row, "required_final_damage"),
-        "required_arcane_force": _value(row, "required_arcane_force"),
-        "required_authentic_force": _value(row, "required_authentic_force"),
-        "required_starforce": _value(row, "required_starforce"),
-        "required_union_level": _value(row, "required_union_level"),
-        "source_name": _value(row, "source_name"),
-        "source_url": _value(row, "source_url"),
-        "reliability": _value(row, "reliability"),
-    }
+    cleaned = {"boss_name": boss_name, "difficulty": _value(row, "difficulty")}
+    cleaned.update({key: _value(row, key) for key in requirement_keys})
+    cleaned.update({key: _value(row, key) for key in ("source_name", "source_url", "reliability")})
     return {key: value for key, value in cleaned.items() if value is not None}
 
 
@@ -533,7 +526,7 @@ RETURN
 """
 
 
-def _fetch_boss_requirements(target_boss: str) -> Dict[str, Any]:
+def _query_boss_requirements(target_boss: str) -> Dict[str, Any]:
     resolved_target_boss = _resolve_boss_target_from_neo4j(target_boss)
     target = _parse_boss_target(resolved_target_boss)
     params = {
@@ -634,7 +627,7 @@ def _fetch_boss_requirements(target_boss: str) -> Dict[str, Any]:
     raise LookupError(f"Boss requirement not found in Neo4j: {target_boss}")
 
 
-def _fetch_all_boss_requirements() -> List[Dict[str, Any]]:
+def _query_all_boss_requirements() -> List[Dict[str, Any]]:
     queries = (
         f"""
         MATCH (b:Boss)-[:HAS_REQUIREMENT]->(req:StatRequirement)
@@ -684,38 +677,6 @@ def _fetch_all_boss_requirements() -> List[Dict[str, Any]]:
     if last_error:
         raise RuntimeError(f"Neo4j boss requirement list query failed: {last_error}") from last_error
     return []
-
-
-def _ratio(actual: float, required: float) -> float:
-    if required <= 0:
-        return 1.0
-    return round(actual / required, 4)
-
-
-def _priority(ratio: float) -> int:
-    if ratio < 0.75:
-        return 1
-    if ratio < 0.90:
-        return 2
-    if ratio < 1.0:
-        return 3
-    return 4
-
-
-def _bottleneck(stat_name: str, actual: float, required: float, description: str) -> Dict[str, Any]:
-    ratio = _ratio(actual, required)
-    return {
-        "category": "BOSS_READINESS",
-        "target": stat_name,
-        "stat": stat_name,
-        "actual": actual,
-        "required": required,
-        "gap": round(max(0.0, required - actual), 2),
-        "ratio": ratio,
-        "priority": _priority(ratio),
-        "expected_cp_gain": int(max(0.0, required - actual)),
-        "description": description,
-    }
 
 
 _BOSS_PRIORITY_PROFILES = {
@@ -991,15 +952,6 @@ def _status(
     return "difficult"
 
 
-def _sum_equipment_starforce(equipment_items: Any) -> int:
-    if not equipment_items:
-        return 0
-    total = 0
-    for item in equipment_items:
-        total += int(_number(item, "starforce", 0))
-    return total
-
-
 def _first_number(sources: List[Any], keys: List[str], default: float = 0.0) -> float:
     for source in sources:
         for key in keys:
@@ -1032,50 +984,36 @@ def _strip_korean_particle(token: str) -> str:
 
 QUERY_PARSER_SYSTEM_PROMPT = """
 You are a MapleStory Korean query parser for an analystic agent node.
-Extract only routing/query slots. Do not answer the user.
+Extract only boss-routing slots. Do not answer the user.
 Return only one JSON object with these keys:
 - intent: boss_readiness | available_boss_recommendation | character_analysis | unknown
-- character_name: string or null
 - target_boss: string or null
 - boss_difficulty: Easy | Normal | Hard | Chaos | Extreme | null
 - needs_boss_recommendation: boolean
 - confidence: number from 0 to 1
 
 Rules:
-- Preserve Korean character names exactly.
+- Ignore character/user names. Supervisor and API collection own that responsibility.
 - Map boss abbreviations when obvious, e.g. 하스우 -> 하드 스우, 검마 -> 검은 마법사.
 - If the query asks "가능한 보스", "추천 보스", or "어디까지 가능", set needs_boss_recommendation true.
 - If no specific boss is asked, target_boss must be null.
-- Do not invent a character name when it is not present.
 """.strip()
 
 
-def _get_default_model() -> str | BaseChatModel:
-    if get_llm is None:
-        raise RuntimeError("common.get_model.get_llm is required for LLM query parsing.")
-    _load_project_env()
-    return get_llm()
-
-
-def _query_parser_prompt(payload: Dict[str, Any]) -> List[HumanMessage]:
-    return [
-        HumanMessage(
-            content=(
-                f"{QUERY_PARSER_SYSTEM_PROMPT}\n\n"
-                f"User query: {payload.get('user_query', '')}\n"
-                "JSON only:"
+def _parse_user_query_with_runnable(user_query: str, model: str | BaseChatModel | None = None) -> Dict[str, Any]:
+    if model is None:
+        if get_llm is None:
+            raise RuntimeError("common.get_model.get_llm is required for LLM query parsing.")
+        _load_project_env()
+        model = get_llm()
+    response = model.invoke(
+        [
+            HumanMessage(
+                content=f"{QUERY_PARSER_SYSTEM_PROMPT}\n\nUser query: {user_query}\nJSON only:"
             )
-        )
-    ]
-
-
-def _invoke_query_parser_model(payload: Dict[str, Any]) -> str:
-    model = payload["model"]
-    response = model.invoke(payload["messages"])
-    return str(getattr(response, "content", response))
-
-
-def _normalise_parsed_query(parsed: Dict[str, Any]) -> Dict[str, Any]:
+        ]
+    )
+    parsed = _parse_json_object(str(getattr(response, "content", response)))
     intent = str(parsed.get("intent") or "unknown")
     if intent not in {"boss_readiness", "available_boss_recommendation", "character_analysis", "unknown"}:
         intent = "unknown"
@@ -1091,27 +1029,25 @@ def _normalise_parsed_query(parsed: Dict[str, Any]) -> Dict[str, Any]:
     except (TypeError, ValueError):
         confidence = 0.0
 
+    target_boss = str(parsed["target_boss"]).strip() if parsed.get("target_boss") else None
+    fallback_target = _extract_target_boss_from_query(user_query)
+    if not target_boss and fallback_target:
+        target_boss = fallback_target
+        if intent == "unknown":
+            intent = "boss_readiness"
+        confidence = max(confidence, 0.55)
+
+    parsed_target = _parse_boss_target(target_boss) if target_boss else {}
+    if difficulty is None and parsed_target.get("difficulty"):
+        difficulty = str(parsed_target["difficulty"]).title()
+
     return {
         "intent": intent,
-        "character_name": str(parsed["character_name"]).strip() if parsed.get("character_name") else None,
-        "target_boss": str(parsed["target_boss"]).strip() if parsed.get("target_boss") else None,
+        "target_boss": target_boss,
         "boss_difficulty": difficulty,
         "needs_boss_recommendation": bool(parsed.get("needs_boss_recommendation", False)),
         "confidence": max(0.0, min(1.0, confidence)),
     }
-
-
-def _parse_user_query_with_runnable(user_query: str, model: str | BaseChatModel | None = None) -> Dict[str, Any]:
-    if model is None:
-        model = _get_default_model()
-    parser_chain = (
-        RunnablePassthrough.assign(model=RunnableLambda(lambda _: model))
-        | RunnablePassthrough.assign(messages=RunnableLambda(_query_parser_prompt))
-        | RunnableLambda(_invoke_query_parser_model)
-        | RunnableLambda(_parse_json_object)
-        | RunnableLambda(_normalise_parsed_query)
-    )
-    return parser_chain.invoke({"user_query": user_query})
 
 
 def _apply_parsed_query_to_state(state: AgentState, parsed: Dict[str, Any]) -> AgentState:
@@ -1122,14 +1058,12 @@ def _apply_parsed_query_to_state(state: AgentState, parsed: Dict[str, Any]) -> A
     if parsed.get("intent") and parsed["intent"] != "unknown":
         new_state.setdefault("intent", parsed["intent"])
 
-    if parsed.get("character_name") and not _value(new_state, "character_name"):
-        new_state["character_name"] = parsed["character_name"]
-
     target_boss = parsed.get("target_boss")
     difficulty = parsed.get("boss_difficulty")
     difficulty_label = _boss_difficulty_ko(difficulty) or difficulty
     difficulty_text = str(difficulty or "")
-    if target_boss and difficulty_label and difficulty_text.lower() not in target_boss.lower() and str(difficulty_label) not in target_boss:
+    target_has_difficulty = bool(_parse_boss_target(target_boss).get("difficulty")) if target_boss else False
+    if target_boss and difficulty_label and not target_has_difficulty and difficulty_text.lower() not in target_boss.lower() and str(difficulty_label) not in target_boss:
         target_boss = f"{difficulty_label} {target_boss}"
 
     if target_boss:
@@ -1148,28 +1082,12 @@ def _fallback_parse_query_to_state(state: AgentState) -> AgentState:
     target_boss = _extract_target_boss_from_query(user_query)
     parsed = {
         "intent": "boss_readiness" if target_boss else "available_boss_recommendation",
-        "character_name": _extract_character_name_from_query(user_query) or None,
         "target_boss": target_boss or None,
         "boss_difficulty": None,
         "needs_boss_recommendation": not bool(target_boss),
         "confidence": 0.35,
     }
     return _apply_parsed_query_to_state(state, parsed)
-
-
-def _extract_character_name_from_query(query: str) -> str:
-    tokens = _query_tokens(query)
-    if not tokens:
-        return ""
-    for marker in ("캐릭터", "닉네임", "이름"):
-        for index, token in enumerate(tokens):
-            if _strip_korean_particle(token) == marker and index + 1 < len(tokens):
-                return _strip_korean_particle(tokens[index + 1])
-    for token in tokens:
-        cleaned = _strip_korean_particle(token)
-        if cleaned and cleaned not in {"나", "내", "제", "저", "캐릭터", "닉네임", "이름"}:
-            return cleaned
-    return ""
 
 
 def _extract_target_boss_from_query(query: str) -> str:
@@ -1196,19 +1114,11 @@ def _append_state_error(state: AgentState, message: str) -> AgentState:
 def _empty_analytics_result(message: str) -> Dict[str, Any]:
     return {
         "available_bosses": [],
-        "boss_groups": {
-            "recommended": [],
-            "challengeable": [],
-            "risky": [],
-            "difficult": [],
-        },
+        "boss_groups": {status: [] for status in _BOSS_STATUSES},
         "recommended_actions": [],
         "challenge_fit_score": 0.0,
         "summary": {
-            "recommended_count": 0,
-            "challengeable_count": 0,
-            "risky_count": 0,
-            "difficult_count": 0,
+            **{f"{status}_count": 0 for status in _BOSS_STATUSES},
             "total_bosses_checked": 0,
             "message": message,
         },
@@ -1217,90 +1127,20 @@ def _empty_analytics_result(message: str) -> Dict[str, Any]:
     }
 
 
-def _state_stat_sources(state: AgentState) -> List[Any]:
-    profile = _value(state, "character_profile", {})
-    return [
-        _value(state, "stat_summary", {}),
-        _value(profile, "final_stats", {}),
-        _value(state, "character_stats", {}),
-        profile,
-    ]
-
-
-def _state_equipment_sources(state: AgentState) -> List[Any]:
-    return [
-        _value(state, "equipment_summary", {}),
-        _value(state, "stat_summary", {}),
-    ]
-
-
-def _state_union_sources(state: AgentState) -> List[Any]:
-    profile = _value(state, "character_profile", {})
-    return [
-        _value(state, "stat_summary", {}),
-        _value(profile, "union_info", {}),
-        _value(state, "union_status", {}),
-    ]
-
-
-def _main_stat_from_sources(sources: List[Any]) -> int:
-    direct = _first_number(sources, ["main_stat", "primary_stat", "mainStat"], 0)
-    if direct > 0:
-        return int(direct)
-    return int(
-        max(
-            _first_number(sources, ["str_val", "str", "STR"], 0),
-            _first_number(sources, ["dex", "dex_val", "DEX"], 0),
-            _first_number(sources, ["int_val", "int", "INT"], 0),
-            _first_number(sources, ["luk", "luk_val", "LUK"], 0),
-        )
-    )
-
-
-def _validate_analystic_state_inputs(state: AgentState) -> None:
-    missing = [
-        key
-        for key in ("character_profile", "stat_summary", "equipment_summary")
-        if key not in state or state[key] is None
-    ]
-    if missing:
-        raise ValueError(f"analystic input state missing fields: {missing}")
-
-
-def _target_boss_from_state(state: AgentState, target_boss: Optional[str]) -> str:
+def _target_boss_from_state(state: AgentState, target_boss: Optional[str], *, required: bool = True) -> str:
     if target_boss:
         return target_boss
-    direct_value = _value(state, "target_boss")
-    if direct_value:
-        return str(direct_value)
-
-    raw_api_results = _value(state, "raw_api_results", {})
-    raw_value = _value(raw_api_results, "target_boss")
-    if raw_value:
-        return str(raw_value)
-
-    tool_results = _value(state, "tool_results", {})
-    tool_value = _value(tool_results, "target_boss")
-    if tool_value:
-        return str(tool_value)
-
-    query_value = _extract_target_boss_from_query(str(_value(state, "user_query", "")))
-    if query_value:
-        return query_value
-
-    raise ValueError("target_boss is required for analystic boss readiness analysis.")
-
-
-def _has_target_boss(state: AgentState, target_boss: Optional[str]) -> bool:
-    if target_boss or _value(state, "target_boss"):
-        return True
-    if _value(_value(state, "raw_api_results", {}), "target_boss"):
-        return True
-    if _value(_value(state, "tool_results", {}), "target_boss"):
-        return True
-    if _extract_target_boss_from_query(str(_value(state, "user_query", ""))):
-        return True
-    return False
+    for value in (
+        _value(state, "target_boss"),
+        _value(_value(state, "raw_api_results", {}), "target_boss"),
+        _value(_value(state, "tool_results", {}), "target_boss"),
+        _extract_target_boss_from_query(str(_value(state, "user_query", ""))),
+    ):
+        if value:
+            return str(value)
+    if required:
+        raise ValueError("target_boss is required for analystic boss readiness analysis.")
+    return ""
 
 
 def _analyze_boss_row(
@@ -1334,63 +1174,65 @@ def _analyze_boss_row(
         boss, "required_authentic_force"
     )
 
-    checks = {
-        "level": _ratio(level, _number(boss, "required_level")),
-        "combat_power": _ratio(combat_power, _number(boss, "required_combat_power")),
-        "main_stat": _ratio(main_stat, _number(boss, "required_main_stat")),
-        "attack_or_magic": _ratio(current_attack_or_magic, required_attack_or_magic),
-        "boss_damage": _ratio(boss_damage, _number(boss, "required_boss_damage")),
-        "ignore_def": _ratio(ignore_def, _number(boss, "required_ignore_def")),
-        "crit_rate": _ratio(min(crit_rate, 100), _number(boss, "required_crit_rate")),
-        "crit_damage": _ratio(crit_damage, _number(boss, "required_crit_damage")),
-        "final_damage": _ratio(final_damage, _number(boss, "required_final_damage")),
-        "force": _ratio(current_force, required_force),
-        "starforce": _ratio(starforce, _number(boss, "required_starforce")),
-        "union_level": _ratio(union_level, _number(boss, "required_union_level")),
+    current_values = {
+        "level": level,
+        "combat_power": combat_power,
+        "main_stat": main_stat,
+        "attack_or_magic": current_attack_or_magic,
+        "boss_damage": boss_damage,
+        "ignore_def": ignore_def,
+        "crit_rate": min(crit_rate, 100),
+        "crit_damage": crit_damage,
+        "final_damage": final_damage,
+        "force": current_force,
+        "starforce": starforce,
+        "union_level": union_level,
     }
     required_values = {
-        "level": _number(boss, "required_level"),
-        "combat_power": _number(boss, "required_combat_power"),
-        "main_stat": _number(boss, "required_main_stat"),
-        "attack_or_magic": required_attack_or_magic,
-        "boss_damage": _number(boss, "required_boss_damage"),
-        "ignore_def": _number(boss, "required_ignore_def"),
-        "crit_rate": _number(boss, "required_crit_rate"),
-        "crit_damage": _number(boss, "required_crit_damage"),
-        "final_damage": _number(boss, "required_final_damage"),
-        "force": required_force,
-        "starforce": _number(boss, "required_starforce"),
-        "union_level": _number(boss, "required_union_level"),
+        stat: _number(boss, field)
+        for stat, field, _ in _BOSS_STAT_RULES
+        if field
     }
-
-    stat_pairs = {
-        "level": (level, _number(boss, "required_level"), "Character level is below the boss baseline."),
-        "combat_power": (
-            combat_power,
-            _number(boss, "required_combat_power"),
-            "Combat power is below the boss requirement.",
-        ),
-        "main_stat": (main_stat, _number(boss, "required_main_stat"), "Primary stat is insufficient."),
-        "attack_or_magic": (
-            current_attack_or_magic,
-            required_attack_or_magic,
-            "Attack or magic power is below the boss baseline.",
-        ),
-        "boss_damage": (boss_damage, _number(boss, "required_boss_damage"), "Boss damage is insufficient."),
-        "ignore_def": (ignore_def, _number(boss, "required_ignore_def"), "Ignore defense is insufficient."),
-        "crit_rate": (min(crit_rate, 100), _number(boss, "required_crit_rate"), "Critical rate is insufficient."),
-        "crit_damage": (crit_damage, _number(boss, "required_crit_damage"), "Critical damage is insufficient."),
-        "final_damage": (final_damage, _number(boss, "required_final_damage"), "Final damage is insufficient."),
-        "force": (current_force, required_force, "Arcane or authentic force is insufficient."),
-        "starforce": (starforce, _number(boss, "required_starforce"), "Starforce is below the baseline."),
-        "union_level": (union_level, _number(boss, "required_union_level"), "Union level is below the baseline."),
-    }
-
-    bottlenecks = [
-        _bottleneck(stat_name, actual, required, description)
-        for stat_name, (actual, required, description) in stat_pairs.items()
-        if checks[stat_name] < 1.0
+    required_values.update(
+        {
+            "attack_or_magic": required_attack_or_magic,
+            "force": required_force,
+        }
+    )
+    stat_pairs = [
+        (
+            stat,
+            current_values[stat],
+            required_values[stat],
+            description,
+        )
+        for stat, _, description in _BOSS_STAT_RULES
     ]
+    checks = {
+        key: round(actual / required, 4) if required > 0 else 1.0
+        for key, actual, required, _ in stat_pairs
+    }
+
+    bottlenecks = []
+    for stat_name, actual, required, description in stat_pairs:
+        ratio = checks[stat_name]
+        if ratio >= 1.0:
+            continue
+        priority = 1 if ratio < 0.75 else 2 if ratio < 0.90 else 3
+        bottlenecks.append(
+            {
+                "category": "BOSS_READINESS",
+                "target": stat_name,
+                "stat": stat_name,
+                "actual": actual,
+                "required": required,
+                "gap": round(max(0.0, required - actual), 2),
+                "ratio": ratio,
+                "priority": priority,
+                "expected_cp_gain": int(max(0.0, required - actual)),
+                "description": description,
+            }
+        )
     bottlenecks.sort(key=lambda item: (item["priority"], item["ratio"]))
 
     priority_profile = _boss_priority_profile(boss, required_values)
@@ -1452,27 +1294,9 @@ def analyze_boss_readiness(
 ) -> Dict[str, Any]:
     """Compare character stats with one DB-backed boss requirement row."""
 
-    boss = _fetch_boss_requirements(target_boss)
-    return _analyze_boss_row(
-        boss,
-        character_name=character_name,
-        job_name=job_name,
-        level=level,
-        target_boss=target_boss,
-        combat_power=combat_power,
-        main_stat=main_stat,
-        attack_power=attack_power,
-        magic_power=magic_power,
-        boss_damage=boss_damage,
-        ignore_def=ignore_def,
-        crit_rate=crit_rate,
-        crit_damage=crit_damage,
-        final_damage=final_damage,
-        arcane_force=arcane_force,
-        authentic_force=authentic_force,
-        starforce=starforce,
-        union_level=union_level,
-    )
+    tool_input = locals()
+    boss = _query_boss_requirements(tool_input.pop("target_boss"))
+    return _analyze_boss_row(boss, target_boss=target_boss, **tool_input)
 
 
 @tool(args_schema=AvailableBossesInput)
@@ -1498,7 +1322,7 @@ def find_available_bosses(
 ) -> Dict[str, Any]:
     """Find all bosses whose DB requirements fit the current character specs."""
 
-    bosses = _fetch_all_boss_requirements()
+    bosses = _query_all_boss_requirements()
     if not bosses:
         return {
             **_empty_analytics_result("No boss requirement rows were found in Neo4j."),
@@ -1506,36 +1330,21 @@ def find_available_bosses(
             "job_name": job_name,
         }
 
+    character_stats = {
+        key: value
+        for key, value in locals().items()
+        if key not in {"bosses", "include_risky", "max_results"}
+    }
     analyses = [
         _analyze_boss_row(
             boss,
-            character_name=character_name,
-            job_name=job_name,
-            level=level,
             target_boss=str(boss.get("boss_name", "")),
-            combat_power=combat_power,
-            main_stat=main_stat,
-            attack_power=attack_power,
-            magic_power=magic_power,
-            boss_damage=boss_damage,
-            ignore_def=ignore_def,
-            crit_rate=crit_rate,
-            crit_damage=crit_damage,
-            final_damage=final_damage,
-            arcane_force=arcane_force,
-            authentic_force=authentic_force,
-            starforce=starforce,
-            union_level=union_level,
+            **character_stats,
         )
         for boss in bosses
     ]
 
-    grouped: Dict[str, List[Dict[str, Any]]] = {
-        "recommended": [],
-        "challengeable": [],
-        "risky": [],
-        "difficult": [],
-    }
+    grouped: Dict[str, List[Dict[str, Any]]] = {status: [] for status in _BOSS_STATUSES}
     for analysis in analyses:
         grouped[analysis["clear_status"]].append(
             {
@@ -1581,57 +1390,39 @@ def find_available_bosses(
         "recommended_actions": recommended_actions,
         "challenge_fit_score": best_score,
         "summary": {
-            "recommended_count": len(grouped["recommended"]),
-            "challengeable_count": len(grouped["challengeable"]),
-            "risky_count": len(grouped["risky"]),
-            "difficult_count": len(grouped["difficult"]),
+            **{f"{status}_count": len(grouped[status]) for status in _BOSS_STATUSES},
             "total_bosses_checked": len(analyses),
         },
         "data_reliability": "boss_requirements_from_neo4j",
     }
 
 
-def _extract_agent_input(state: AgentState, target_boss: Optional[str]) -> Dict[str, Any]:
-    tool_input = _extract_character_input(state)
-    tool_input["target_boss"] = _target_boss_from_state(state, target_boss)
-    return tool_input
-
-
-def _extract_available_bosses_input(
-    state: AgentState,
-    *,
-    include_risky: bool = True,
-    max_results: int = 20,
-) -> Dict[str, Any]:
-    tool_input = _extract_character_input(state)
-    tool_input["include_risky"] = include_risky
-    tool_input["max_results"] = max_results
-    return tool_input
-
-
 def _extract_character_input(state: AgentState) -> Dict[str, Any]:
     profile = _value(state, "character_profile", {})
     equipment_items = _value(state, "equipment_items", _value(profile, "equipment_list", []))
-    stat_sources = _state_stat_sources(state)
-    equipment_sources = _state_equipment_sources(state)
-    union_sources = _state_union_sources(state)
-    starforce_default = _sum_equipment_starforce(equipment_items)
+    stat_sources = [
+        _value(state, "stat_summary", {}),
+        _value(profile, "final_stats", {}),
+        _value(state, "character_stats", {}),
+        profile,
+    ]
+    equipment_sources = [_value(state, "equipment_summary", {}), _value(state, "stat_summary", {})]
+    union_sources = [_value(state, "stat_summary", {}), _value(profile, "union_info", {}), _value(state, "union_status", {})]
+    main_stat = _first_number(stat_sources, ["main_stat", "primary_stat", "mainStat"], 0)
+    if main_stat <= 0:
+        main_stat = max(
+            _first_number(stat_sources, ["str_val", "str", "STR"], 0),
+            _first_number(stat_sources, ["dex", "dex_val", "DEX"], 0),
+            _first_number(stat_sources, ["int_val", "int", "INT"], 0),
+            _first_number(stat_sources, ["luk", "luk_val", "LUK"], 0),
+        )
+    starforce_default = sum(int(_number(item, "starforce", 0)) for item in (equipment_items or []))
 
-    return {
+    character_input = {
         "character_name": _first_text([profile, state], ["character_name", "name"], ""),
         "job_name": _first_text([profile, state], ["job_name", "character_class", "class_name"], ""),
         "level": int(_first_number([profile, *stat_sources], ["level", "character_level"], 0)),
-        "combat_power": int(_first_number(stat_sources, ["combat_power", "current_combat_power"], 0)),
-        "main_stat": _main_stat_from_sources(stat_sources),
-        "attack_power": int(_first_number(stat_sources, ["attack_power", "attack"], 0)),
-        "magic_power": int(_first_number(stat_sources, ["magic_power"], 0)),
-        "boss_damage": _first_number(stat_sources, ["boss_damage"], 0),
-        "ignore_def": _first_number(stat_sources, ["ignore_def", "ignore_defense", "ied"], 0),
-        "crit_rate": _first_number(stat_sources, ["crit_rate", "critical_rate"], 0),
-        "crit_damage": _first_number(stat_sources, ["crit_damage", "critical_damage"], 0),
-        "final_damage": _first_number(stat_sources, ["final_damage"], 0),
-        "arcane_force": int(_first_number(stat_sources, ["arcane_force"], 0)),
-        "authentic_force": int(_first_number(stat_sources, ["authentic_force", "sacred_force"], 0)),
+        "main_stat": int(main_stat),
         "starforce": int(
             _first_number(
                 [*equipment_sources, *stat_sources],
@@ -1641,6 +1432,13 @@ def _extract_character_input(state: AgentState) -> Dict[str, Any]:
         ),
         "union_level": int(_first_number(union_sources, ["union_level"], 0)),
     }
+    character_input.update(
+        {
+            field: caster(_first_number(stat_sources, list(keys), 0))
+            for field, (keys, caster) in _CHARACTER_NUMBER_FIELDS.items()
+        }
+    )
+    return character_input
 
 
 def _normalise_action_plan(action: Any, *, fallback_category: str = "BOSS_READINESS") -> Dict[str, Any]:
@@ -1675,7 +1473,6 @@ def _is_valid_recommendation_action(action: Dict[str, Any]) -> bool:
         "api",
         "API",
         "넥슨",
-        "Nexon",
         "이용해",
         "이용하여",
         "가져와",
@@ -1755,6 +1552,13 @@ def _build_growth_report(
     result: Dict[str, Any],
     recommended_actions: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
+    profile = _value(state, "character_profile", {})
+    stat_sources = [
+        _value(state, "stat_summary", {}),
+        _value(profile, "final_stats", {}),
+        _value(state, "character_stats", {}),
+        profile,
+    ]
     return {
         "character_id": _value(state, "ocid", tool_input.get("character_name", "")),
         "current_combat_power": int(tool_input.get("combat_power", 0)),
@@ -1763,7 +1567,7 @@ def _build_growth_report(
         "ignore_def": float(tool_input.get("ignore_def", 0.0)),
         "crit_rate": float(tool_input.get("crit_rate", 0.0)),
         "crit_damage": float(tool_input.get("crit_damage", 0.0)),
-        "damage": _first_number(_state_stat_sources(state), ["damage"], 0),
+        "damage": _first_number(stat_sources, ["damage"], 0),
         "bottleneck_analysis": result.get("bottleneck_analysis", {}),
         "recommended_actions": recommended_actions,
         "boss_clear_prediction": _boss_prediction_from_result(result),
@@ -1772,11 +1576,109 @@ def _build_growth_report(
     }
 
 
+def _build_analytics_answer_context(tool_input: Dict[str, Any], result: Dict[str, Any]) -> str:
+    if result.get("error"):
+        return "\n".join(
+            [
+                "Analytics result for final answer.",
+                f"- Analytics failed: {result.get('error')}",
+                "- Final answer should say the boss verdict could not be calculated from the current analytics result.",
+            ]
+        )
+
+    if "available_bosses" in result and not result.get("boss_requirements"):
+        groups = result.get("boss_groups") or {}
+        group_counts = ", ".join(
+            f"{status}={len(groups.get(status, []) or [])}" for status in _BOSS_STATUSES
+        )
+        top_bosses = ", ".join(
+            str(_value(item, "boss_name", "unknown"))
+            for item in (result.get("available_bosses") or [])[:8]
+        ) or "none"
+        return "\n".join(
+            [
+                "Analytics result for final answer.",
+                "- Verdict type: available boss recommendation.",
+                f"- Boss group counts: {group_counts}.",
+                f"- Top available bosses: {top_bosses}.",
+                f"- Best challenge fit score: {_format_number(result.get('challenge_fit_score', 0), 4)}.",
+                f"- Data reliability: {result.get('data_reliability', 'unknown')}.",
+            ]
+        )
+
+    requirements = result.get("boss_requirements") or {}
+    target_boss = result.get("target_boss") or tool_input.get("target_boss") or "unknown"
+    status = str(result.get("clear_status") or "unknown")
+    challengeable = result.get("challengeable")
+    if challengeable is None:
+        challengeable = status in {"recommended", "challengeable"}
+
+    current_force = _number(tool_input, "arcane_force") + _number(tool_input, "authentic_force")
+    required_force = _number(requirements, "required_arcane_force") + _number(requirements, "required_authentic_force")
+    comparisons = [
+        ("level", _value(tool_input, "level", 0), _value(requirements, "required_level", 0)),
+        ("combat_power", _value(tool_input, "combat_power", 0), _value(requirements, "required_combat_power", 0)),
+        ("main_stat", _value(tool_input, "main_stat", 0), _value(requirements, "required_main_stat", 0)),
+        ("boss_damage", _value(tool_input, "boss_damage", 0), _value(requirements, "required_boss_damage", 0)),
+        ("ignore_def", _value(tool_input, "ignore_def", 0), _value(requirements, "required_ignore_def", 0)),
+        ("force", current_force, required_force),
+        ("starforce", _value(tool_input, "starforce", 0), _value(requirements, "required_starforce", 0)),
+        ("union_level", _value(tool_input, "union_level", 0), _value(requirements, "required_union_level", 0)),
+    ]
+    comparison_text = "; ".join(
+        f"{name}: current={_format_number(current)} required={_format_number(required)}"
+        for name, current, required in comparisons
+        if current not in (None, "") or required not in (None, "")
+    )
+    lacking_stats = ", ".join(str(item) for item in (result.get("lacking_stats") or [])) or "none"
+    action_text = "; ".join(
+        (
+            f"{_value(action, 'target', _value(action, 'stat', 'unknown'))}: "
+            f"current={_format_number(_value(action, 'actual', 0))} "
+            f"required={_format_number(_value(action, 'required', 0))} "
+            f"gap={_format_number(_value(action, 'gap', 0))}"
+        )
+        for action in (result.get("recommended_actions") or [])[:5]
+    ) or "none"
+
+    return "\n".join(
+        [
+            "Analytics result for final answer.",
+            (
+                "- Verdict: "
+                f"target_boss={target_boss}, status={status}, "
+                f"challengeable={bool(challengeable)}, "
+                f"challenge_fit_score={_format_number(result.get('challenge_fit_score', 0), 4)}."
+            ),
+            "- Verdict rule: recommended/challengeable means the character can attempt the boss; risky means possible but unstable; difficult means not ready.",
+            f"- Current vs required stats: {comparison_text}.",
+            f"- Lacking stats: {lacking_stats}.",
+            f"- Recommended improvements: {action_text}.",
+            f"- Requirement source: {requirements.get('source_name', 'unknown')} / reliability={requirements.get('reliability', result.get('data_reliability', 'unknown'))}.",
+        ]
+    )
+
+
+def _with_analytics_result(state: AgentState, tool_input: Dict[str, Any], result: Dict[str, Any]) -> AgentState:
+    recommended_actions = _normalise_action_plans(result)
+    new_state = dict(state)
+    new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
+    new_state["bottleneck_analysis"] = result.get("bottleneck_analysis", {})
+    new_state["growth_report"] = _build_growth_report(new_state, tool_input, result, recommended_actions)
+    new_state["recommended_actions"] = recommended_actions
+    new_state["confidence_score"] = result.get("challenge_fit_score", 0.0)
+    new_state["context"] = _upsert_context_section(
+        new_state.get("context", ""),
+        "analytics_context",
+        _build_analytics_answer_context(tool_input, result),
+    )
+    return new_state
+
+
 def run_analystic(
     state: AgentState,
     *,
-    boss_graph_connection: Any = None,
-    boss_db_connection: Any = None,
+    boss_neo4j_connection: Any = None,
     target_boss: Optional[str] = None,
 ) -> "AgentState":
     """Run the common.state-compatible analystic step.
@@ -1787,20 +1689,28 @@ def run_analystic(
     """
 
     try:
-        _validate_analystic_state_inputs(state)
+        missing = [
+            key
+            for key in ("character_profile", "stat_summary", "equipment_summary")
+            if key not in state or state[key] is None
+        ]
+        if missing:
+            raise ValueError(f"analystic input state missing fields: {missing}")
         if validate_agent_inputs is not None:
             validate_agent_inputs("analystic", state)
 
-        if boss_graph_connection is not None:
-            set_boss_neo4j_connection(boss_graph_connection)
-        elif boss_db_connection is not None:
-            set_boss_db_connection(boss_db_connection)
+        if boss_neo4j_connection is not None:
+            set_boss_neo4j_connection(boss_neo4j_connection)
 
-        if _has_target_boss(state, target_boss):
-            tool_input = _extract_agent_input(state, target_boss)
+        resolved_target_boss = _target_boss_from_state(state, target_boss, required=False)
+        if resolved_target_boss:
+            tool_input = _extract_character_input(state)
+            tool_input["target_boss"] = resolved_target_boss
             result = analyze_boss_readiness.invoke(tool_input)
         else:
-            tool_input = _extract_available_bosses_input(state)
+            tool_input = _extract_character_input(state)
+            tool_input["include_risky"] = True
+            tool_input["max_results"] = 20
             result = find_available_bosses.invoke(tool_input)
     except Exception as exc:
         message = f"analystic failed: {exc}"
@@ -1816,26 +1726,12 @@ def run_analystic(
             "crit_rate": 0.0,
             "crit_damage": 0.0,
         }
-        recommended_actions = _normalise_action_plans(result)
-        new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
-        new_state["bottleneck_analysis"] = {}
-        new_state["growth_report"] = _build_growth_report(new_state, tool_input, result, recommended_actions)
-        new_state["recommended_actions"] = recommended_actions
-        new_state["confidence_score"] = 0.0
+        new_state = _with_analytics_result(new_state, tool_input, result)
         if validate_agent_outputs is not None:
             validate_agent_outputs("analystic", new_state)
         return new_state
 
-    recommended_actions = _normalise_action_plans(result)
-    growth_report = _build_growth_report(state, tool_input, result, recommended_actions)
-
-    new_state = dict(state)
-    new_state["tool_results"] = {**new_state.get("tool_results", {}), "analystic": result}
-    new_state["bottleneck_analysis"] = result.get("bottleneck_analysis", {})
-    new_state["growth_report"] = growth_report
-    new_state["recommended_actions"] = recommended_actions
-    new_state["confidence_score"] = result.get("challenge_fit_score", 0.0)
-
+    new_state = _with_analytics_result(state, tool_input, result)
     if validate_agent_outputs is not None:
         validate_agent_outputs("analystic", new_state)
     return new_state
@@ -1874,7 +1770,7 @@ def _compact_analytics_context(state: AgentState) -> Dict[str, Any]:
         context["available_bosses"] = [_compact_boss_item(item) for item in tool_result.get("available_bosses", [])[:8]]
         context["boss_groups"] = {
             status: [_compact_boss_item(item) for item in (boss_groups.get(status, []) or [])[:5]]
-            for status in ("recommended", "challengeable", "risky")
+            for status in _BOSS_STATUSES[:3]
         }
         return context
 
@@ -1914,34 +1810,6 @@ def _compact_research_context(state: AgentState) -> Dict[str, Any]:
     }
 
 
-def _has_research_context(state: AgentState) -> bool:
-    return bool(str(_value(state, "context", "")).strip() or (_value(state, "retrieved_docs", []) or []))
-
-
-def _parse_action_plan_json(content: str) -> List[Dict[str, Any]]:
-    text = content.strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
-
-    try:
-        parsed = json.loads(text)
-    except json.JSONDecodeError:
-        match = re.search(r"\[[\s\S]*\]", text)
-        if not match:
-            return []
-        try:
-            parsed = json.loads(match.group(0))
-        except json.JSONDecodeError:
-            return []
-
-    if isinstance(parsed, dict):
-        parsed = parsed.get("recommended_actions", [])
-    if not isinstance(parsed, list):
-        return []
-    return [_normalise_action_plan(item, fallback_category="BOSS_READINESS") for item in parsed[:5]]
-
-
 def _parse_json_object(content: str) -> Dict[str, Any]:
     text = content.strip()
     if text.startswith("```"):
@@ -1976,27 +1844,6 @@ def _merge_action_plans(base_actions: List[Dict[str, Any]], llm_actions: List[Di
         merged.append(normalised)
     return merged[:8]
 
-
-def _analysis_has_usable_result(state: AgentState) -> bool:
-    result = _value(_value(state, "tool_results", {}), "analystic", {}) or {}
-    if _value(result, "error"):
-        return False
-    if _value(result, "data_reliability") == "analysis_failed_or_missing_data":
-        return False
-    if _value(result, "boss_requirements") or _value(result, "available_bosses"):
-        return True
-    if _value(result, "clear_status") or _value(result, "boss_clear_prediction"):
-        return True
-    return bool(_value(state, "recommended_actions", []))
-
-
-def _agent_state_payload(state: AgentState) -> Dict[str, Any]:
-    return {
-        "user_query": _value(state, "user_query", ""),
-        "analytics": _compact_analytics_context(state),
-        "research_context": _compact_research_context(state),
-        "current_recommended_actions": _value(state, "recommended_actions", []),
-    }
 
 ANALYTICS_TOOLS = [analyze_boss_readiness, find_available_bosses]
 
@@ -2036,7 +1883,12 @@ def _generate_agent_state_update(
                 HumanMessage(
                     content=(
                         "Return only a JSON object for AgentState update. "
-                        f"Input: {json.dumps(_agent_state_payload(state), ensure_ascii=False)}"
+                        f"Input: {json.dumps({
+                            'user_query': _value(state, 'user_query', ''),
+                            'analytics': _compact_analytics_context(state),
+                            'research_context': _compact_research_context(state),
+                            'current_recommended_actions': _value(state, 'recommended_actions', []),
+                        }, ensure_ascii=False)}"
                     )
                 )
             ]
@@ -2061,8 +1913,7 @@ def _generate_agent_state_update(
 def analytics_agent(
     model: str | BaseChatModel | None = None,
     *,
-    boss_graph_connection: Any = None,
-    boss_db_connection: Any = None,
+    boss_neo4j_connection: Any = None,
     state: AgentState,
 ) -> AgentState:
     """Run analystic node with create_agent tools and return AgentState-compatible fields."""
@@ -2075,16 +1926,23 @@ def analytics_agent(
         state = _append_state_error(state, f"analystic query parser failed: {exc}")
         state = _fallback_parse_query_to_state(state)
 
-    if boss_graph_connection is not None:
-        set_boss_neo4j_connection(boss_graph_connection)
-    elif boss_db_connection is not None:
-        set_boss_db_connection(boss_db_connection)
     state = run_analystic(
         state,
-        boss_graph_connection=boss_graph_connection,
-        boss_db_connection=boss_db_connection,
+        boss_neo4j_connection=boss_neo4j_connection,
     )
-    if _analysis_has_usable_result(state):
+    analysis_result = _value(_value(state, "tool_results", {}), "analystic", {}) or {}
+    has_usable_result = (
+        not _value(analysis_result, "error")
+        and _value(analysis_result, "data_reliability") != "analysis_failed_or_missing_data"
+        and bool(
+            _value(analysis_result, "boss_requirements")
+            or _value(analysis_result, "available_bosses")
+            or _value(analysis_result, "clear_status")
+            or _value(analysis_result, "boss_clear_prediction")
+            or _value(state, "recommended_actions", [])
+        )
+    )
+    if has_usable_result:
         try:
             agent_update = _generate_agent_state_update(state, model)
         except Exception as exc:
@@ -2100,7 +1958,7 @@ def analytics_agent(
         recommended_actions = _merge_action_plans(base_actions, llm_actions)
         growth_report = dict(_value(state, "growth_report", {}) or {})
         growth_report["recommended_actions"] = recommended_actions
-        if _has_research_context(state):
+        if str(_value(state, "context", "")).strip() or (_value(state, "retrieved_docs", []) or []):
             growth_report["data_reliability"] = "boss_requirements_from_neo4j_with_research_context"
 
         tool_results = dict(_value(state, "tool_results", {}) or {})
@@ -2127,65 +1985,3 @@ def analytics_agent(
         **state,
         "user_query": user_query,
     }
-
-
-# if __name__ == "__main__":
-#     input_state = {
-#     "user_query": "나 음표인데 하드 검마 가능해?",
-#     "character_name": "음표",
-#     "ocid": "816a7a2b984c1a3031fbc144d913a189",
-#     "character_profile": {
-#         "character_name": "음표",
-#         "job_name": "플레임위자드",
-#         "world_name": "스카니아",
-#         "level": 294,
-#         "gender": "여",
-#         "final_stats": {
-#             "combat_power": 144744108,
-#             "main_stat": 60976,
-#             "int_val": 60976,
-#             "boss_damage": 320,
-#             "ignore_def": 89.89,
-#             "crit_rate": 90,
-#             "crit_damage": 91.55,
-#             "final_damage": 122.75,
-#             "arcane_force": 1375,
-#             "authentic_force": 800,
-#             "starforce": 279,
-#             "magic_power": 7104,
-#             "attack_power": 2268,
-#             "union_level": 8935,
-#         },
-#         "union_info": {
-#             "union_level": 8935,
-#             "union_grade": "그랜드 마스터 유니온 2",
-#         },
-#     },
-#     "stat_summary": {
-#         "combat_power": 144744108,
-#         "main_stat": 60976,
-#         "int_val": 60976,
-#         "str_val": 3870,
-#         "dex": 3494,
-#         "luk": 6306,
-#         "boss_damage": 320,
-#         "ignore_def": 89.89,
-#         "crit_rate": 90,
-#         "crit_damage": 91.55,
-#         "final_damage": 122.75,
-#         "arcane_force": 1375,
-#         "authentic_force": 800,
-#         "starforce": 279,
-#         "magic_power": 7104,
-#         "attack_power": 2268,
-#         "union_level": 8935,
-#     },
-#     "equipment_summary": {
-#         "equipment_count": 24,
-#         "starforce": 264,
-#         "total_starforce": 264,
-#     },
-
-# }
-#     result_state = analytics_agent(state=input_state)
-#     print(result_state['growth_report'])

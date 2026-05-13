@@ -99,6 +99,20 @@ _STAT_TARGETS = {
     "starforce": 22,
 }
 
+_STAT_SCORE_WEIGHTS = {
+    "str_val": 1,
+    "dex_val": 1,
+    "int_val": 1,
+    "luk_val": 1,
+    "all_stat_percent": 9,
+    "attack_power": 4,
+    "magic_power": 4,
+    "boss_damage_percent": 6,
+    "ignore_def_percent": 5,
+    "damage_percent": 4,
+    "crit_damage": 8,
+}
+
 _STARFORCE_TARGET_RULES = [
     # Mirrored from Neo4j EquipmentCatalog item_type=equipment_growth_rule.
     {"min_level": 200, "max_level": 219, "category": "all", "minimum": 10, "recommended": 12},
@@ -165,62 +179,94 @@ def _first_number(sources: List[Any], keys: List[str], default: float = 0.0) -> 
     return default
 
 
-def _ratio(value: float, target: float) -> float:
-    if target <= 0:
-        return 1.0
-    return max(0.0, min(value / target, 1.0))
-
-
 def _safe_round(value: float, digits: int = 4) -> float:
     if value == float("inf") or value != value:
         return 0.0
     return round(value, digits)
 
 
-def _sum_equipment_starforce(equipment_items: List[Any]) -> int:
-    return sum(int(_number(item, "starforce", 0)) for item in equipment_items)
+def _format_number(value: Any, digits: int = 2) -> str:
+    if value in (None, ""):
+        return "0"
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if number.is_integer():
+        return f"{int(number):,}"
+    return f"{number:,.{digits}f}".rstrip("0").rstrip(".")
+
+
+def _upsert_context_section(context: Any, section_id: str, body: str) -> str:
+    start = f"[{section_id}:start]"
+    end = f"[{section_id}:end]"
+    block = f"{start}\n{body.strip()}\n{end}"
+    text = str(context or "").strip()
+    pattern = rf"{re.escape(start)}[\s\S]*?{re.escape(end)}"
+    if re.search(pattern, text):
+        return re.sub(pattern, block, text).strip()
+    return "\n\n".join(part for part in (text, block) if part).strip()
+
+
+def _build_calculator_answer_context(state: AgentState) -> str:
+    profile = _value(state, "character_profile", {})
+    stat_summary = _value(state, "stat_summary", {}) or {}
+    equipment_summary = _value(state, "equipment_summary", {}) or {}
+    bottlenecks = _value(state, "bottleneck_analysis", {}) or {}
+    forecast = _value(equipment_summary, "growth_forecast", []) or []
+
+    top_bottlenecks = sorted(
+        ((str(key), float(value)) for key, value in bottlenecks.items() if isinstance(value, (int, float))),
+        key=lambda item: item[1],
+        reverse=True,
+    )[:5]
+    bottleneck_text = ", ".join(f"{key}={_format_number(value, 3)}" for key, value in top_bottlenecks) or "none"
+
+    growth_text = "; ".join(
+        (
+            f"{_value(item, 'category', 'growth')} "
+            f"target={_value(item, 'target', _value(item, 'slot', 'unknown'))} "
+            f"expected_score_after={_format_number(_value(item, 'expected_score_after', 0), 4)} "
+            f"gain={_format_number(_value(item, 'expected_damage_gain_percent', 0))}%"
+        )
+        for item in forecast[:3]
+    ) or "none"
+
+    return "\n".join(
+        [
+            "Calculator result for final answer.",
+            f"- Character: {_value(profile, 'character_name', _value(state, 'character_name', ''))} / job={_value(profile, 'job_name', '')} / level={_format_number(_value(profile, 'level', 0))}.",
+            (
+                "- Current stats: "
+                f"combat_power={_format_number(_value(stat_summary, 'combat_power', 0))}, "
+                f"main_stat={_format_number(_value(stat_summary, 'main_stat', 0))}, "
+                f"boss_damage={_format_number(_value(stat_summary, 'boss_damage', 0))}, "
+                f"ignore_def={_format_number(_value(stat_summary, 'ignore_def', 0))}, "
+                f"crit_rate={_format_number(_value(stat_summary, 'crit_rate', 0))}, "
+                f"crit_damage={_format_number(_value(stat_summary, 'crit_damage', 0))}, "
+                f"arcane_force={_format_number(_value(stat_summary, 'arcane_force', 0))}, "
+                f"authentic_force={_format_number(_value(stat_summary, 'authentic_force', 0))}, "
+                f"damage_score={_format_number(_value(stat_summary, 'damage_score', 0), 4)}."
+            ),
+            (
+                "- Equipment summary: "
+                f"equipment_count={_format_number(_value(equipment_summary, 'equipment_count', 0))}, "
+                f"total_starforce={_format_number(_value(equipment_summary, 'total_starforce', 0))}."
+            ),
+            f"- Calculator bottlenecks: {bottleneck_text}.",
+            f"- Top growth options: {growth_text}.",
+        ]
+    )
 
 
 def _stat_package_score(stats: Any) -> float:
-    return (
-        _number(stats, "str_val")
-        + _number(stats, "dex_val")
-        + _number(stats, "int_val")
-        + _number(stats, "luk_val")
-        + _number(stats, "all_stat_percent") * 9
-        + (_number(stats, "attack_power") + _number(stats, "magic_power")) * 4
-        + _number(stats, "boss_damage_percent") * 6
-        + _number(stats, "ignore_def_percent") * 5
-        + _number(stats, "damage_percent") * 4
-        + _number(stats, "crit_damage") * 8
-    )
-
-
-def _equipment_contribution_score(item: Any) -> float:
-    return (
-        _stat_package_score(_value(item, "total_stats", {}))
-        + _stat_package_score(_value(item, "bonus_stats", {})) * 0.4
-        + _stat_package_score(_value(item, "scroll_stats", {})) * 0.3
-        + _number(item, "starforce") * 18
-    )
+    return sum(_number(stats, key) * weight for key, weight in _STAT_SCORE_WEIGHTS.items())
 
 
 def _potential_rank(grade: Any) -> int:
     if grade is None:
         return 0
     return _POTENTIAL_GRADE_RANK.get(str(grade).strip(), 0)
-
-
-def _estimate_starforce_cost(current_starforce: int) -> int:
-    if current_starforce < 10:
-        return 80_000_000
-    if current_starforce < 15:
-        return 350_000_000
-    if current_starforce < 17:
-        return 900_000_000
-    if current_starforce < 20:
-        return 2_500_000_000
-    return 6_000_000_000
 
 
 def _equipment_category(part: Any) -> str:
@@ -262,40 +308,6 @@ def _starforce_target_for_item(character_level: int, part: Any) -> Dict[str, Any
     }
 
 
-def _potential_target_rank(character_level: int) -> int:
-    if character_level >= 270:
-        return _POTENTIAL_GRADE_RANK["레전드리"]
-    if character_level >= 220:
-        return _POTENTIAL_GRADE_RANK["유니크"]
-    return _POTENTIAL_GRADE_RANK["에픽"]
-
-
-def _additional_potential_target_rank(character_level: int) -> int:
-    if character_level >= 270:
-        return _POTENTIAL_GRADE_RANK["유니크"]
-    return _POTENTIAL_GRADE_RANK["에픽"]
-
-
-def _estimated_days(cost_meso: int, daily_meso_budget: int) -> int:
-    return max(1, int((cost_meso + daily_meso_budget - 1) // daily_meso_budget))
-
-
-def _state_stat_sources(state: AgentState) -> List[Any]:
-    profile = _value(state, "character_profile", {})
-    return [
-        _value(state, "character_stats", {}),
-        _value(profile, "final_stats", {}),
-    ]
-
-
-def _state_union_sources(state: AgentState) -> List[Any]:
-    profile = _value(state, "character_profile", {})
-    return [
-        _value(state, "union_status", {}),
-        _value(profile, "union_info", {}),
-    ]
-
-
 def _state_equipment_items(state: AgentState) -> List[Dict[str, Any]]:
     profile = _value(state, "character_profile", {})
     items = _value(state, "equipment_items", None)
@@ -304,34 +316,23 @@ def _state_equipment_items(state: AgentState) -> List[Dict[str, Any]]:
     return [item for item in _plain(items or []) if isinstance(item, dict)]
 
 
-def _state_character_level(state: AgentState) -> int:
-    profile = _value(state, "character_profile", {})
-    stat_sources = _state_stat_sources(state)
-    return int(_first_number([profile, *stat_sources, state], ["level", "character_level"], 0))
-
-
-def _main_stat_from_sources(sources: List[Any]) -> int:
-    direct = _first_number(sources, ["main_stat", "primary_stat", "mainStat"], 0)
-    if direct > 0:
-        return int(direct)
-    return int(
-        max(
-            _first_number(sources, ["str_val", "str", "STR"], 0),
-            _first_number(sources, ["dex", "dex_val", "DEX"], 0),
-            _first_number(sources, ["int_val", "int", "INT"], 0),
-            _first_number(sources, ["luk", "luk_val", "LUK"], 0),
-        )
-    )
-
-
 def _extract_character_input(state: AgentState) -> Dict[str, Any]:
-    stat_sources = _state_stat_sources(state)
-    union_sources = _state_union_sources(state)
+    profile = _value(state, "character_profile", {})
+    stat_sources = [_value(state, "character_stats", {}), _value(profile, "final_stats", {})]
+    union_sources = [_value(state, "union_status", {}), _value(profile, "union_info", {})]
     equipment_items = _state_equipment_items(state)
+    main_stat = _first_number(stat_sources, ["main_stat", "primary_stat", "mainStat"], 0)
+    if main_stat <= 0:
+        main_stat = max(
+            _first_number(stat_sources, ["str_val", "str", "STR"], 0),
+            _first_number(stat_sources, ["dex", "dex_val", "DEX"], 0),
+            _first_number(stat_sources, ["int_val", "int", "INT"], 0),
+            _first_number(stat_sources, ["luk", "luk_val", "LUK"], 0),
+        )
     return {
-        "character_level": _state_character_level(state),
+        "character_level": int(_first_number([profile, *stat_sources, state], ["level", "character_level"], 0)),
         "combat_power": int(_first_number(stat_sources, ["combat_power", "current_combat_power"], 0)),
-        "main_stat": _main_stat_from_sources(stat_sources),
+        "main_stat": int(main_stat),
         "attack_power": int(_first_number(stat_sources, ["attack_power", "attack"], 0)),
         "magic_power": int(_first_number(stat_sources, ["magic_power"], 0)),
         "damage": _first_number(stat_sources, ["damage"], 0),
@@ -342,43 +343,14 @@ def _extract_character_input(state: AgentState) -> Dict[str, Any]:
         "crit_damage": _first_number(stat_sources, ["crit_damage", "critical_damage"], 0),
         "arcane_force": int(_first_number(stat_sources, ["arcane_force"], 0)),
         "authentic_force": int(_first_number(stat_sources, ["authentic_force", "sacred_force"], 0)),
-        "starforce": int(_first_number(stat_sources, ["starforce", "total_starforce"], _sum_equipment_starforce(equipment_items))),
+        "starforce": int(
+            _first_number(
+                stat_sources,
+                ["starforce", "total_starforce"],
+                sum(int(_number(item, "starforce", 0)) for item in equipment_items),
+            )
+        ),
         "union_level": int(_first_number(union_sources, ["union_level"], 0)),
-    }
-
-
-def _validate_calculator_state_inputs(state: AgentState) -> None:
-    missing = [
-        key
-        for key in ("character_stats", "equipment_items", "union_status")
-        if key not in state or state[key] is None
-    ]
-    if missing:
-        raise ValueError(f"calculator input state missing fields: {missing}")
-
-
-def _append_state_error(state: AgentState, message: str) -> AgentState:
-    new_state = dict(state)
-    new_state["errors"] = [*new_state.get("errors", []), message]
-    return new_state
-
-
-def _empty_calculator_result(message: str) -> Dict[str, Any]:
-    return {
-        "stat_summary": {
-            "damage_score": 0.0,
-            "formula": "relative_growth_comparison_score",
-            "data_reliability": "calculation_failed_or_missing_data",
-            "error": message,
-        },
-        "equipment_summary": {
-            "equipment_count": 0,
-            "total_starforce": 0,
-            "growth_forecast": [],
-            "data_reliability": "calculation_failed_or_missing_data",
-            "error": message,
-        },
-        "bottleneck_analysis": {},
     }
 
 
@@ -485,16 +457,25 @@ def summarize_equipment_contribution(
         slot = str(_value(item, "part", "") or "unknown")
         starforce = int(_number(item, "starforce"))
         starforce_target = _starforce_target_for_item(character_level, slot)
-        score = _equipment_contribution_score(item)
+        score = (
+            _stat_package_score(_value(item, "total_stats", {}))
+            + _stat_package_score(_value(item, "bonus_stats", {})) * 0.4
+            + _stat_package_score(_value(item, "scroll_stats", {})) * 0.3
+            + starforce * 18
+        )
         total_starforce += starforce
         total_score += score
 
-        upgrade_flags: List[str] = []
+        target_potential = _POTENTIAL_GRADE_RANK[
+            "레전드리" if character_level >= 270 else "유니크" if character_level >= 220 else "에픽"
+        ]
+        target_additional = _POTENTIAL_GRADE_RANK["유니크" if character_level >= 270 else "에픽"]
+        upgrade_flags = []
         if starforce_target["recommended"] and starforce < starforce_target["recommended"]:
             upgrade_flags.append(f"starforce_under_{starforce_target['recommended']}")
-        if _potential_rank(_value(item, "potential_grade")) < _potential_target_rank(character_level):
+        if _potential_rank(_value(item, "potential_grade")) < target_potential:
             upgrade_flags.append("potential_under_target")
-        if _potential_rank(_value(item, "additional_potential_grade")) < _additional_potential_target_rank(character_level):
+        if _potential_rank(_value(item, "additional_potential_grade")) < target_additional:
             upgrade_flags.append("additional_potential_under_target")
 
         slot_summary = {
@@ -532,6 +513,44 @@ def summarize_equipment_contribution(
     }
 
 
+def _growth_item(
+    *,
+    category: str,
+    target: str,
+    action: str,
+    gain_percent: float,
+    base_score: float,
+    combat_power: float,
+    cost: int,
+    daily_meso_budget: int,
+    days: int | None = None,
+    basis: str | None = None,
+    score_gain_percent: float | None = None,
+    cp_gain_percent: float | None = None,
+    efficiency_score: float | None = None,
+) -> Dict[str, Any]:
+    score_gain_percent = gain_percent if score_gain_percent is None else score_gain_percent
+    cp_gain_percent = gain_percent if cp_gain_percent is None else cp_gain_percent
+    item = {
+        "category": category,
+        "target": target,
+        "action": action,
+        "expected_damage_gain_percent": _safe_round(gain_percent, 2),
+        "expected_score_after": _safe_round(base_score * (1 + score_gain_percent / 100), 6),
+        "expected_cp_gain": int(combat_power * cp_gain_percent / 100),
+        "estimated_cost_meso": cost,
+        "estimated_days": days or max(1, int((cost + daily_meso_budget - 1) // daily_meso_budget)),
+        "efficiency_score": (
+            _safe_round(gain_percent / max(cost / 1_000_000_000, 0.1), 3)
+            if efficiency_score is None
+            else efficiency_score
+        ),
+    }
+    if basis:
+        item["basis"] = basis
+    return item
+
+
 @tool(args_schema=GrowthForecastInput)
 def estimate_growth_cost_period(
     stat_summary: Dict[str, Any],
@@ -549,72 +568,76 @@ def estimate_growth_cost_period(
         recommended_starforce = int(_number(slot, "recommended_starforce"))
         target = slot.get("part") or slot.get("item_name") or "unknown"
         if recommended_starforce and current_starforce < recommended_starforce:
-            cost = _estimate_starforce_cost(current_starforce)
+            cost = 6_000_000_000
+            for limit, candidate in ((10, 80_000_000), (15, 350_000_000), (17, 900_000_000), (20, 2_500_000_000)):
+                if current_starforce < limit:
+                    cost = candidate
+                    break
             star_gap = recommended_starforce - current_starforce
             gain_percent = max(2.0, min(star_gap * 1.15, 14.0))
             forecast.append(
-                {
-                    "category": "장비 강화",
-                    "target": target,
-                    "action": f"스타포스 {recommended_starforce}성 권장선 달성",
-                    "expected_damage_gain_percent": _safe_round(gain_percent, 2),
-                    "expected_score_after": _safe_round(base_score * (1 + gain_percent / 100), 6),
-                    "expected_cp_gain": int(combat_power * gain_percent / 100),
-                    "estimated_cost_meso": cost,
-                    "estimated_days": _estimated_days(cost, daily_meso_budget),
-                    "efficiency_score": _safe_round(gain_percent / max(cost / 1_000_000_000, 0.1), 3),
-                    "basis": "neo4j_equipment_growth_rule",
-                }
+                _growth_item(
+                    category="장비 강화",
+                    target=target,
+                    action=f"스타포스 {recommended_starforce}성 권장선 달성",
+                    gain_percent=gain_percent,
+                    base_score=base_score,
+                    combat_power=combat_power,
+                    cost=cost,
+                    daily_meso_budget=daily_meso_budget,
+                    basis="neo4j_equipment_growth_rule",
+                )
             )
 
         if "potential_under_target" in (slot.get("upgrade_flags") or []):
             cost = 700_000_000
             gain_percent = 4.5 if _number(stat_summary, "character_level") >= 270 else 3.5
             forecast.append(
-                {
-                    "category": "잠재능력",
-                    "target": target,
-                    "action": "주요 장비 잠재 목표 등급 달성",
-                    "expected_damage_gain_percent": gain_percent,
-                    "expected_score_after": _safe_round(base_score * 1.035, 6),
-                    "expected_cp_gain": int(combat_power * 0.035),
-                    "estimated_cost_meso": cost,
-                    "estimated_days": _estimated_days(cost, daily_meso_budget),
-                    "efficiency_score": _safe_round(gain_percent / (cost / 1_000_000_000), 3),
-                }
+                _growth_item(
+                    category="잠재능력",
+                    target=target,
+                    action="주요 장비 잠재 목표 등급 달성",
+                    gain_percent=gain_percent,
+                    base_score=base_score,
+                    combat_power=combat_power,
+                    cost=cost,
+                    daily_meso_budget=daily_meso_budget,
+                    score_gain_percent=3.5,
+                    cp_gain_percent=3.5,
+                )
             )
 
     if _number(stat_summary, "arcane_force") < _STAT_TARGETS["arcane_force"]:
         cost = 250_000_000
         gain_percent = 2.5
         forecast.append(
-            {
-                "category": "심볼",
-                "target": "아케인포스",
-                "action": "아케인 심볼 레벨업",
-                "expected_damage_gain_percent": gain_percent,
-                "expected_score_after": _safe_round(base_score * 1.025, 6),
-                "expected_cp_gain": int(combat_power * 0.025),
-                "estimated_cost_meso": cost,
-                "estimated_days": _estimated_days(cost, daily_meso_budget),
-                "efficiency_score": _safe_round(gain_percent / (cost / 1_000_000_000), 3),
-            }
+            _growth_item(
+                category="심볼",
+                target="아케인포스",
+                action="아케인 심볼 레벨업",
+                gain_percent=gain_percent,
+                base_score=base_score,
+                combat_power=combat_power,
+                cost=cost,
+                daily_meso_budget=daily_meso_budget,
+            )
         )
 
     if _number(stat_summary, "union_level") < _STAT_TARGETS["union_level"]:
         remaining = _STAT_TARGETS["union_level"] - _number(stat_summary, "union_level")
         forecast.append(
-            {
-                "category": "유니온",
-                "target": "유니온 레벨",
-                "action": "유니온 8000 구간까지 육성",
-                "expected_damage_gain_percent": 1.8,
-                "expected_score_after": _safe_round(base_score * 1.018, 6),
-                "expected_cp_gain": int(combat_power * 0.018),
-                "estimated_cost_meso": 0,
-                "estimated_days": max(7, int(remaining / 120)),
-                "efficiency_score": 1.8,
-            }
+            _growth_item(
+                category="유니온",
+                target="유니온 레벨",
+                action="유니온 8000 구간까지 육성",
+                gain_percent=1.8,
+                base_score=base_score,
+                combat_power=combat_power,
+                cost=0,
+                daily_meso_budget=daily_meso_budget,
+                days=max(7, int(remaining / 120)),
+                efficiency_score=1.8,
+            )
         )
 
     forecast.sort(key=lambda item: (item["efficiency_score"], item["expected_damage_gain_percent"]), reverse=True)
@@ -630,22 +653,12 @@ def calculate_bottleneck_scores(
     """Calculate 0 to 1 growth bottleneck scores. Higher means more urgent."""
 
     scores = {
-        "combat_power": 1 - _ratio(_number(stat_summary, "combat_power"), _STAT_TARGETS["combat_power"]),
-        "main_stat": 1 - _ratio(_number(stat_summary, "main_stat"), _STAT_TARGETS["main_stat"]),
-        "primary_attack": 1 - _ratio(_number(stat_summary, "primary_attack"), _STAT_TARGETS["primary_attack"]),
-        "boss_damage": 1 - _ratio(_number(stat_summary, "boss_damage"), _STAT_TARGETS["boss_damage"]),
-        "ignore_def": 1 - _ratio(_number(stat_summary, "ignore_def"), _STAT_TARGETS["ignore_def"]),
-        "crit_rate": 1 - _ratio(_number(stat_summary, "crit_rate"), _STAT_TARGETS["crit_rate"]),
-        "crit_damage": 1 - _ratio(_number(stat_summary, "crit_damage"), _STAT_TARGETS["crit_damage"]),
-        "arcane_force": 1 - _ratio(_number(stat_summary, "arcane_force"), _STAT_TARGETS["arcane_force"]),
-        "authentic_force": 1 - _ratio(_number(stat_summary, "authentic_force"), _STAT_TARGETS["authentic_force"]),
-        "union_level": 1 - _ratio(_number(stat_summary, "union_level"), _STAT_TARGETS["union_level"]),
-        "starforce": 1
-        - _ratio(
-            _number(equipment_summary, "total_starforce"),
-            max(_number(equipment_summary, "total_recommended_starforce"), _STAT_TARGETS["starforce"]),
-        ),
+        key: 1 - max(0.0, min(_number(stat_summary, key) / target, 1.0))
+        for key, target in _STAT_TARGETS.items()
+        if key != "starforce" and target > 0
     }
+    starforce_target = max(_number(equipment_summary, "total_recommended_starforce"), _STAT_TARGETS["starforce"])
+    scores["starforce"] = 1 - max(0.0, min(_number(equipment_summary, "total_starforce") / starforce_target, 1.0))
 
     if growth_forecast:
         best = growth_forecast[0]
@@ -653,17 +666,6 @@ def calculate_bottleneck_scores(
         scores[f"growth_option:{category}"] = min(float(best.get("efficiency_score", 0)) / 10, 1.0)
 
     return {key: _safe_round(value, 4) for key, value in scores.items() if value > 0.05}
-
-
-def _calculator_has_usable_result(state: AgentState) -> bool:
-    result = _value(_value(state, "tool_results", {}), "calculator", {}) or {}
-    if _value(result, "error"):
-        return False
-    stat_summary = _value(state, "stat_summary", {}) or {}
-    equipment_summary = _value(state, "equipment_summary", {}) or {}
-    if _value(stat_summary, "data_reliability") == "calculation_failed_or_missing_data":
-        return False
-    return bool(_value(stat_summary, "damage_score") or _value(equipment_summary, "equipment_count"))
 
 
 def _calculator_state_payload(state: AgentState) -> Dict[str, Any]:
@@ -697,7 +699,13 @@ def run_calculator(
     """Run the common.state-compatible calculator step using only AgentState inputs."""
 
     try:
-        _validate_calculator_state_inputs(state)
+        missing = [
+            key
+            for key in ("character_stats", "equipment_items", "union_status")
+            if key not in state or state[key] is None
+        ]
+        if missing:
+            raise ValueError(f"calculator input state missing fields: {missing}")
         validate_agent_inputs("calculator", state)
 
         character_input = _extract_character_input(state)
@@ -727,13 +735,34 @@ def run_calculator(
         )
     except Exception as exc:
         message = f"calculator failed: {exc}"
-        new_state = _append_state_error(state, message)
-        empty_result = _empty_calculator_result(message)
+        new_state = dict(state)
+        new_state["errors"] = [*new_state.get("errors", []), message]
+        empty_result = {
+            "stat_summary": {
+                "damage_score": 0.0,
+                "formula": "relative_growth_comparison_score",
+                "data_reliability": "calculation_failed_or_missing_data",
+                "error": message,
+            },
+            "equipment_summary": {
+                "equipment_count": 0,
+                "total_starforce": 0,
+                "growth_forecast": [],
+                "data_reliability": "calculation_failed_or_missing_data",
+                "error": message,
+            },
+            "bottleneck_analysis": {},
+        }
         new_state.update(empty_result)
         new_state["tool_results"] = {
             **new_state.get("tool_results", {}),
             "calculator": empty_result,
         }
+        new_state["context"] = _upsert_context_section(
+            new_state.get("context", ""),
+            "calculator_context",
+            f"Calculator result for final answer.\n- Calculator failed: {message}",
+        )
         return new_state
 
     new_state = dict(state)
@@ -752,6 +781,11 @@ def run_calculator(
             "bottleneck_analysis": new_state["bottleneck_analysis"],
         },
     }
+    new_state["context"] = _upsert_context_section(
+        new_state.get("context", ""),
+        "calculator_context",
+        _build_calculator_answer_context(new_state),
+    )
 
     validate_agent_outputs("calculator", new_state)
     return new_state
@@ -860,11 +894,23 @@ def calculator_agent(
         model = get_llm()
 
     state = run_calculator(state, daily_meso_budget=daily_meso_budget)
-    if _calculator_has_usable_result(state):
+    calculator_result = _value(_value(state, "tool_results", {}), "calculator", {}) or {}
+    stat_summary = _value(state, "stat_summary", {}) or {}
+    equipment_summary = _value(state, "equipment_summary", {}) or {}
+    has_usable_result = (
+        not _value(calculator_result, "error")
+        and _value(stat_summary, "data_reliability") != "calculation_failed_or_missing_data"
+        and bool(_value(stat_summary, "damage_score") or _value(equipment_summary, "equipment_count"))
+    )
+    if has_usable_result:
         try:
             agent_update = _generate_agent_state_update(state, model)
         except Exception as exc:
-            state = _append_state_error(state, f"calculator create_agent state generation failed: {exc}")
+            state = dict(state)
+            state["errors"] = [
+                *state.get("errors", []),
+                f"calculator create_agent state generation failed: {exc}",
+            ]
             agent_update = {}
     else:
         agent_update = {}
@@ -875,69 +921,3 @@ def calculator_agent(
         **state,
         "user_query": user_query,
     }
-
-# if __name__ == "__main__":
-#     input_state = {
-#     "user_query": "음표 캐릭터 딜 시뮬레이션과 성장 비용/기간 계산해줘",
-#     "character_name": "음표",
-#     "world_name": "스카니아",
-#     "ocid": "816a7a2b984c1a3031fbc144d913a189",
-#     "character_profile": {
-#         "character_name": "음표",
-#         "job_name": "플레임위자드",
-#         "world_name": "스카니아",
-#         "level": 294,
-#         "gender": "여",
-#     },
-#     "character_stats": {
-#         "min_stat_damage": 78086560,
-#         "max_stat_damage": 82196377,
-#         "damage": 73.0,
-#         "boss_damage": 320.0,
-#         "final_damage": 122.75,
-#         "ignore_def": 89.89,
-#         "crit_rate": 90.0,
-#         "crit_damage": 91.55,
-#         "starforce": 279,
-#         "arcane_force": 1375,
-#         "authentic_force": 800,
-#         "str_val": 3870,
-#         "dex": 3494,
-#         "int_val": 60976,
-#         "luk": 6306,
-#         "hp": 46901,
-#         "mp": 80133,
-#         "buff_duration": 50,
-#         "attack_speed": 8,
-#         "attack_power": 2268,
-#         "magic_power": 7104,
-#         "combat_power": 144744108,
-#         "main_stat": 60976,
-#     },
-#     "equipment_items": [
-#         {"item_name": "하이네스 던위치햇", "part": "모자", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "에픽", "total_stats": {"str_val": 20, "int_val": 301, "luk_val": 157, "attack_power": 85, "magic_power": 88, "hp": 2055, "ignore_def_percent": 10, "all_stat_percent": 5}, "bonus_stats": {"str_val": 20, "int_val": 60, "all_stat_percent": 5}, "scroll_stats": {"int_val": 84, "magic_power": 1, "hp": 1440}},
-#         {"item_name": "레드 매지션 마이스터 심볼", "part": "얼굴장식", "starforce": 8, "potential_grade": "레전드리", "additional_potential_grade": "레어", "total_stats": {"int_val": 21, "luk_val": 20, "magic_power": 8, "hp": 1200}, "bonus_stats": {"hp": 1200}, "scroll_stats": {"magic_power": 8}},
-#         {"item_name": "미카엘라의 새 안경", "part": "눈장식", "starforce": 5, "potential_grade": "레전드리", "additional_potential_grade": "레어", "total_stats": {"str_val": 12, "dex_val": 12, "int_val": 12, "luk_val": 12, "attack_power": 2, "magic_power": 27, "all_stat_percent": 3}, "bonus_stats": {"all_stat_percent": 3}, "scroll_stats": {"magic_power": 25}},
-#         {"item_name": "하프 이어링", "part": "귀고리", "starforce": 5, "potential_grade": "레전드리", "additional_potential_grade": "레어", "total_stats": {"str_val": 10, "dex_val": 18, "int_val": 36, "luk_val": 24, "hp": 420}, "bonus_stats": {"dex_val": 8, "int_val": 6, "luk_val": 14, "hp": 420}, "scroll_stats": {"int_val": 20}},
-#         {"item_name": "이글아이 던위치로브", "part": "상의", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "유니크", "total_stats": {"str_val": 20, "int_val": 263, "luk_val": 147, "attack_power": 85, "magic_power": 88, "hp": 1215, "ignore_def_percent": 5, "all_stat_percent": 6}, "bonus_stats": {"str_val": 20, "int_val": 60, "all_stat_percent": 6}, "scroll_stats": {"int_val": 56, "magic_power": 1, "hp": 960}},
-#         {"item_name": "트릭스터 던위치팬츠", "part": "하의", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "유니크", "total_stats": {"str_val": 106, "int_val": 268, "luk_val": 149, "attack_power": 85, "magic_power": 95, "hp": 975, "ignore_def_percent": 5, "all_stat_percent": 6}, "bonus_stats": {"str_val": 28, "int_val": 76, "all_stat_percent": 6}, "scroll_stats": {"str_val": 1, "int_val": 45, "luk_val": 2, "magic_power": 8, "hp": 720}},
-#         {"item_name": "아케인셰이드 메이지슈즈", "part": "신발", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "유니크", "total_stats": {"str_val": 142, "int_val": 358, "luk_val": 185, "attack_power": 106, "magic_power": 122, "hp": 1190, "all_stat_percent": 5}, "bonus_stats": {"str_val": 36, "int_val": 102, "all_stat_percent": 5}, "scroll_stats": {"str_val": 1, "int_val": 71, "magic_power": 7, "hp": 1190}},
-#         {"item_name": "아케인셰이드 메이지글러브", "part": "장갑", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "레전드리", "total_stats": {"dex_val": 30, "int_val": 283, "luk_val": 186, "attack_power": 106, "magic_power": 160, "all_stat_percent": 5}, "bonus_stats": {"dex_val": 30, "int_val": 96, "magic_power": 4, "all_stat_percent": 5}, "scroll_stats": {"int_val": 2, "luk_val": 1, "magic_power": 34}},
-#         {"item_name": "아케인셰이드 메이지케이프", "part": "망토", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "레전드리", "total_stats": {"str_val": 178, "dex_val": 179, "int_val": 378, "luk_val": 181, "attack_power": 113, "magic_power": 119, "hp": 1445, "all_stat_percent": 4}, "bonus_stats": {"str_val": 36, "dex_val": 36, "int_val": 127, "all_stat_percent": 4}, "scroll_stats": {"str_val": 2, "dex_val": 3, "int_val": 71, "luk_val": 1, "attack_power": 1, "magic_power": 7, "hp": 1190}},
-#         {"item_name": "제네시스 스태프", "part": "스태프", "starforce": 22, "potential_grade": "레전드리", "additional_potential_grade": "레전드리", "total_stats": {"int_val": 351, "luk_val": 319, "attack_power": 541, "magic_power": 1004, "hp": 255, "boss_damage_percent": 30, "ignore_def_percent": 20, "damage_percent": 4}, "bonus_stats": {"int_val": 24, "luk_val": 24, "attack_power": 92, "magic_power": 250, "damage_percent": 4}, "scroll_stats": {"int_val": 32, "magic_power": 72}},
-#     ],
-#     "union_status": {
-#         "union_level": 8935,
-#         "union_grade": "그랜드 마스터 유니온 2",
-#         "artifact_level": None,
-#         "artifact_exp": 0,
-#     },
-#     "raw_api_results": {
-#         "nexon": {
-#             "date": "2026-05-09"
-#         }
-#     },
-# }
-
-#     result_state = calculator_agent(state=input_state)
-#     print(result_state["equipment_summary"])

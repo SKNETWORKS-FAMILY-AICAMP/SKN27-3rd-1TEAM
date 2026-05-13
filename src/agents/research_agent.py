@@ -7,6 +7,8 @@ from common.validator import validate_agent_inputs, validate_agent_outputs
 
 
 ResearchMode = Literal["auto", "text", "vector", "hybrid"]
+MAX_CONTEXT_DOC_CHARS = 1200
+MAX_RESEARCH_CONTEXT_CHARS = 5000
 
 
 class ResearchRouting(TypedDict):
@@ -33,6 +35,7 @@ GRAPH_KEYWORDS = (
     "\ub354\uc2a4\ud06c",
     "\ub4c4\ucf08",
     "\uc9c4\ud790\ub77c",
+    "검은 마법사",
     "\uac80\uc740\ub9c8\ubc95\uc0ac",
     "\uc138\ub80c",
     "\uce7c\ub85c\uc2a4",
@@ -235,7 +238,9 @@ def build_research_context(documents: list[RetrievedDocument]) -> str:
             or document.get("source")
             or "unknown"
         )
-        reliability = metadata.get("reliability") or metadata.get("trust_level") or "unknown"
+        reliability = normalize_research_reliability(
+            metadata.get("reliability") or metadata.get("trust_level")
+        )
         retrieval_method = metadata.get("retrieval_method") or "unknown"
         freshness = metadata.get("freshness")
 
@@ -249,8 +254,34 @@ def build_research_context(documents: list[RetrievedDocument]) -> str:
         ]
         if freshness:
             header_lines.append(f"freshness: {freshness}")
-        blocks.append("\n".join([*header_lines, str(document.get("page_content", ""))]))
-    return "\n\n".join(blocks)
+        content = clip_research_text(
+            str(document.get("page_content", "")),
+            MAX_CONTEXT_DOC_CHARS,
+        )
+        blocks.append("\n".join([*header_lines, content]))
+    return clip_research_text("\n\n".join(blocks), MAX_RESEARCH_CONTEXT_CHARS)
+
+
+def normalize_research_reliability(value: Any) -> str:
+    text = str(value or "LOW").strip().upper()
+    return {
+        "A": "HIGH",
+        "B": "MEDIUM",
+        "C": "LOW",
+        "HIGH": "HIGH",
+        "MEDIUM": "MEDIUM",
+        "LOW": "LOW",
+        "GRAPH_SEED": "MEDIUM",
+        "DRAFT": "LOW",
+        "PROJECT_DRAFT_RULE_NEEDS_REVIEW": "LOW",
+    }.get(text, "LOW")
+
+
+def clip_research_text(text: str, max_chars: int) -> str:
+    text = str(text or "").strip()
+    if len(text) <= max_chars:
+        return text
+    return f"{text[:max_chars].rstrip()}\n...[truncated]"
 
 
 def _document_key(document: RetrievedDocument) -> str:

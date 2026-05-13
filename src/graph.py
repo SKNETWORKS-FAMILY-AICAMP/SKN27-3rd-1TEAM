@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Literal
 
+from dotenv import load_dotenv
 from langgraph.graph import END, START, StateGraph
 
 from common.state import AgentState
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env", override=False)
 
 
 GraphRoute = Literal[
@@ -47,9 +51,41 @@ def supervisor(state: AgentState) -> AgentState:
     if int(state.get("retry_count", 0)) >= MAX_RETRY_COUNT:
         return build_retry_limit_state(state)
 
+    state = collect_character_state_if_possible(state)
+
     from src.agents.supervisor import supervisor as supervisor_agent
 
     return supervisor_agent(state)
+
+
+def collect_character_state_if_possible(state: AgentState) -> AgentState:
+    if state.get("character_profile") and state.get("character_stats"):
+        return state
+
+    try:
+        from src.collectors.nexon_api import (
+            extract_character_name_from_query,
+            nexon_api_node,
+        )
+
+        character_name = state.get("character_name") or extract_character_name_from_query(
+            state.get("user_query", "")
+        )
+        if not character_name:
+            return state
+
+        return nexon_api_node(
+            {**state, "character_name": character_name},
+            include_optional=False,
+        )
+    except Exception as exc:
+        tool_results = dict(state.get("tool_results", {}))
+        tool_results["nexon_api"] = {"error": str(exc)}
+        return {
+            **state,
+            "errors": [*state.get("errors", []), f"nexon api collection failed: {exc}"],
+            "tool_results": tool_results,
+        }
 
 
 def research(state: AgentState) -> AgentState:
@@ -70,9 +106,9 @@ def analystic(state: AgentState) -> AgentState:
 
 
 def calculator(state: AgentState) -> AgentState:
-    from src.agents.calculator import calculator_agent
+    from src.agents.calculator import run_calculator
 
-    return calculator_agent(state=state)
+    return run_calculator(state=state)
 
 
 def final_answer(state: AgentState) -> AgentState:

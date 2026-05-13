@@ -624,12 +624,18 @@ class WebSearchRAG:
         official_domains: tuple[str, ...] | None = None,
         community_domains: tuple[str, ...] | None = None,
     ) -> None:
-        self.search_provider = normalize_provider(search_provider or os.environ.get("WEB_RAG_SEARCH_PROVIDER"))
-        self.search_url = search_url or os.environ.get("WEB_RAG_SEARCH_URL", default_search_url(self.search_provider))
+        requested_provider = normalize_provider(search_provider or os.environ.get("WEB_RAG_SEARCH_PROVIDER"))
+        self.tavily_api_key = os.environ.get("TAVILY_API_KEY", "").strip()
+        self.search_provider = (
+            "duckduckgo"
+            if requested_provider == "tavily" and not self.tavily_api_key
+            else requested_provider
+        )
+        configured_search_url = search_url or os.environ.get("WEB_RAG_SEARCH_URL", "").strip()
+        self.search_url = configured_search_url if configured_search_url and self.search_provider == requested_provider else default_search_url(self.search_provider)
         self.timeout_seconds = timeout_seconds or get_env_int("WEB_RAG_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS)
         self.official_domains = official_domains or get_official_domains()
         self.community_domains = community_domains or get_community_domains()
-        self.tavily_api_key = os.environ.get("TAVILY_API_KEY", "").strip()
         self.tavily_search_depth = os.environ.get("TAVILY_SEARCH_DEPTH", "basic").strip().lower()
         self.tavily_include_raw_content = get_env_bool("TAVILY_INCLUDE_RAW_CONTENT", False)
         resolved_user_agent = user_agent or os.environ.get("WEB_RAG_USER_AGENT", DEFAULT_USER_AGENT)

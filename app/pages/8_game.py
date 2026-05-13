@@ -45,11 +45,17 @@ st.markdown(
 st.title("허접한 인내의 숲")
 st.caption("화살표 또는 WASD 이동, Space 점프")
 
-GAME_ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+APP_ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
+GAME_ASSET_DIR = PROJECT_ROOT / "src" / "gamesrc"
 
 
 def game_asset_path(filename: str) -> Path:
-    return GAME_ASSET_DIR / filename
+    for asset_dir in (APP_ASSET_DIR, GAME_ASSET_DIR):
+        path = asset_dir / filename
+        if path.exists():
+            return path
+    return APP_ASSET_DIR / filename
 
 
 bgm_path = game_asset_path("엘리니아 필드.mp3")

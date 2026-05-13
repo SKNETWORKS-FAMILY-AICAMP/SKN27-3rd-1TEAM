@@ -177,7 +177,10 @@ def evaluate_final_answer_record(
     has_answer = len(answer_text) >= min_answer_chars
     says_insufficient_info = contains_insufficient_info_phrase(answer_text)
 
-    question_overlap = compute_overlap(answer_text, [question])
+    question_overlap = max(
+        compute_overlap(answer_text, [question]),
+        compute_reference_coverage(answer_text, [question]),
+    )
     context_overlap = compute_overlap(answer_text, contexts)
     reference_overlap = compute_overlap(answer_text, [reference] if reference else [])
 
@@ -206,6 +209,7 @@ def evaluate_final_answer_record(
         has_source=has_source,
         source_reliability_valid=source_reliability_valid,
         says_insufficient_info=says_insufficient_info,
+        source_required=source_required,
     )
 
     confidence_consistent = is_confidence_consistent(
@@ -413,7 +417,7 @@ def final_answer_state_to_record(state: dict[str, Any]) -> dict[str, Any]:
     retrieved_docs = state.get("retrieved_docs") or []
     sources = state.get("sources") or sources_from_retrieved_docs(retrieved_docs)
     metadata = {
-        "requires_source_citation": bool(sources or state.get("context")),
+        "requires_source_citation": bool(sources),
         "state_eval": True,
     }
     return {
@@ -605,9 +609,17 @@ def has_valid_source_reliability(sources: list[Any]) -> bool:
 
 def normalize_source_reliability(value: Any) -> str:
     reliability = str(value or "LOW").strip().upper()
-    if reliability in {"HIGH", "MEDIUM", "LOW"}:
-        return reliability
-    return "INVALID"
+    return {
+        "A": "HIGH",
+        "B": "MEDIUM",
+        "C": "LOW",
+        "HIGH": "HIGH",
+        "MEDIUM": "MEDIUM",
+        "LOW": "LOW",
+        "GRAPH_SEED": "MEDIUM",
+        "DRAFT": "LOW",
+        "PROJECT_DRAFT_RULE_NEEDS_REVIEW": "LOW",
+    }.get(reliability, "INVALID")
 
 
 def is_api_response_compatible(
@@ -616,8 +628,13 @@ def is_api_response_compatible(
     has_source: bool,
     source_reliability_valid: bool,
     says_insufficient_info: bool,
+    source_required: bool = True,
 ) -> bool:
-    return has_answer and source_reliability_valid and (has_source or says_insufficient_info)
+    return (
+        has_answer
+        and source_reliability_valid
+        and (has_source or says_insufficient_info or not source_required)
+    )
 
 
 def is_confidence_consistent(
@@ -658,6 +675,14 @@ def compute_overlap(answer: str, references: list[str]) -> float:
     if not reference_tokens:
         return 0.0
     return len(answer_tokens.intersection(reference_tokens)) / len(answer_tokens)
+
+
+def compute_reference_coverage(answer: str, references: list[str]) -> float:
+    answer_tokens = tokenize(answer)
+    reference_tokens = tokenize("\n".join(references))
+    if not answer_tokens or not reference_tokens:
+        return 0.0
+    return len(answer_tokens.intersection(reference_tokens)) / len(reference_tokens)
 
 
 def tokenize(text: str) -> set[str]:

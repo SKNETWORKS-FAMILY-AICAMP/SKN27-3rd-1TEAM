@@ -55,10 +55,163 @@ def has_character_analysis_state(state: AgentState) -> bool:
     )
 
 
+def _state_query_text(state: AgentState) -> str:
+    values = [str(state.get("user_query") or "")]
+    for message in state.get("messages", []) or []:
+        values.append(str(getattr(message, "content", message)))
+    return " ".join(values).lower()
+
+
+def _contains_any(text: str, keywords: tuple[str, ...]) -> bool:
+    return any(keyword.lower() in text for keyword in keywords)
+
+
+def _looks_like_boss_readiness_query(state: AgentState) -> bool:
+    text = _state_query_text(state)
+    has_boss = _contains_any(
+        text,
+        (
+            "보스",
+            "검마",
+            "검은 마법사",
+            "검은마법사",
+            "카링",
+            "칼로스",
+            "세렌",
+            "루시드",
+            "윌",
+            "스우",
+            "데미안",
+            "진힐라",
+            "듄켈",
+            "더스크",
+        ),
+    )
+    asks_readiness = _contains_any(
+        text,
+        ("가능", "될까", "되나", "클리어", "잡을", "깰", "격파", "도전"),
+    )
+    has_character = bool(state.get("character_profile") or state.get("character_name")) or _contains_any(
+        text,
+        ("내 캐릭터", "캐릭터명", "닉네임"),
+    )
+    return has_character and has_boss and asks_readiness
+
+
+def _looks_like_calculation_query(state: AgentState) -> bool:
+    return _contains_any(
+        _state_query_text(state),
+        (
+            "계산",
+            "효율",
+            "비용",
+            "기간",
+            "전투력",
+            "데미지 점수",
+            "스펙",
+            "주스탯",
+            "장비",
+            "강화",
+            "스타포스",
+            "병목",
+        ),
+    )
+
+
+def _looks_like_explanation_query(state: AgentState) -> bool:
+    text = _state_query_text(state)
+    has_topic = _contains_any(
+        text,
+        (
+            "검마",
+            "검은 마법사",
+            "검은마법사",
+            "카링",
+            "칼로스",
+            "세렌",
+            "루시드",
+            "윌",
+            "스우",
+            "데미안",
+            "진힐라",
+            "듄켈",
+            "더스크",
+            "스토리",
+            "세계관",
+        ),
+    )
+    asks_explanation = _contains_any(
+        text,
+        ("뭐야", "무엇", "누구", "설명", "알려", "스토리", "세계관", "정체"),
+    )
+    return has_topic and asks_explanation
+
+
+def _normalise_plan_order(plan: list[str]) -> list[str]:
+    ordered_plan = []
+    for agent in ["research", "calculator", "analystic", "final_answer"]:
+        if agent in plan and agent not in ordered_plan:
+            ordered_plan.append(agent)
+    return ordered_plan
+
+
+def _has_usable_calculator_state(state: AgentState) -> bool:
+    tool_results = state.get("tool_results") or {}
+    result = tool_results.get("calculator") if isinstance(tool_results, dict) else {}
+    stat_summary = state.get("stat_summary") or {}
+    equipment_summary = state.get("equipment_summary") or {}
+    return (
+        isinstance(result, dict)
+        and not result.get("error")
+        and stat_summary.get("data_reliability") != "calculation_failed_or_missing_data"
+        and bool(stat_summary.get("damage_score") or equipment_summary.get("equipment_count"))
+    )
+
+
+def _has_usable_analytics_state(state: AgentState) -> bool:
+    tool_results = state.get("tool_results") or {}
+    result = tool_results.get("analystic") if isinstance(tool_results, dict) else {}
+    return (
+        isinstance(result, dict)
+        and not result.get("error")
+        and result.get("data_reliability") != "analysis_failed_or_missing_data"
+        and bool(
+            result.get("clear_status")
+            or result.get("boss_requirements")
+            or result.get("available_bosses")
+            or result.get("boss_clear_prediction")
+        )
+    )
+
+
+def _apply_deterministic_routing(state: AgentState, plan: list[str]) -> list[str]:
+    if _looks_like_boss_readiness_query(state):
+        plan = [agent for agent in plan if agent != "research"]
+        if _has_usable_calculator_state(state):
+            plan = [agent for agent in plan if agent != "calculator"]
+        else:
+            plan.append("calculator")
+        if _has_usable_analytics_state(state):
+            plan = [agent for agent in plan if agent != "analystic"]
+        else:
+            plan.append("analystic")
+    elif _looks_like_calculation_query(state):
+        if _has_usable_calculator_state(state):
+            plan = [agent for agent in plan if agent != "calculator"]
+        else:
+            plan.append("calculator")
+    elif _looks_like_explanation_query(state):
+        if state.get("context") or state.get("retrieved_docs"):
+            plan = [agent for agent in plan if agent != "research"]
+        else:
+            plan.append("research")
+    if "final_answer" not in plan:
+        plan.append("final_answer")
+    return _normalise_plan_order(plan)
+
+
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
-    llm = get_llm()
-
     existing_plan = state.get("plan") or []
     feedback = state.get("feedback", "")
     retry_count = state.get("retry_count", 0)
@@ -89,6 +242,53 @@ def supervisor(state:AgentState):
         completed_agent = existing_plan[0]
         remaining_plan = existing_plan[1:]
 
+    if existing_plan and not is_evaluation_retry:
+        plan = _normalise_plan_order(remaining_plan) or ["final_answer"]
+        completed_agents = state.get("completed_agents", [])
+        if completed_agent and completed_agent not in completed_agents:
+            completed_agents = [*completed_agents, completed_agent]
+        return {
+            **state,
+            "plan": plan,
+            "next_agent": plan[0],
+            "completed_agents": completed_agents,
+            "retry_count": retry_count,
+            "errors": errors,
+        }
+
+    if (
+        _looks_like_boss_readiness_query(state)
+        or _looks_like_calculation_query(state)
+        or _looks_like_explanation_query(state)
+    ):
+        is_boss_query = _looks_like_boss_readiness_query(state)
+        is_explanation_query = _looks_like_explanation_query(state)
+        plan = _apply_deterministic_routing(state, remaining_plan)
+        completed_agents = state.get("completed_agents", [])
+        if completed_agent and completed_agent not in completed_agents:
+            completed_agents = [*completed_agents, completed_agent]
+        return {
+            **state,
+            "intent": (
+                "캐릭터 스펙으로 보스 도전 가능 여부를 판단"
+                if is_boss_query
+                else "게임 세계관 또는 보스 정보를 설명"
+                if is_explanation_query
+                else "캐릭터 스펙 계산 및 성장 병목 분석"
+            ),
+            "task_type": (
+                "boss_strategy"
+                if is_boss_query
+                else "story_explanation"
+                if is_explanation_query
+                else "character_status_analysis"
+            ),
+            "plan": plan,
+            "next_agent": plan[0],
+            "completed_agents": completed_agents,
+            "retry_count": retry_count,
+            "errors": errors,
+        }
 
     messages = state["messages"]
     prompt = f"""
@@ -120,7 +320,7 @@ TASK_TYPES:
 plan에는 아래 목록의 에이전트만 포함할 수 있습니다.
 {AgentName}
 
-에이전트 실행 순서는 research -> analystic -> calculator -> final_answer 입니다.
+에이전트 실행 순서는 research -> calculator -> analystic -> final_answer 입니다.
 - requires_search가 True이면 research를 추가합니다.
 - requires_analytics가 True이면 analystic을 추가합니다.
 - requires_calculation이 True이면 calculator를 추가합니다.
@@ -152,6 +352,7 @@ feedback: {feedback}
 ]
 """
 
+    llm = get_llm()
     response = llm.invoke(prompt)
     content = getattr(response, "content", response)
 
@@ -174,7 +375,10 @@ feedback: {feedback}
     if task_type not in TASK_TYPES:
         task_type = "unknown"
 
-    plan = response_dict.get("plan")
+    if existing_plan and not is_evaluation_retry:
+        plan = remaining_plan
+    else:
+        plan = response_dict.get("plan")
     if plan is None:
         # LLM이 plan을 반환하지 못한 경우 기존 흐름을 최대한 유지
         retry_count += 1
@@ -186,18 +390,12 @@ feedback: {feedback}
         plan = ["final_answer"]
 
     # 에이전트 실행 순서 고정
-    ordered_plan = []
-    for agent in ["research", "analystic", "calculator", "final_answer"]:
-        if agent in plan and agent not in ordered_plan:
-            ordered_plan.append(agent)
-
-    plan = ordered_plan
+    plan = _normalise_plan_order(plan)
+    if not (existing_plan and not is_evaluation_retry):
+        plan = _apply_deterministic_routing(state, plan)
     if not plan and state.get("next_agent") in ["research", "analystic", "calculator", "final_answer"]:
         # plan이 비어도 이전 next_agent가 있으면 기존 라우팅을 이어감
         plan = [state["next_agent"]]
-
-    if "analystic" in plan and not has_character_analysis_state(state):
-        plan = [agent for agent in plan if agent != "analystic"]
 
     if "final_answer" not in plan:
         plan.append("final_answer")
@@ -209,9 +407,7 @@ feedback: {feedback}
     if not plan:
         plan = ["final_answer"]
 
-    next_agent = response_dict.get("next_agent") or plan[0]
-    if next_agent not in plan:
-        next_agent = plan[0]
+    next_agent = plan[0]
 
     completed_agents = state.get("completed_agents", [])
     if completed_agent and completed_agent not in completed_agents:
