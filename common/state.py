@@ -137,6 +137,7 @@ AgentStateField = Literal[
 
 class AgentFieldContract(TypedDict):
     required_inputs: tuple[AgentStateField, ...]
+    optional_inputs: tuple[AgentStateField, ...]
     required_outputs: tuple[AgentStateField, ...]
 
 
@@ -145,22 +146,27 @@ class AgentFieldContract(TypedDict):
 AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
     "supervisor": {
         "required_inputs": ("user_query", "messages"),
+        "optional_inputs": (),
         "required_outputs": ("intent", "task_type", "plan", "next_agent"),
     },
     "calculator": {
-        "required_inputs": ("character_stats", "equipment_items", "union_status"),
+        "required_inputs": (),
+        "optional_inputs": ("character_stats", "equipment_items", "union_status"),
         "required_outputs": ("stat_summary", "equipment_summary", "bottleneck_analysis"),
     },
     "analystic": {
-        "required_inputs": ("character_profile", "stat_summary", "equipment_summary"),
+        "required_inputs": (),
+        "optional_inputs": ("character_profile", "stat_summary", "equipment_summary"),
         "required_outputs": ("growth_report", "recommended_actions"),
     },
     "research": {
         "required_inputs": ("user_query", "character_name", "world_name"),
+        "optional_inputs": (),
         "required_outputs": ("retrieved_docs", "context"),
     },
     "final_answer": {
         "required_inputs": ("user_query", "recommended_actions", "context"),
+        "optional_inputs": (),
         "required_outputs": (
             "draft_answer",
             "final_answer",
