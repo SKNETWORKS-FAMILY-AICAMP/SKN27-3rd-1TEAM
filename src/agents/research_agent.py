@@ -388,18 +388,20 @@ def run_research(
 
     validate_agent_inputs("research", state)
 
+    user_query = state["user_query"]
+    effective_query = str(state.get("contextualized_query") or user_query).strip() or user_query
+
     parser_result: dict[str, Any] = {"used_llm": False, "fallback_used": False}
     if route is None:
         route, parser_result = build_research_route(
-            state["user_query"],
+            effective_query,
             use_llm=use_llm_parser,
         )
     else:
-        route = apply_structured_boss_reward_guard(state["user_query"], route)
+        route = apply_structured_boss_reward_guard(effective_query, route)
 
     docs: list[RetrievedDocument] = []
-    user_query = state["user_query"]
-    search_query = route.get("search_query") or user_query
+    search_query = route.get("search_query") or effective_query
 
     tool_results = dict(state.get("tool_results", {}))
     research_result: dict[str, Any] = {
@@ -469,11 +471,12 @@ def run_research(
 
     structured_boss_reward_query = (
         is_structured_boss_reward_query(user_query)
+        or is_structured_boss_reward_query(effective_query)
         or is_structured_boss_reward_query(search_query)
     )
     if structured_boss_reward_query and any(_is_graph_document(document) for document in docs):
         docs = [document for document in docs if _is_graph_document(document)]
-        route = apply_structured_boss_reward_guard(user_query, route)
+        route = apply_structured_boss_reward_guard(effective_query, route)
         research_result["structured_boss_reward_guard"] = True
 
     web_reason = "route_requested" if route["use_web"] else web_fallback_reason(
@@ -504,14 +507,14 @@ def run_research(
         research_result["web_skipped"] = True
         research_result["web_skip_reason"] = "local_evidence_available"
 
-    merged_docs = merge_retrieved_documents(docs, query=user_query, route=route)
+    merged_docs = merge_retrieved_documents(docs, query=effective_query, route=route)
     selected_evidence = build_selected_evidence(
         merged_docs,
-        query=user_query,
+        query=effective_query,
         route=route,
     )
     evidence_summary = build_evidence_summary(
-        user_query,
+        effective_query,
         route,
         selected_evidence,
     )

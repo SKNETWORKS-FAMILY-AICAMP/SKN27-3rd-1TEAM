@@ -261,7 +261,8 @@ def is_cash_update_request(user_input: str) -> bool:
 def format_cash_update_answer() -> str:
     from src.collectors.nexon_api import fetch_recent_update_cash_sections
 
-    notices = fetch_recent_update_cash_sections(max_notices=3)
+    latest_only = bool(st.session_state.pop("cash_update_latest_only_once", False))
+    notices = fetch_recent_update_cash_sections(max_notices=1 if latest_only else 3)
     if not notices:
         return "최근 업데이트 공지에서 캐시 관련 내용을 찾지 못했습니다. Nexon API 키와 업데이트 공지 데이터를 확인해 주세요."
 
@@ -312,6 +313,7 @@ def get_assistant_response(user_input: str) -> str:
         )
         state = {
             "user_query": user_input,
+            "contextualized_query": user_input,
             "messages": to_langchain_messages(agent_messages),
             "completed_agents": [],
             "retry_count": 0,

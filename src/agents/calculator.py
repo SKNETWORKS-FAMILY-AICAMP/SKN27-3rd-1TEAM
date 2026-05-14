@@ -668,7 +668,7 @@ def _calculator_state_payload(state: AgentState) -> Dict[str, Any]:
     stat_summary = _value(state, "stat_summary", {}) or {}
     equipment_summary = _value(state, "equipment_summary", {}) or {}
     return {
-        "user_query": _value(state, "user_query", ""),
+        "user_query": _value(state, "contextualized_query", "") or _value(state, "user_query", ""),
         "character": {
             "character_name": _value(state, "character_name", ""),
             "world_name": _value(state, "world_name", ""),

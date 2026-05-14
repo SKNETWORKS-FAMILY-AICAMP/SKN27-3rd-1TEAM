@@ -38,6 +38,7 @@ class AgentState(TypedDict, total=False):
     # Shared input
     user_query: str  # 사용자가 입력한 원문 질문
     messages: list[BaseMessage]  # 대화 메시지 히스토리
+    contextualized_query: str  # 이전 대화 맥락을 반영해 재작성한 현재 질문
 
     # Request analysis
     intent: str  # supervisor가 해석한 사용자 의도
@@ -106,6 +107,7 @@ AgentName = Literal[
 AgentStateField = Literal[
     "user_query",
     "messages",
+    "contextualized_query",
     "intent",
     "task_type",
     "requires_character_lookup",
@@ -154,9 +156,10 @@ class AgentFieldContract(TypedDict):
 AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
     "supervisor": {
         "required_inputs": ("user_query", "messages"),
-        "optional_inputs": (),
+        "optional_inputs": ("contextualized_query",),
         "required_outputs": (
             "intent",
+            "contextualized_query",
             "task_type",
             "requires_character_lookup",
             "plan",
@@ -165,22 +168,32 @@ AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
     },
     "calculator": {
         "required_inputs": (),
-        "optional_inputs": ("character_stats", "equipment_items", "union_status"),
+        "optional_inputs": (
+            "contextualized_query",
+            "character_stats",
+            "equipment_items",
+            "union_status",
+        ),
         "required_outputs": ("stat_summary", "equipment_summary", "bottleneck_analysis"),
     },
     "analystic": {
         "required_inputs": (),
-        "optional_inputs": ("character_profile", "stat_summary", "equipment_summary"),
+        "optional_inputs": (
+            "contextualized_query",
+            "character_profile",
+            "stat_summary",
+            "equipment_summary",
+        ),
         "required_outputs": ("growth_report", "recommended_actions"),
     },
     "research": {
         "required_inputs": ("user_query", "character_name", "world_name"),
-        "optional_inputs": (),
+        "optional_inputs": ("contextualized_query",),
         "required_outputs": ("retrieved_docs", "context"),
     },
     "final_answer": {
         "required_inputs": ("user_query", "recommended_actions", "context"),
-        "optional_inputs": (),
+        "optional_inputs": ("contextualized_query",),
         "required_outputs": (
             "draft_answer",
             "final_answer",

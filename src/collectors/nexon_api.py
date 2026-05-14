@@ -271,14 +271,17 @@ def nexon_api_node(
 ) -> AgentState:
     """LangGraph-friendly node that enriches AgentState with Nexon data."""
 
-    character_name = state.get("character_name") or extract_character_name_from_query(
-        state.get("user_query", "")
+    lookup_query = state.get("contextualized_query") or state.get("user_query", "")
+    character_name = (
+        state.get("character_name")
+        or extract_character_name_from_query(lookup_query)
+        or extract_character_name_from_query(state.get("user_query", ""))
     )
     fetched = fetch_character_state(
         character_name=character_name,
         ocid=state.get("ocid"),
         world_name=state.get("world_name"),
-        user_query=state.get("user_query"),
+        user_query=lookup_query,
         api_date=api_date,
         api_key=api_key,
         client=client,
@@ -682,10 +685,14 @@ def fetch_recent_update_cash_sections(
     if not isinstance(rows, list):
         return []
 
+    notice_rows = sorted(
+        (row for row in rows if isinstance(row, dict)),
+        key=_notice_date_sort_key,
+        reverse=True,
+    )
+
     results: list[dict[str, Any]] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
+    for row in notice_rows:
         notice_id = row.get("notice_id")
         if notice_id in (None, ""):
             continue
@@ -700,6 +707,10 @@ def fetch_recent_update_cash_sections(
         if len(results) >= max_notices:
             break
     return results
+
+
+def _notice_date_sort_key(row: dict[str, Any]) -> str:
+    return str(row.get("date") or "")
 
 
 def extract_keyword_sections(contents: str, *, keyword: str) -> list[str]:
@@ -725,24 +736,107 @@ def _clean_notice_lines(contents: str) -> list[str]:
 
 
 def _extract_heading_section(lines: list[str], keyword: str) -> list[str]:
-    start_index = -1
-    for index, line in enumerate(lines):
-        if _is_table_of_contents_line(line):
-            continue
-        if line.strip("■ ").strip() == keyword:
-            start_index = index
-            break
-    if start_index < 0:
-        return []
+    toc_headings = _extract_notice_toc_headings(lines)
+    boundary_headings = _headings_after_keyword(toc_headings, keyword)
+    best_section: list[str] = []
 
-    section: list[str] = []
-    for line in lines[start_index + 1:]:
-        if _is_next_notice_heading(line):
-            break
-        if _is_table_of_contents_line(line):
+    for index, line in enumerate(lines):
+        if _is_table_of_contents_line(line) or _is_inside_table_of_contents(lines, index):
             continue
-        section.append(line)
-    return section
+        if _normalise_notice_heading(line) != keyword:
+            continue
+
+        section: list[str] = []
+        for next_index, next_line in enumerate(lines[index + 1:], start=index + 1):
+            if _is_section_boundary(next_line, boundary_headings):
+                break
+            if (
+                _is_table_of_contents_line(next_line)
+                or _is_inside_table_of_contents(lines, next_index)
+            ):
+                continue
+            section.append(next_line)
+
+        if len(section) > len(best_section):
+            best_section = section
+
+    return best_section
+
+
+def _extract_notice_toc_headings(lines: list[str]) -> list[str]:
+    headings: list[str] = []
+
+    for line in lines:
+        match = re.fullmatch(r"\d+\.\s+(?P<title>[^.]{1,80})", line.strip())
+        if match:
+            _append_unique_heading(headings, match.group("title"))
+            continue
+        if headings:
+            break
+
+    for index, line in enumerate(lines):
+        if line.strip() != "목차":
+            continue
+        for toc_line in lines[index + 1:]:
+            if toc_line.startswith("■ "):
+                _append_unique_heading(headings, toc_line)
+                continue
+            if toc_line.startswith("- "):
+                continue
+            break
+        break
+
+    return headings
+
+
+def _append_unique_heading(headings: list[str], value: str) -> None:
+    heading = _normalise_notice_heading(value)
+    if heading and heading not in headings:
+        headings.append(heading)
+
+
+def _headings_after_keyword(headings: list[str], keyword: str) -> set[str]:
+    if keyword not in headings:
+        return set()
+    return set(headings[headings.index(keyword) + 1:])
+
+
+def _normalise_notice_heading(line: str) -> str:
+    stripped = re.sub(r"\s+", " ", str(line or "")).strip()
+    stripped = re.sub(r"^\d+\.\s+", "", stripped).strip()
+    stripped = stripped.strip("■ ").strip()
+    if stripped.startswith("ㅣ"):
+        stripped = stripped.lstrip("ㅣ").strip()
+
+    tokens = stripped.split()
+    if len(tokens) % 2 == 0:
+        midpoint = len(tokens) // 2
+        if tokens[:midpoint] == tokens[midpoint:]:
+            stripped = " ".join(tokens[:midpoint])
+
+    return stripped
+
+
+def _is_inside_table_of_contents(lines: list[str], index: int) -> bool:
+    current = lines[index].strip() if 0 <= index < len(lines) else ""
+    if not (current.startswith("■ ") or current.startswith("- ")):
+        return False
+
+    for previous in reversed(lines[:index]):
+        stripped = previous.strip()
+        if stripped == "목차":
+            return True
+        if stripped.startswith("■ ") or stripped.startswith("- "):
+            continue
+        return False
+    return False
+
+
+def _is_section_boundary(line: str, boundary_headings: set[str]) -> bool:
+    heading = _normalise_notice_heading(line)
+    if boundary_headings:
+        return heading in boundary_headings
+    return _is_next_notice_heading(line)
 
 
 def _format_notice_section(lines: list[str]) -> str:
@@ -770,12 +864,12 @@ def _is_next_notice_heading(line: str) -> bool:
     stripped = line.strip()
     if stripped.startswith("■ ") and len(stripped) <= 40:
         return True
-    return bool(re.fullmatch(r"\d+\.\s*[^.]{1,40}", stripped))
+    return bool(re.fullmatch(r"\d+\.\s+[^.]{1,80}", stripped))
 
 
 def _is_table_of_contents_line(line: str) -> bool:
     stripped = line.strip()
-    return bool(re.fullmatch(r"\d+\.\s*[^.]{1,40}", stripped))
+    return bool(re.fullmatch(r"\d+\.\s+[^.]{1,80}", stripped))
 
 
 def _is_event_active(event: dict[str, Any], base_date: date) -> bool:

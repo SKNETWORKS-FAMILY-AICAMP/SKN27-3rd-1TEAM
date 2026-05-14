@@ -344,7 +344,7 @@ def _target_hint_score(query: str, requirement: dict[str, Any]) -> float:
 def _select_target_requirement(state: AgentState, requirements: list[dict[str, Any]]) -> dict[str, Any] | None:
     if not requirements:
         return None
-    query = str(state.get("user_query") or "")
+    query = str(state.get("contextualized_query") or state.get("user_query") or "")
     return max(requirements, key=lambda item: _target_hint_score(query, item))
 
 
@@ -902,7 +902,7 @@ def _analytics_llm_prompt(
     deterministic_guidance: str,
 ) -> str:
     payload = {
-        "user_query": state.get("user_query", ""),
+        "user_query": state.get("contextualized_query") or state.get("user_query", ""),
         "character": {
             "character_name": character.get("character_name"),
             "world_name": character.get("world_name"),
@@ -985,10 +985,11 @@ def run_analystic(state: AgentState, **_: Any) -> AgentState:
         actions: list[dict[str, Any]] = _growth_forecast_actions(state, start_priority=1)
     else:
         target_requirement = _select_target_requirement(state, requirements)
+        effective_query = str(state.get("contextualized_query") or state.get("user_query") or "")
         wants_available_list = any(
-            keyword in str(state.get("user_query") or "")
+            keyword in effective_query
             for keyword in ("어디까지", "가능한 보스", "추천 보스", "갈 수 있는", "가능해?")
-        ) and len(requirements) > 1 and not _target_hint_score(str(state.get("user_query") or ""), target_requirement or {})
+        ) and len(requirements) > 1 and not _target_hint_score(effective_query, target_requirement or {})
 
         if wants_available_list:
             result = _available_bosses_result(character, requirements)

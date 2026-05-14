@@ -128,8 +128,9 @@ class DBSearchRAG:
         graph_top_k: int | None = None,
     ) -> AgentState:
         validate_agent_inputs("research", state)
+        query = str(state.get("contextualized_query") or state["user_query"])
         response = self.search_context(
-            query=state["user_query"],
+            query=query,
             top_k=top_k,
             reliability_filter=reliability_filter,
             mode=mode,

@@ -19,6 +19,7 @@ RELIABILITY_ORDER = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
 FRESHNESS_ORDER = {"HIGH": 0, "MEDIUM": 1, "UNKNOWN": 2, "LOW": 3}
 MAX_SOURCE_COUNT = 5
 MAX_RETRY_COUNT = 2
+MAX_FINAL_ANSWER_MESSAGE_CONTEXT = 10
 
 EVALUATION_TOOL_KEY = "evaluation"
 FINAL_ANSWER_TOOL_KEY = "final_answer"
@@ -157,7 +158,7 @@ def build_draft_answer(
     state: AgentState,
     sources: list[dict[str, JsonValue]],
 ) -> str:
-    question = state["user_query"]
+    question = str(state.get("contextualized_query") or state["user_query"]).strip()
     context = state["context"].strip()
     recommendations = format_recommendations(state)
 
@@ -232,9 +233,25 @@ def build_final_answer_system_prompt() -> str:
             "",
             "당신은 메이플스토리 RAG 멀티 에이전트 챗봇의 Final Answer Agent입니다.",
             "제공된 AgentState와 근거 context만 사용하여 한국어로 답변하세요.",
+            "최근 대화는 사용자 질문의 생략된 대상과 답변 범위를 파악하는 데만 사용하세요.",
             "state에 없는 정보는 추측하지 말고, 근거가 부족하면 한계를 명시하세요.",
         ]
     ).strip()
+
+
+def format_messages_for_final_answer(state: AgentState) -> str:
+    messages = list(state.get("messages") or [])[-MAX_FINAL_ANSWER_MESSAGE_CONTEXT:]
+    lines = []
+    for message in messages:
+        role = str(getattr(message, "type", "") or message.__class__.__name__)
+        if role == "human":
+            role = "user"
+        elif role == "ai":
+            role = "assistant"
+        content = str(getattr(message, "content", message)).strip()
+        if content:
+            lines.append(f"{role}: {content}")
+    return "\n".join(lines)
 
 
 def build_final_answer_user_prompt(state: AgentState, draft_answer: str = "") -> str:
@@ -242,6 +259,8 @@ def build_final_answer_user_prompt(state: AgentState, draft_answer: str = "") ->
     return "\n".join(
         [
             f"사용자 질문: {state.get('user_query', '')}",
+            f"맥락 반영 질문: {state.get('contextualized_query') or state.get('user_query', '')}",
+            f"최근 대화:\n{format_messages_for_final_answer(state) or '없음'}",
             f"근거 context: {state.get('context', '')}",
             f"추천 액션: {format_recommendations(state)}",
             f"Evaluation route: {normalize_evaluation_route(evaluation)}",
