@@ -104,6 +104,10 @@ def render_prompt_buttons() -> None:
         for column, (key, label, prompt) in zip(columns, PROMPT_CHIPS):
             with column:
                 if st.button(label, key=key, type="tertiary", use_container_width=True):
+                    if st.session_state.get("active_page") != "chat":
+                        st.session_state.scroll_chat_top_once = True
+                        if key == "chip_cash_update":
+                            st.session_state.cash_update_latest_only_once = True
                     _queue_prompt(prompt)
 
 
@@ -140,6 +144,10 @@ def render_chat_page() -> None:
     """채팅 캔버스, 아바타, 메시지 말풍선을 렌더링합니다."""
     messages = st.session_state.get("messages", [])
     visible_messages = messages[1:]
+    scroll_top_requested = bool(st.session_state.get("scroll_chat_top_once", False))
+    scroll_top_once = scroll_top_requested and not st.session_state.get("pending_user_input")
+    if scroll_top_once:
+        st.session_state.pop("scroll_chat_top_once", None)
 
     assistant_avatar = image_to_data_uri(ASSISTANT_AVATAR_PATH)
     user_avatar = image_to_data_uri(USER_AVATAR_PATH)
@@ -196,6 +204,8 @@ def render_chat_page() -> None:
 <script>
 (() => {{
   const userMessageCount = {user_message_count};
+  const suppressBottomScroll = {json.dumps(scroll_top_requested)};
+  const scrollTopOnce = {json.dumps(scroll_top_once)};
   const storageKey = "mapleChatLastUserMessageCount";
   const getThread = () => {{
     try {{
@@ -216,9 +226,28 @@ def render_chat_page() -> None:
     return true;
   }};
 
+  const scrollThreadToTop = () => {{
+    const thread = getThread();
+    if (!thread) return false;
+    thread.scrollTop = 0;
+    window.parent.scrollTo(0, 0);
+    return true;
+  }};
+
   const previousCount = Number(window.parent.sessionStorage.getItem(storageKey) || "0");
   window.parent.sessionStorage.setItem(storageKey, String(userMessageCount));
-  if (userMessageCount > previousCount) {{
+  if (scrollTopOnce) {{
+    let attempts = 0;
+    const timer = window.setInterval(() => {{
+      attempts += 1;
+      const didScroll = scrollThreadToTop();
+      if (didScroll || attempts >= 20) {{
+        window.clearInterval(timer);
+      }}
+    }}, 50);
+    return;
+  }}
+  if (!suppressBottomScroll && userMessageCount > previousCount) {{
     let attempts = 0;
     const timer = window.setInterval(() => {{
       attempts += 1;
