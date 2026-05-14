@@ -63,6 +63,23 @@ CHITCHAT_PATTERNS = (
     "넌 누구",
 )
 
+AGENT_ORDER = ("research", "analystic", "calculator", "final_answer")
+TRUTHY_VALUES = {"true", "yes", "y", "1"}
+RESEARCH_FEEDBACK_MARKERS = (
+    "missing_context",
+    "no retrieved context",
+    "retrieved_docs are empty",
+    "contexts are empty",
+    "web fallback",
+    "근거",
+)
+RESEARCH_REPLAN_MARKER = "plan omitted research"
+RESEARCH_REPLAN_FEEDBACK = (
+    "requires_search is true, but the plan omitted research. "
+    "Rebuild the remaining plan with research before final_answer. "
+    "If local evidence is missing, research must use web fallback."
+)
+
 
 def is_chitchat_query(query: str) -> bool:
     normalized = str(query or "").strip().lower()
@@ -76,7 +93,6 @@ def is_chitchat_query(query: str) -> bool:
     return False
 
 
-
 def has_character_analysis_state(state: AgentState) -> bool:
     return all(
         bool(state.get(key))
@@ -84,79 +100,21 @@ def has_character_analysis_state(state: AgentState) -> bool:
     )
 
 
-def _coerce_bool(value, default: bool = False) -> bool:
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, (int, float)):
-        return value != 0
-    if isinstance(value, str):
-        lowered = value.strip().lower()
-        if lowered in {"true", "yes", "y", "1"}:
-            return True
-        if lowered in {"false", "no", "n", "0"}:
-            return False
-    return default
-
-
-def _research_replan_feedback(
-    response_dict: dict,
-    plan: list[str],
-    state: AgentState,
-    completed_agent: str | None,
-    feedback: str = "",
-) -> str:
-    feedback_requires_research = _feedback_requires_research(feedback)
-    if not (
-        _coerce_bool(response_dict.get("requires_search"), False)
-        or feedback_requires_research
-    ):
-        return ""
-
-    completed_agents = state.get("completed_agents", [])
-    has_research_evidence = bool(
-        str(state.get("context") or "").strip()
-        or state.get("retrieved_docs")
-    )
-    if (
-        "research" in plan
-        or completed_agent == "research"
-        or ("research" in completed_agents and has_research_evidence)
-    ):
-        return ""
-
-    return (
-        "requires_search is true, but the plan omitted research. "
-        "Rebuild the remaining plan with research before final_answer. "
-        "If local evidence is missing, research must use web fallback."
-    )
-
-
-def _has_research_replan_feedback(feedback: str) -> bool:
-    return "plan omitted research" in str(feedback or "")
-
-
-def _feedback_requires_research(feedback: str) -> bool:
-    normalized = str(feedback or "").lower()
-    return any(
-        marker in normalized
-        for marker in (
-            "missing_context",
-            "no retrieved context",
-            "retrieved_docs are empty",
-            "contexts are empty",
-            "web fallback",
-            "근거",
-        )
-    )
-
-
 def _fallback_supervisor_response(state: AgentState, error: Exception | None = None) -> dict:
     user_query = str(state.get("user_query") or "")
     existing_plan = list(state.get("plan") or [])
     feedback = str(state.get("feedback") or "")
+    feedback_requires_research = any(
+        marker in feedback.lower()
+        for marker in RESEARCH_FEEDBACK_MARKERS
+    )
     completed_agents = list(state.get("completed_agents", []) or [])
     completed_agent = existing_plan[0] if existing_plan else None
     remaining_plan = existing_plan[1:] if existing_plan else []
+    has_research_evidence = bool(
+        str(state.get("context") or "").strip()
+        or state.get("retrieved_docs")
+    )
     requires_search = False
     requires_calculation = any(keyword in user_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
     task_type = "general_qa"
@@ -168,11 +126,11 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     if is_chitchat_query(user_query):
         task_type = "chitchat"
         plan = ["final_answer"]
-    elif existing_plan and not _feedback_requires_research(feedback):
+    elif existing_plan and (not feedback_requires_research or has_research_evidence):
         plan = [
             agent
             for agent in remaining_plan
-            if agent in ("research", "analystic", "calculator", "final_answer")
+            if agent in AGENT_ORDER
         ]
         if "analystic" in plan and not has_character_analysis_state(state):
             plan = [agent for agent in plan if agent != "analystic"]
@@ -190,11 +148,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             errors.append(f"supervisor fallback route classification failed: {exc}")
 
         plan = []
-        has_research_evidence = bool(
-            str(state.get("context") or "").strip()
-            or state.get("retrieved_docs")
-        )
-        if requires_search or (_feedback_requires_research(feedback) and not has_research_evidence):
+        if requires_search or (feedback_requires_research and not has_research_evidence):
             plan.append("research")
         if requires_calculation:
             plan.append("calculator")
@@ -215,6 +169,130 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     }
 
 
+def _parse_supervisor_response(
+    content,
+    state: AgentState,
+    remaining_plan: list[str],
+    retry_count: int,
+    errors: list[str],
+) -> tuple[dict, str, str, list[str], int, list[str]]:
+    try:
+        response_list = json.loads(content)
+        if not isinstance(response_list, list):
+            raise ValueError("supervisor response is not a JSON list")
+    except (json.JSONDecodeError, TypeError, ValueError) as exc:
+        # JSON 파싱 실패 시 원본 일부를 남겨 supervisor 라우팅 실패 원인을 추적
+        retry_count += 1
+        errors = [*errors, f"supervisor json parse failed: {exc}: {str(content)[:200]}"]
+        response_list = []
+
+    response_dict = {
+        item.get("key"): item.get("value")
+        for item in response_list
+        if isinstance(item, dict)
+    }
+
+    intent = response_dict.get("intent", state.get("intent", ""))
+    task_type = response_dict.get("task_type", state.get("task_type", "unknown"))
+    if task_type not in TASK_TYPES:
+        task_type = "unknown"
+
+    plan = response_dict.get("plan")
+    if plan is None:
+        # LLM이 plan을 반환하지 못한 경우 기존 흐름을 최대한 유지
+        retry_count += 1
+        plan = remaining_plan
+    elif not isinstance(plan, list):
+        # plan은 반드시 list여야 하므로 형식이 틀리면 안전하게 final_answer로 보냄
+        retry_count += 1
+        plan = ["final_answer"]
+
+    return response_dict, intent, task_type, plan, retry_count, errors
+
+
+def _guard_research_plan(
+    state: AgentState,
+    response_dict: dict,
+    plan: list[str],
+    completed_agent: str | None,
+    feedback: str,
+    retry_count: int,
+    errors: list[str],
+) -> tuple[list[str], int, list[str], AgentState | None]:
+    requires_search = response_dict.get("requires_search")
+    requires_search = (
+        requires_search
+        if isinstance(requires_search, bool)
+        else str(requires_search).strip().lower() in TRUTHY_VALUES
+    )
+    feedback_requires_research = any(
+        marker in feedback.lower()
+        for marker in RESEARCH_FEEDBACK_MARKERS
+    )
+    has_research_evidence = bool(
+        str(state.get("context") or "").strip()
+        or state.get("retrieved_docs")
+    )
+    research_already_done = (
+        completed_agent == "research"
+        or ("research" in state.get("completed_agents", []) and has_research_evidence)
+    )
+    needs_research_replan = (
+        (requires_search or feedback_requires_research)
+        and "research" not in plan
+        and not research_already_done
+    )
+
+    if not needs_research_replan:
+        return plan, retry_count, errors, None
+
+    if RESEARCH_REPLAN_MARKER not in feedback:
+        retry_count += 1
+        next_feedback = f"{feedback}\n{RESEARCH_REPLAN_FEEDBACK}" if feedback else RESEARCH_REPLAN_FEEDBACK
+        replan_state = {
+            **state,
+            "plan": [],
+            "feedback": next_feedback,
+            "retry_count": retry_count,
+            "errors": errors,
+        }
+        return plan, retry_count, errors, replan_state
+
+    retry_count += 1
+    errors = [*errors, "supervisor replan still omitted research; applied research fallback"]
+    plan = ["research", *[agent for agent in plan if agent != "research"]]
+    return plan, retry_count, errors, None
+
+
+def _finalize_plan(
+    plan: list[str],
+    state: AgentState,
+    completed_agent: str | None,
+    feedback: str,
+) -> list[str]:
+    ordered_plan = [
+        agent
+        for agent in AGENT_ORDER
+        if agent in plan
+    ]
+
+    if not ordered_plan and state.get("next_agent") in AGENT_ORDER:
+        # plan이 비어도 이전 next_agent가 있으면 기존 라우팅을 이어감
+        ordered_plan = [state["next_agent"]]
+
+    if "analystic" in ordered_plan and not has_character_analysis_state(state):
+        ordered_plan = [agent for agent in ordered_plan if agent != "analystic"]
+
+    if "final_answer" not in ordered_plan:
+        ordered_plan.append("final_answer")
+
+    if completed_agent and not feedback and ordered_plan and ordered_plan[0] == completed_agent:
+        # feedback 없이 정상 진행 중이면 이미 실행한 agent를 다시 실행하지 않도록 제거
+        ordered_plan = ordered_plan[1:]
+
+    return ordered_plan or ["final_answer"]
+
+
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
     user_query = str(state.get("user_query") or "")
@@ -232,10 +310,10 @@ def supervisor(state:AgentState):
 
     llm = get_llm()
 
-    existing_plan = state.get("plan") or []
-    feedback = state.get("feedback", "")
-    retry_count = state.get("retry_count", 0)
-    errors = state.get("errors", [])
+    existing_plan = list(state.get("plan") or [])
+    feedback = str(state.get("feedback", "") or "")
+    retry_count = int(state.get("retry_count", 0) or 0)
+    errors = list(state.get("errors", []) or [])
 
     completed_agent = None
     remaining_plan = []
@@ -314,81 +392,26 @@ feedback: {feedback}
     except Exception as exc:
         return _fallback_supervisor_response(state, exc)
 
-    try:
-        response_list = json.loads(content)
-    except json.JSONDecodeError:
-        # JSON 파싱 실패 시 원본 일부를 남겨 supervisor 라우팅 실패 원인을 추적
-        retry_count += 1
-        errors = [*errors, f"supervisor json parse failed: {str(content)[:200]}"]
-        response_list = []
-
-    response_dict = {}
-    for item in response_list:
-        key = item.get("key")
-        value = item.get("value")
-        response_dict[key] = value
-
-    intent = response_dict.get("intent", state.get("intent", ""))
-    task_type = response_dict.get("task_type", state.get("task_type", "unknown"))
-    if task_type not in TASK_TYPES:
-        task_type = "unknown"
-
-    plan = response_dict.get("plan")
-    if plan is None:
-        # LLM이 plan을 반환하지 못한 경우 기존 흐름을 최대한 유지
-        retry_count += 1
-        plan = remaining_plan
-
-    if not isinstance(plan, list):
-        # plan은 반드시 list여야 하므로 형식이 틀리면 안전하게 final_answer로 보냄
-        retry_count += 1
-        plan = ["final_answer"]
-
-    # 에이전트 실행 순서 고정
-    ordered_plan = []
-    for agent in ["research", "analystic", "calculator", "final_answer"]:
-        if agent in plan and agent not in ordered_plan:
-            ordered_plan.append(agent)
-
-    plan = ordered_plan
-    replan_feedback = _research_replan_feedback(
+    response_dict, intent, task_type, plan, retry_count, errors = _parse_supervisor_response(
+        content,
+        state,
+        remaining_plan,
+        retry_count,
+        errors,
+    )
+    plan, retry_count, errors, replan_state = _guard_research_plan(
+        state,
         response_dict,
         plan,
-        state,
         completed_agent,
         feedback,
+        retry_count,
+        errors,
     )
-    if replan_feedback and not _has_research_replan_feedback(feedback):
-        retry_count += 1
-        next_feedback = f"{feedback}\n{replan_feedback}" if feedback else replan_feedback
-        return supervisor(
-            {
-                **state,
-                "plan": [],
-                "feedback": next_feedback,
-                "retry_count": retry_count,
-                "errors": errors,
-            }
-        )
+    if replan_state:
+        return supervisor(replan_state)
 
-    if replan_feedback:
-        retry_count += 1
-        errors = [*errors, "supervisor replan still omitted research; applied research fallback"]
-        plan = ["research", *[agent for agent in plan if agent != "research"]]
-
-    if not plan and state.get("next_agent") in ["research", "analystic", "calculator", "final_answer"]:
-        # plan이 비어도 이전 next_agent가 있으면 기존 라우팅을 이어감
-        plan = [state["next_agent"]]
-
-    if "analystic" in plan and not has_character_analysis_state(state):
-        plan = [agent for agent in plan if agent != "analystic"]
-
-    if "final_answer" not in plan:
-        plan.append("final_answer")
-
-    if completed_agent and not feedback and plan and plan[0] == completed_agent:
-        # feedback 없이 정상 진행 중이면 이미 실행한 agent를 다시 실행하지 않도록 제거
-        plan = plan[1:]
+    plan = _finalize_plan(plan, state, completed_agent, feedback)
 
     next_agent = response_dict.get("next_agent") or plan[0]
     if next_agent != plan[0]:
