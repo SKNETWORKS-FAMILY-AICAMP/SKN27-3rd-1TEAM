@@ -1,17 +1,20 @@
 # python 3.12
 
 # 데이터
+### neo4j
+> graph_loader.py 실행
 
-docs/openapi.yaml파일을 참고해주세요
-아래의 링크에 들어가서 파일의 내용을 복사 붙여넣기 하면 됩니다
-https://editor.swagger.io/
+### postgreSQL(pgvector)
+> 다운로드  https://drive.google.com/file/d/1lBz-kOiFt2uR9iZnszeOCZ0tpAkTxz-7/view
+```
+docker compose -f database\docker-compose.yml up -d postgres
 
-common/domain.py
-모든 로직은 이 domain 모델을 기준으로 작성해주시면 됩니다
+docker cp .\database\postgres\mapledb_pgvector.dump maplestory-postgres:/tmp/mapledb_pgvector.dump
 
-common/state.py
-각 에이전트 및 노드들은 state.py에 정의된 필드로 데이터를 공유합니다
-파일의 하단에 에이전트별 꼭 채워야 하는 필드를 명시해 두었으니 참고해주세요
+docker exec maplestory-postgres pg_restore -U admin -d mapledb --clean --if-exists /tmp/mapledb_pgvector.dump
+
+docker exec maplestory-postgres psql -U admin -d mapledb -c "select 'documents' as table_name, count() from documents union all select 'document_chunks', count() from document_chunks union all select 'document_embeddings', count(*) from document_embeddings;"
+```
 
 # 폴더 구조
 ```
