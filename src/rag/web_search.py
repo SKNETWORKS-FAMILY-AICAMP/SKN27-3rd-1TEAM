@@ -612,6 +612,29 @@ def score_text(query: str, text: str) -> float:
     return len(overlap) / len(query_tokens)
 
 
+def combined_context_score(
+    question: str,
+    title: str,
+    chunk: str,
+    search_score: Any = None,
+) -> float:
+    try:
+        provider_score = float(search_score or 0.0)
+    except (TypeError, ValueError):
+        provider_score = 0.0
+
+    provider_score = max(0.0, min(provider_score, 1.0))
+    title_score = score_text(question, title)
+    chunk_score = score_text(question, chunk)
+
+    if provider_score > 0:
+        return round(
+            (provider_score * 0.6) + (title_score * 0.25) + (chunk_score * 0.15),
+            6,
+        )
+    return round(max(title_score, chunk_score), 6)
+
+
 class WebSearchRAG:
     """First-pass Web Search RAG retriever for MapleStory project sources."""
 
@@ -824,7 +847,12 @@ class WebSearchRAG:
                         "url": document["url"],
                         "chunk_index": index,
                         "content": chunk,
-                        "score": score_text(question, chunk),
+                        "score": combined_context_score(
+                            question,
+                            document["title"],
+                            chunk,
+                            result.get("tavily_score"),
+                        ),
                         "reliability": document["reliability"],
                         "freshness": document.get("freshness", "UNKNOWN"),
                         "published_at": document.get("published_at"),
