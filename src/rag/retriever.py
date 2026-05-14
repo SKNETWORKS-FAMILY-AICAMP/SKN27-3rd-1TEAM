@@ -495,6 +495,11 @@ class Neo4jGraphRetriever:
                     terms=terms,
                     limit=max(top_k * 2, top_k),
                 ).data()
+                reward_rows = session.run(
+                    _GRAPH_BOSS_REWARD_QUERY,
+                    terms=terms,
+                    limit=max(top_k * 2, top_k),
+                ).data()
         finally:
             driver.close()
 
@@ -504,6 +509,9 @@ class Neo4jGraphRetriever:
         ] + [
             _graph_relation_row_to_result(row, terms)
             for row in relation_rows
+        ] + [
+            _graph_reward_row_to_result(row, terms)
+            for row in reward_rows
         ]
         return _dedupe_and_rank_graph_results(results, top_k)
 
@@ -758,6 +766,7 @@ WHERE any(term IN $terms WHERE
     toLower(coalesce(finish.boss_name, '')) CONTAINS term
 )
 AND type(rel) <> 'MENTIONED_IN'
+AND type(rel) <> 'DROPS_REWARD'
 RETURN
     elementId(start) + ':' + type(rel) + ':' + elementId(finish) AS graph_id,
     labels(start)[0] AS start_type,
@@ -767,6 +776,33 @@ RETURN
     coalesce(finish.name, finish.code, finish.boss_name, 'unknown') AS end_name,
     properties(start) AS start_props,
     properties(finish) AS end_props
+LIMIT $limit
+"""
+
+
+_GRAPH_BOSS_REWARD_QUERY = """
+MATCH (boss:Boss)-[:DROPS_REWARD]->(reward:Reward)
+OPTIONAL MATCH (alias:BossAlias)-[:ALIAS_OF]->(boss)
+WITH boss, reward, collect(DISTINCT alias) AS aliases
+WHERE any(term IN $terms WHERE
+    toLower(coalesce(boss.name, '')) CONTAINS term OR
+    toLower(coalesce(boss.difficulty, '')) CONTAINS term OR
+    toLower(coalesce(reward.name, '')) CONTAINS term OR
+    toLower(coalesce(reward.reward_type, '')) CONTAINS term OR
+    toLower(coalesce(reward.value_type, '')) CONTAINS term OR
+    toLower(coalesce(reward.description, '')) CONTAINS term OR
+    any(alias IN aliases WHERE
+        toLower(coalesce(alias.name, '')) CONTAINS term OR
+        toLower(coalesce(alias.normalized_name, '')) CONTAINS term
+    )
+)
+RETURN
+    elementId(boss) + ':DROPS_REWARD:' + elementId(reward) AS graph_id,
+    boss.name AS boss_name,
+    boss.difficulty AS difficulty,
+    properties(boss) AS boss_props,
+    properties(reward) AS reward_props,
+    [alias IN aliases WHERE alias.name IS NOT NULL | alias.name] AS aliases
 LIMIT $limit
 """
 
@@ -806,6 +842,42 @@ def _graph_requirement_row_to_result(
         score=_score_graph_text(f"{title} {content}", terms) + 1.0,
         entity_type="Boss->StatRequirement",
         retrieval_method="graph_requirement",
+    )
+
+
+def _graph_reward_row_to_result(
+    row: dict[str, Any],
+    terms: list[str],
+) -> GraphSearchResult:
+    boss_name = row.get("boss_name") or "unknown"
+    difficulty = row.get("difficulty") or "unknown"
+    reward_props = _compact_graph_props(row.get("reward_props"))
+    boss_props = _compact_graph_props(row.get("boss_props"))
+    aliases = [item for item in row.get("aliases", []) if item]
+    reward_name = reward_props.get("name") or "unknown"
+    title = f"{boss_name} - DROPS_REWARD - {reward_name}"
+    content = (
+        f"Graph boss reward fact\n"
+        f"Boss: {boss_name}\n"
+        f"aliases: {', '.join(aliases)}\n"
+        f"difficulty: {difficulty}\n"
+        f"relationship: DROPS_REWARD\n"
+        f"Reward: {reward_name}\n"
+        f"reward_type: {reward_props.get('reward_type') or ''}\n"
+        f"value_type: {reward_props.get('value_type') or ''}\n"
+        f"description: {reward_props.get('description') or ''}\n"
+        f"boss_properties: {boss_props}\n"
+        f"reward_properties: {reward_props}"
+    )
+    return GraphSearchResult(
+        graph_id=f"graph::reward::{row.get('graph_id')}",
+        title=title,
+        content=content,
+        source_url=None,
+        reliability=GRAPH_RELIABILITY,
+        score=_score_graph_text(f"{title} {content}", terms) + 0.8,
+        entity_type="Boss->Reward",
+        retrieval_method="graph_reward",
     )
 
 
