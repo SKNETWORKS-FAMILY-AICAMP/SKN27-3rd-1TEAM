@@ -251,6 +251,28 @@ def stable_id(*parts):
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:20]
 
 
+def normalize_lookup_key(value):
+    return "".join(str(value or "").lower().split())
+
+
+def boss_lookup_keys(name):
+    raw_name = str(name or "").strip()
+    if not raw_name:
+        return []
+
+    candidates = {raw_name}
+    canonical_name = DRAFT_BOSS_CANONICAL_NAMES.get(raw_name)
+    if canonical_name:
+        candidates.add(canonical_name)
+
+    for boss_name, aliases in BOSS_ALIAS_SEEDS.items():
+        if raw_name == boss_name or raw_name in aliases or canonical_name == boss_name:
+            candidates.add(boss_name)
+            candidates.update(aliases)
+
+    return [key for key in {normalize_lookup_key(item) for item in candidates} if key]
+
+
 def read_existing_csv(file_name):
     path = OUT_DIR / file_name
     if not path.exists():
@@ -702,12 +724,26 @@ def build_handoff_graph_rows(handoff_rows):
     seen_mentions = set()
     seen_boss_requirements = set()
     seen_boss_rewards = set()
+    boss_ids_by_key = {}
+    pending_boss_rewards = []
 
     def add_mention(source_id, label, entity_id):
         key = (source_id, label, entity_id)
         if source_id and entity_id and key not in seen_mentions:
             source_mentions.append({"source_id": source_id, "entity_label": label, "entity_id": entity_id})
             seen_mentions.add(key)
+
+    def remember_boss(name, boss_id):
+        for key in boss_lookup_keys(name):
+            boss_ids_by_key.setdefault(key, [])
+            if boss_id not in boss_ids_by_key[key]:
+                boss_ids_by_key[key].append(boss_id)
+
+    def add_boss_reward(boss_id, reward_id):
+        key = (boss_id, reward_id)
+        if boss_id and reward_id and key not in seen_boss_rewards:
+            boss_rewards.append({"boss_id": boss_id, "reward_id": reward_id})
+            seen_boss_rewards.add(key)
 
     for row in handoff_rows:
         category = row.get("category", "")
@@ -743,6 +779,7 @@ def build_handoff_graph_rows(handoff_rows):
             difficulty = fields.get("difficulty") or ""
             if boss_name:
                 boss_id = "boss_" + stable_id(boss_name, difficulty)
+                remember_boss(boss_name, boss_id)
                 if boss_id not in seen_bosses:
                     bosses.append(
                         {
@@ -852,6 +889,8 @@ def build_handoff_graph_rows(handoff_rows):
                     )
                     seen_rewards.add(reward_id)
                 add_mention(source_id, "Reward", reward_id)
+                if boss_name:
+                    pending_boss_rewards.append((boss_name, reward_id))
 
         if category in {"class_5th_core_priority", "class_6th_hexa_priority"}:
             job_name = fields.get("class_name") or primary_name
@@ -869,6 +908,11 @@ def build_handoff_graph_rows(handoff_rows):
                     )
                     seen_jobs.add(job_id)
                 add_mention(source_id, "Job", job_id)
+
+    for boss_name, reward_id in pending_boss_rewards:
+        for key in boss_lookup_keys(boss_name):
+            for boss_id in boss_ids_by_key.get(key, []):
+                add_boss_reward(boss_id, reward_id)
 
     return {
         "events": events,
