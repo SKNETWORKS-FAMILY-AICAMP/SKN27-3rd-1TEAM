@@ -267,7 +267,7 @@ if meisterville_background:
 <style>
 [data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) {{
     background:
-        linear-gradient(180deg, rgba(8, 7, 6, 0.34), rgba(8, 7, 6, 0.72)),
+        linear-gradient(180deg, rgba(8, 7, 6, 0.24), rgba(8, 7, 6, 0.62)),
         url("{meisterville_background}") center top / cover fixed no-repeat !important;
 }}
 
@@ -277,8 +277,8 @@ if meisterville_background:
     inset: 0;
     pointer-events: none;
     background:
-        radial-gradient(circle at 50% 18%, rgba(255, 211, 145, 0.12), transparent 32%),
-        rgba(0, 0, 0, 0.08);
+        radial-gradient(circle at 50% 18%, rgba(255, 211, 145, 0.15), transparent 34%),
+        rgba(0, 0, 0, 0.04);
     z-index: 0;
 }}
 
