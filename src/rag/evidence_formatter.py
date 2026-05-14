@@ -106,7 +106,20 @@ def format_document_summary(document: RetrievedDocument) -> str:
 
     title = str(metadata.get("title") or document.get("source") or "근거")
     snippet = clean_context_snippet(str(document.get("page_content") or ""))
-    return f"- {title}: {snippet}"
+    source_note = format_content_source_note(metadata)
+    return f"- {title}{source_note}: {snippet}"
+
+
+def format_content_source_note(metadata: dict) -> str:
+    content_source = str(metadata.get("content_source") or "")
+    fetch_status = str(metadata.get("fetch_status") or "")
+    if content_source == "tavily_snippet_fallback":
+        return f" (검색 스니펫 기반, fetch_status={fetch_status or 'unknown'})"
+    if content_source == "tavily_raw_content":
+        return " (Tavily raw content)"
+    if content_source == "fetched_page":
+        return " (실제 페이지 본문)"
+    return ""
 
 
 def format_graph_reward_summary(fields: dict[str, str]) -> str:

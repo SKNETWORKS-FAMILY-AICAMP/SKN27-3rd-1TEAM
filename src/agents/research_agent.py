@@ -12,6 +12,13 @@ from common.validator import validate_agent_inputs, validate_agent_outputs
 
 
 ResearchMode = Literal["auto", "text", "vector", "hybrid"]
+ResearchIntent = Literal[
+    "general",
+    "boss_strategy",
+    "boss_requirement",
+    "boss_reward",
+    "time_sensitive",
+]
 
 
 class ResearchRouting(TypedDict):
@@ -29,6 +36,7 @@ class ResearchRouting(TypedDict):
     reason: str
     search_query: str
     parser_source: str
+    intent_tags: list[ResearchIntent]
 
 
 RESEARCH_ROUTE_PARSER_PROMPT = """
@@ -45,6 +53,7 @@ Return only one JSON object with these keys:
 - web_max_contexts: integer from 1 to 10
 - official_only: boolean
 - search_query: concise Korean search query preserving game terms and character names
+- intent_tags: array using only general, boss_strategy, boss_requirement, boss_reward, time_sensitive
 - reason: short snake_case string
 
 Rules:
@@ -106,6 +115,54 @@ BOSS_REWARD_KEYWORDS = (
     "\uacb0\uc815\uc11d",
     "\uac15\ub82c\ud55c \ud798\uc758 \uacb0\uc815",
 )
+BOSS_STRATEGY_KEYWORDS = (
+    "공략",
+    "패턴",
+    "기믹",
+    "방법",
+    "잡는법",
+    "잡는 법",
+    "깨는법",
+    "깨는 법",
+    "클리어",
+    "생존",
+    "피하는",
+    "피하기",
+)
+VALID_INTENT_TAGS: tuple[ResearchIntent, ...] = (
+    "general",
+    "boss_strategy",
+    "boss_requirement",
+    "boss_reward",
+    "time_sensitive",
+)
+GRAPH_INTENT_TAGS = {"boss_strategy", "boss_requirement", "boss_reward"}
+DOCUMENT_CATEGORY_INTENT_TAGS: dict[str, tuple[ResearchIntent, ...]] = {
+    "boss_recommendation_rule": ("boss_strategy", "boss_requirement"),
+    "reward_priority_rule": ("boss_reward",),
+    "official_event": ("time_sensitive",),
+    "official_notice": ("time_sensitive",),
+    "official_update": ("time_sensitive",),
+    "testworld_update": ("time_sensitive",),
+}
+RETRIEVAL_METHOD_INTENT_TAGS: dict[str, tuple[ResearchIntent, ...]] = {
+    "graph_requirement": ("boss_requirement", "boss_strategy"),
+    "graph_reward": ("boss_reward",),
+}
+WEB_PATH_INTENT_TAGS: dict[str, tuple[ResearchIntent, ...]] = {
+    "/news/update": ("time_sensitive",),
+    "/news/event": ("time_sensitive",),
+    "/news/notice": ("time_sensitive",),
+    "/news/cashshop": ("time_sensitive",),
+    "/promotion/event": ("time_sensitive",),
+    "/guide": ("general",),
+}
+TITLE_INTENT_HINTS: tuple[tuple[str, tuple[ResearchIntent, ...]], ...] = (
+    ("업데이트", ("time_sensitive",)),
+    ("이벤트", ("time_sensitive",)),
+    ("공지", ("time_sensitive",)),
+    ("캐시샵", ("time_sensitive",)),
+)
 
 
 @lru_cache(maxsize=1)
@@ -129,6 +186,51 @@ def graph_route_keywords() -> tuple[str, ...]:
     return (*GRAPH_KEYWORDS, *load_boss_alias_keywords())
 
 
+def derive_intent_tags(query: str) -> list[ResearchIntent]:
+    normalized_query = str(query or "").lower()
+    has_boss_reference = "보스" in normalized_query or any(
+        keyword.lower() in normalized_query
+        for keyword in load_boss_alias_keywords()
+    )
+    tags: list[ResearchIntent] = []
+
+    if has_boss_reference and any(keyword in normalized_query for keyword in BOSS_STRATEGY_KEYWORDS):
+        tags.extend(["boss_strategy", "boss_requirement"])
+    if has_boss_reference and any(keyword in normalized_query for keyword in REQUIREMENT_KEYWORDS):
+        tags.append("boss_requirement")
+    if has_boss_reference and any(keyword in normalized_query for keyword in BOSS_REWARD_KEYWORDS):
+        tags.append("boss_reward")
+    if any(keyword.lower() in normalized_query for keyword in WEB_KEYWORDS):
+        tags.append("time_sensitive")
+
+    return normalize_intent_tags(tags)
+
+
+def normalize_intent_tags(value: Any) -> list[ResearchIntent]:
+    raw_tags = value if isinstance(value, list) else []
+    tags: list[ResearchIntent] = []
+    for raw_tag in raw_tags:
+        tag = str(raw_tag or "").strip().lower()
+        if tag in VALID_INTENT_TAGS and tag not in tags:
+            tags.append(tag)  # type: ignore[arg-type]
+    return tags or ["general"]
+
+
+def merge_intent_tags(*tag_lists: list[ResearchIntent]) -> list[ResearchIntent]:
+    merged: list[ResearchIntent] = []
+    for tag_list in tag_lists:
+        for tag in tag_list:
+            if tag == "general" and len(tag_list) > 1:
+                continue
+            if tag not in merged:
+                merged.append(tag)
+    return merged or ["general"]
+
+
+def route_tags_have_graph_intent(intent_tags: list[ResearchIntent]) -> bool:
+    return bool(set(intent_tags).intersection(GRAPH_INTENT_TAGS))
+
+
 def classify_research_route(query: str) -> ResearchRouting:
     """질문을 보고 DB/Graph/Web 중 어떤 검색을 쓸지 고릅니다.
 
@@ -136,12 +238,16 @@ def classify_research_route(query: str) -> ResearchRouting:
     """
 
     normalized_query = query.lower()
+    intent_tags = derive_intent_tags(query)
 
-    structured_boss_reward = is_structured_boss_reward_query(query)
+    structured_boss_reward = "boss_reward" in intent_tags and "time_sensitive" not in intent_tags
 
-    needs_graph = any(keyword.lower() in normalized_query for keyword in graph_route_keywords())
+    needs_graph = (
+        route_tags_have_graph_intent(intent_tags)
+        or any(keyword.lower() in normalized_query for keyword in graph_route_keywords())
+    )
 
-    needs_web = any(keyword.lower() in normalized_query for keyword in WEB_KEYWORDS)
+    needs_web = "time_sensitive" in intent_tags
     if structured_boss_reward:
         needs_web = False
 
@@ -169,6 +275,7 @@ def classify_research_route(query: str) -> ResearchRouting:
         "reason": reason,
         "search_query": query,
         "parser_source": "keyword",
+        "intent_tags": intent_tags,
     }
 
 
@@ -207,7 +314,11 @@ def build_research_route(query: str, *, use_llm: bool = True) -> tuple[ResearchR
     route["use_db"] = route["use_db"] or fallback_route["use_db"]
     route["use_graph"] = route["use_graph"] or fallback_route["use_graph"]
     route["use_web"] = route["use_web"] or fallback_route["use_web"]
-    route = apply_structured_boss_reward_guard(query, route)
+    route["intent_tags"] = merge_intent_tags(
+        normalize_intent_tags(route.get("intent_tags")),
+        fallback_route["intent_tags"],
+    )
+    route = apply_route_intent_guards(query, route)
     if route["use_web"]:
         route["official_only"] = True
     route["parser_source"] = "llm"
@@ -242,6 +353,10 @@ def normalize_research_route_parse(query: str, parsed: dict[str, Any]) -> Resear
         db_mode = fallback["db_mode"]
 
     use_graph = coerce_bool(parsed.get("use_graph"), fallback["use_graph"])
+    intent_tags = merge_intent_tags(
+        normalize_intent_tags(parsed.get("intent_tags")),
+        fallback["intent_tags"],
+    )
     return {
         "use_db": coerce_bool(parsed.get("use_db"), fallback["use_db"]) or use_graph,
         "use_graph": use_graph,
@@ -255,6 +370,7 @@ def normalize_research_route_parse(query: str, parsed: dict[str, Any]) -> Resear
         "reason": normalize_reason(parsed.get("reason"), fallback["reason"]),
         "search_query": normalize_search_query(parsed.get("search_query"), query),
         "parser_source": "llm",
+        "intent_tags": intent_tags,
     }
 
 
@@ -292,34 +408,97 @@ def normalize_search_query(value: Any, default: str) -> str:
     return query or default
 
 
-def apply_structured_boss_reward_guard(
+def apply_route_intent_guards(
     query: str,
     route: ResearchRouting,
 ) -> ResearchRouting:
-    if not is_structured_boss_reward_query(query):
-        return route
-
+    intent_tags = merge_intent_tags(normalize_intent_tags(route.get("intent_tags")), derive_intent_tags(query))
     guarded_route: ResearchRouting = {
         **route,
-        "use_graph": True,
-        "use_web": False,
-        "reason": "boss_reward_graph_fact",
+        "intent_tags": intent_tags,
     }
+
+    if route_tags_have_graph_intent(intent_tags):
+        guarded_route["use_graph"] = True
+
+    if "boss_reward" in intent_tags and "time_sensitive" not in intent_tags:
+        guarded_route["use_graph"] = True
+        guarded_route["use_web"] = False
+        guarded_route["reason"] = "boss_reward_graph_fact"
+
     return guarded_route
 
 
 def is_structured_boss_reward_query(query: str) -> bool:
-    normalized_query = query.lower()
-    has_boss_alias = any(
-        keyword.lower() in normalized_query
-        for keyword in load_boss_alias_keywords()
-    )
-    if not has_boss_alias:
-        return False
+    intent_tags = derive_intent_tags(query)
+    return "boss_reward" in intent_tags and "time_sensitive" not in intent_tags
 
-    has_reward_intent = any(keyword in normalized_query for keyword in BOSS_REWARD_KEYWORDS)
-    has_web_intent = any(keyword in normalized_query for keyword in WEB_KEYWORDS)
-    return has_reward_intent and not has_web_intent
+
+def filter_documents_for_route(
+    documents: list[RetrievedDocument],
+    *,
+    route: ResearchRouting,
+) -> tuple[list[RetrievedDocument], dict[str, Any]]:
+    desired_tags = set(normalize_intent_tags(route.get("intent_tags")))
+    if not documents or desired_tags == {"general"}:
+        return documents, {}
+
+    filtered_documents = []
+    rejected_count = 0
+    unknown_count = 0
+    for document in documents:
+        document_tags = set(document_intent_tags(document))
+        if not document_tags:
+            unknown_count += 1
+            filtered_documents.append(document)
+            continue
+        if document_tags.intersection(desired_tags):
+            filtered_documents.append(document)
+            continue
+        rejected_count += 1
+
+    result = {
+        "reason": "route_intent_tags",
+        "intent_tags": sorted(desired_tags),
+        "before_count": len(documents),
+        "after_count": len(filtered_documents),
+        "rejected_count": rejected_count,
+        "unknown_count": unknown_count,
+        "dropped_all_irrelevant": not bool(filtered_documents),
+    }
+
+    return filtered_documents, result
+
+
+def document_intent_tags(document: RetrievedDocument) -> list[ResearchIntent]:
+    metadata = document.get("metadata", {}) or {}
+    tags: list[ResearchIntent] = []
+
+    category = str(metadata.get("category") or "").strip()
+    tags.extend(DOCUMENT_CATEGORY_INTENT_TAGS.get(category, ()))
+
+    retrieval_method = str(metadata.get("retrieval_method") or "").strip()
+    for method_key, method_tags in RETRIEVAL_METHOD_INTENT_TAGS.items():
+        if method_key in retrieval_method:
+            tags.extend(method_tags)
+
+    url = str(
+        metadata.get("url")
+        or metadata.get("source_url")
+        or document.get("source")
+        or ""
+    )
+    normalized_url = url.lower()
+    for path_prefix, path_tags in WEB_PATH_INTENT_TAGS.items():
+        if path_prefix in normalized_url:
+            tags.extend(path_tags)
+
+    title = str(metadata.get("title") or "").lower()
+    for title_hint, title_tags in TITLE_INTENT_HINTS:
+        if title_hint in title:
+            tags.extend(title_tags)
+
+    return normalize_intent_tags(tags) if tags else []
 
 
 def retrieve_web_evidence(
@@ -398,7 +577,7 @@ def run_research(
             use_llm=use_llm_parser,
         )
     else:
-        route = apply_structured_boss_reward_guard(effective_query, route)
+        route = apply_route_intent_guards(effective_query, route)
 
     docs: list[RetrievedDocument] = []
     search_query = route.get("search_query") or effective_query
@@ -452,6 +631,7 @@ def run_research(
                 query=search_query,
                 top_k=route["graph_top_k"],
                 reliability_filter="ALL",
+                intent_tags=route.get("intent_tags"),
             )
             graph_docs = [result.to_retrieved_document() for result in graph_results]
             docs.extend(graph_docs)
@@ -476,8 +656,12 @@ def run_research(
     )
     if structured_boss_reward_query and any(_is_graph_document(document) for document in docs):
         docs = [document for document in docs if _is_graph_document(document)]
-        route = apply_structured_boss_reward_guard(effective_query, route)
+        route = apply_route_intent_guards(effective_query, route)
         research_result["structured_boss_reward_guard"] = True
+
+    docs, intent_filter_result = filter_documents_for_route(docs, route=route)
+    if intent_filter_result:
+        research_result["intent_filter"] = intent_filter_result
 
     web_reason = "route_requested" if route["use_web"] else web_fallback_reason(
         route,
@@ -506,6 +690,10 @@ def run_research(
     else:
         research_result["web_skipped"] = True
         research_result["web_skip_reason"] = "local_evidence_available"
+
+    docs, intent_filter_result = filter_documents_for_route(docs, route=route)
+    if intent_filter_result:
+        research_result["intent_filter_after_web"] = intent_filter_result
 
     merged_docs = merge_retrieved_documents(docs, query=effective_query, route=route)
     selected_evidence = build_selected_evidence(
@@ -653,6 +841,8 @@ def build_relevance_reason(
         return "graph_requirement_priority_for_requirement_query"
     if _is_graph_document(document):
         return "graph_fact_matches_structured_query"
+    if _is_snippet_fallback_document(document):
+        return "web_snippet_fallback_low_confidence"
     if route and route.get("use_web") and _is_web_document(document):
         return "web_source_selected_for_time_sensitive_query"
     if _keyword_overlap_score(document, query) > 0:
@@ -676,6 +866,8 @@ def build_research_context(documents: list[RetrievedDocument]) -> str:
         reliability = metadata.get("reliability") or metadata.get("trust_level") or "unknown"
         retrieval_method = metadata.get("retrieval_method") or "unknown"
         freshness = metadata.get("freshness")
+        content_source = metadata.get("content_source")
+        fetch_status = metadata.get("fetch_status")
         relevance_reason = metadata.get("relevance_reason")
 
         header_lines = [
@@ -688,6 +880,10 @@ def build_research_context(documents: list[RetrievedDocument]) -> str:
         ]
         if freshness:
             header_lines.append(f"freshness: {freshness}")
+        if content_source:
+            header_lines.append(f"content_source: {content_source}")
+        if fetch_status:
+            header_lines.append(f"fetch_status: {fetch_status}")
         if relevance_reason:
             header_lines.append(f"relevance_reason: {relevance_reason}")
         blocks.append("\n".join([*header_lines, str(document.get("page_content", ""))]))
@@ -710,11 +906,11 @@ def _document_rank(
     *,
     query: str = "",
     route: ResearchRouting | None = None,
-) -> tuple[int, int, int, float]:
+) -> tuple[int, int, int, int, float]:
     """문서를 정렬하기 위한 점수를 만듭니다.
 
     Python tuple 비교는 앞의 값부터 비교합니다.
-    즉 신뢰도 -> 최신성 -> 검색 점수 순서로 중요하게 봅니다.
+    즉 라우팅 적합도 -> 본문 출처 -> 신뢰도 -> 최신성 -> 검색 점수 순서로 중요하게 봅니다.
     """
 
     metadata = document.get("metadata", {})
@@ -722,6 +918,7 @@ def _document_rank(
     freshness = str(metadata.get("freshness") or "")
     return (
         _route_relevance_rank(document, query=query, route=route),
+        _content_source_rank(document),
         _reliability_rank(reliability),
         _freshness_rank(freshness),
         float(document.get("score") or 0),
@@ -734,6 +931,14 @@ def _route_relevance_rank(
     query: str,
     route: ResearchRouting | None,
 ) -> int:
+    if route:
+        desired_tags = set(normalize_intent_tags(route.get("intent_tags")))
+        document_tags = set(document_intent_tags(document))
+        if document_tags and document_tags.intersection(desired_tags):
+            return 6
+        if document_tags:
+            return 0
+
     if route and route.get("use_graph") and _is_graph_document(document):
         if _query_mentions_requirement(query) and _is_graph_requirement_document(document):
             return 5
@@ -745,6 +950,21 @@ def _route_relevance_rank(
         return 2
 
     return min(1, _keyword_overlap_score(document, query))
+
+
+def _content_source_rank(document: RetrievedDocument) -> int:
+    metadata = document.get("metadata", {}) or {}
+    content_source = str(metadata.get("content_source") or "")
+    if content_source == "tavily_snippet_fallback":
+        return 0
+    if content_source in {"fetched_page", "tavily_raw_content"}:
+        return 2
+    return 1
+
+
+def _is_snippet_fallback_document(document: RetrievedDocument) -> bool:
+    metadata = document.get("metadata", {}) or {}
+    return str(metadata.get("content_source") or "") == "tavily_snippet_fallback"
 
 
 def _keyword_overlap_score(document: RetrievedDocument, query: str) -> int:

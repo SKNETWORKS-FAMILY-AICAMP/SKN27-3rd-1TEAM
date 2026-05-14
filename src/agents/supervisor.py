@@ -1,6 +1,6 @@
 import json
-from typing import Any
 
+from common.conversation import format_messages_for_prompt, is_conversation_recall_query
 from common.state import AgentState, AgentName
 from common.get_model import get_llm
 from common.prompt import master_prompt
@@ -167,24 +167,13 @@ RESEARCH_REPLAN_FEEDBACK = (
 )
 
 
-def format_messages_for_prompt(messages: list[Any]) -> str:
-    lines = []
-    for message in messages:
-        role = str(getattr(message, "type", "") or message.__class__.__name__)
-        if role == "human":
-            role = "user"
-        elif role == "ai":
-            role = "assistant"
-        content = str(getattr(message, "content", message)).strip()
-        lines.append(f"{role}: {content}")
-    return "\n".join(lines)
-
-
 def is_chitchat_query(query: str) -> bool:
     normalized = str(query or "").strip().lower()
     compact = "".join(normalized.split())
     if not compact:
         return False
+    if is_conversation_recall_query(normalized):
+        return True
     if compact in CHITCHAT_PATTERNS:
         return True
     if len(compact) <= 12 and any(pattern in normalized for pattern in CHITCHAT_PATTERNS):
