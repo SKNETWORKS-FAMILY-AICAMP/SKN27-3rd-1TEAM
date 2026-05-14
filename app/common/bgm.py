@@ -14,6 +14,8 @@ DEFAULT_YOUTUBE_BGM_URL = "https://www.youtube.com/watch?v=VtvcSMZcEdE"
 PAGE_YOUTUBE_BGM_URLS = {
     "home": "https://www.youtube.com/watch?v=iHFSl7p9ajE",
     "chat": "https://www.youtube.com/watch?v=FcgCvoXQXTQ",
+    "starforce": "https://www.youtube.com/watch?v=tRPnNoCth2c&list=RDtRPnNoCth2c&start_radio=1",
+    "game": "https://www.youtube.com/watch?v=qE2Cwbzqvww&list=RDqE2Cwbzqvww&start_radio=1",
     "lounge": DEFAULT_YOUTUBE_BGM_URL,
     "models": DEFAULT_YOUTUBE_BGM_URL,
     "history": DEFAULT_YOUTUBE_BGM_URL,
