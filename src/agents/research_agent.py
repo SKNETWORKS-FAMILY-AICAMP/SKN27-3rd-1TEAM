@@ -37,6 +37,7 @@ class ResearchRouting(TypedDict):
     search_query: str
     parser_source: str
     intent_tags: list[ResearchIntent]
+    task_type: str
 
 
 RESEARCH_ROUTE_PARSER_PROMPT = """
@@ -231,18 +232,19 @@ def route_tags_have_graph_intent(intent_tags: list[ResearchIntent]) -> bool:
     return bool(set(intent_tags).intersection(GRAPH_INTENT_TAGS))
 
 
-def classify_research_route(query: str) -> ResearchRouting:
+def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
     """질문을 보고 DB/Graph/Web 중 어떤 검색을 쓸지 고릅니다.
 
     여기서는 LLM에게 판단을 맡기지 않고 키워드로만 판단합니다.
     """
 
     normalized_query = query.lower()
+    normalized_task_type = str(task_type or "").strip()
     intent_tags = derive_intent_tags(query)
 
     structured_boss_reward = "boss_reward" in intent_tags and "time_sensitive" not in intent_tags
 
-    needs_graph = (
+    needs_graph = normalized_task_type != "story_explanation" and (
         route_tags_have_graph_intent(intent_tags)
         or any(keyword.lower() in normalized_query for keyword in graph_route_keywords())
     )
@@ -251,7 +253,10 @@ def classify_research_route(query: str) -> ResearchRouting:
     if structured_boss_reward:
         needs_web = False
 
-    if needs_web and needs_graph:
+    reason = "document_research"
+    if normalized_task_type == "story_explanation":
+        reason = "task_type_story_explanation"
+    elif needs_web and needs_graph:
         reason = "latest_structured_fact"
     elif structured_boss_reward:
         reason = "boss_reward_graph_fact"
@@ -259,8 +264,6 @@ def classify_research_route(query: str) -> ResearchRouting:
         reason = "latest_or_notice"
     elif needs_graph:
         reason = "structured_fact"
-    else:
-        reason = "document_research"
 
     return {
         "use_db": True,
@@ -273,9 +276,10 @@ def classify_research_route(query: str) -> ResearchRouting:
         "web_max_contexts": 5,
         "official_only": True,
         "reason": reason,
-        "search_query": query,
+        "search_query": normalize_search_query(query, query, task_type=normalized_task_type),
         "parser_source": "keyword",
         "intent_tags": intent_tags,
+        "task_type": normalized_task_type,
     }
 
 
@@ -295,15 +299,20 @@ def parse_research_route_with_llm(query: str) -> ResearchRouting:
     return normalize_research_route_parse(query, parse_json_object(str(content)))
 
 
-def build_research_route(query: str, *, use_llm: bool = True) -> tuple[ResearchRouting, dict[str, Any]]:
+def build_research_route(
+    query: str,
+    *,
+    task_type: str = "",
+    use_llm: bool = True,
+) -> tuple[ResearchRouting, dict[str, Any]]:
     """Return a research route plus parser metadata for tool_results."""
 
-    fallback_route = classify_research_route(query)
+    fallback_route = classify_research_route(query, task_type=task_type)
     if not use_llm:
         return fallback_route, {"used_llm": False, "fallback_used": False}
 
     try:
-        route = parse_research_route_with_llm(query)
+        route = normalize_research_task_type(parse_research_route_with_llm(query), task_type)
     except Exception as exc:
         return fallback_route, {
             "used_llm": True,
@@ -346,8 +355,13 @@ def parse_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-def normalize_research_route_parse(query: str, parsed: dict[str, Any]) -> ResearchRouting:
-    fallback = classify_research_route(query)
+def normalize_research_route_parse(
+    query: str,
+    parsed: dict[str, Any],
+    task_type: str = "",
+) -> ResearchRouting:
+    normalized_task_type = str(task_type or "").strip()
+    fallback = classify_research_route(query, task_type=normalized_task_type)
     db_mode = str(parsed.get("db_mode") or fallback["db_mode"]).lower()
     if db_mode not in {"auto", "text", "vector", "hybrid"}:
         db_mode = fallback["db_mode"]
@@ -368,9 +382,14 @@ def normalize_research_route_parse(query: str, parsed: dict[str, Any]) -> Resear
         "web_max_contexts": clamp_int(parsed.get("web_max_contexts"), fallback["web_max_contexts"], 1, 10),
         "official_only": coerce_bool(parsed.get("official_only"), fallback["official_only"]),
         "reason": normalize_reason(parsed.get("reason"), fallback["reason"]),
-        "search_query": normalize_search_query(parsed.get("search_query"), query),
+        "search_query": normalize_search_query(
+            parsed.get("search_query"),
+            query,
+            task_type=normalized_task_type,
+        ),
         "parser_source": "llm",
         "intent_tags": intent_tags,
+        "task_type": normalized_task_type,
     }
 
 
@@ -403,9 +422,61 @@ def normalize_reason(value: Any, default: str) -> str:
     return reason.strip("_") or default
 
 
-def normalize_search_query(value: Any, default: str) -> str:
+def normalize_search_query(value: Any, default: str, task_type: str = "") -> str:
     query = str(value or "").strip()
-    return query or default
+    normalized_task_type = str(task_type or "").strip()
+    normalized_query = normalize_query_boss_aliases(query or default, task_type=normalized_task_type)
+    if normalized_task_type != "story_explanation":
+        return normalized_query
+
+    graph_terms = {keyword.lower() for keyword in GRAPH_KEYWORDS}
+    terms = [
+        term
+        for term in normalized_query.split()
+        if term.lower() not in graph_terms
+    ]
+    return " ".join(terms) or normalized_query
+
+
+def normalize_query_boss_aliases(query: str, task_type: str = "") -> str:
+    """기존 boss_aliases.csv를 이용해 짧은 보스명 오타를 검색어에서 보정한다."""
+    normalized_query = str(query or "").strip()
+    lower_query = normalized_query.lower()
+    can_use_aliases = (
+        str(task_type or "").strip() == "story_explanation"
+        or any(keyword.lower() in lower_query for keyword in GRAPH_KEYWORDS)
+    )
+    if not can_use_aliases:
+        return normalized_query
+
+    aliases = load_boss_alias_keywords()
+    terms = []
+    for raw_term in normalized_query.split():
+        term = raw_term.strip()
+        replacement = term
+        for alias in aliases:
+            if len(term) == len(alias) and term != alias:
+                distance = sum(left != right for left, right in zip(term, alias))
+                if distance == 1:
+                    replacement = alias
+                    break
+        terms.append(replacement)
+    return " ".join(terms).strip()
+
+
+def normalize_research_task_type(route: ResearchRouting, task_type: str) -> ResearchRouting:
+    normalized_task_type = str(task_type or "").strip()
+    if not normalized_task_type:
+        return route
+    return {
+        **route,
+        "task_type": normalized_task_type,
+        "search_query": normalize_search_query(
+            route.get("search_query"),
+            route.get("search_query") or "",
+            task_type=normalized_task_type,
+        ),
+    }
 
 
 def apply_route_intent_guards(
@@ -417,6 +488,20 @@ def apply_route_intent_guards(
         **route,
         "intent_tags": intent_tags,
     }
+
+    if route.get("task_type") == "story_explanation":
+        return {
+            **guarded_route,
+            "use_db": True,
+            "use_graph": False,
+            "intent_tags": ["general"],
+            "reason": "task_type_story_explanation",
+            "search_query": normalize_search_query(
+                guarded_route.get("search_query"),
+                query,
+                task_type="story_explanation",
+            ),
+        }
 
     if route_tags_have_graph_intent(intent_tags):
         guarded_route["use_graph"] = True
@@ -574,9 +659,11 @@ def run_research(
     if route is None:
         route, parser_result = build_research_route(
             effective_query,
+            task_type=str(state.get("task_type") or ""),
             use_llm=use_llm_parser,
         )
-    else:
+    elif route is not None:
+        route = normalize_research_task_type(route, str(state.get("task_type") or ""))
         route = apply_route_intent_guards(effective_query, route)
 
     docs: list[RetrievedDocument] = []
@@ -620,7 +707,7 @@ def run_research(
             message = f"research db_search_rag failed: {exc}"
             errors.append(message)
             research_result["errors"].append(message)
-    else:
+    if not route["use_db"]:
         research_result["db_skipped"] = True
 
     if route["use_graph"]:
@@ -646,7 +733,7 @@ def run_research(
             message = f"research graph_search_rag failed: {exc}"
             errors.append(message)
             research_result["errors"].append(message)
-    else:
+    if not route["use_graph"]:
         research_result["graph_skipped"] = True
 
     structured_boss_reward_query = (
@@ -687,7 +774,7 @@ def run_research(
             errors.append(message)
             research_result["errors"].append(message)
             research_result["web_reason"] = web_reason
-    else:
+    if not web_reason:
         research_result["web_skipped"] = True
         research_result["web_skip_reason"] = "local_evidence_available"
 
@@ -695,14 +782,14 @@ def run_research(
     if intent_filter_result:
         research_result["intent_filter_after_web"] = intent_filter_result
 
-    merged_docs = merge_retrieved_documents(docs, query=effective_query, route=route)
+    merged_docs = merge_retrieved_documents(docs, query=search_query, route=route)
     selected_evidence = build_selected_evidence(
         merged_docs,
-        query=effective_query,
+        query=search_query,
         route=route,
     )
     evidence_summary = build_evidence_summary(
-        effective_query,
+        search_query,
         route,
         selected_evidence,
     )
@@ -803,11 +890,13 @@ def build_evidence_summary(
         if retrieval_method not in retrieval_methods:
             retrieval_methods.append(retrieval_method)
         top_titles.append(title)
-        if _is_graph_document(document):
+        is_graph_document = _is_graph_document(document)
+        is_web_document = _is_web_document(document)
+        if is_graph_document:
             graph_count += 1
-        elif _is_web_document(document):
+        elif is_web_document:
             web_count += 1
-        else:
+        elif not is_graph_document and not is_web_document:
             db_count += 1
 
     return {

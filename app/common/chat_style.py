@@ -1,3 +1,14 @@
+"""메이플스토리 챗봇 Streamlit 앱의 UI 스타일 정의 모듈.
+
+이 모듈은 채팅 UI의 전체적인 시각 스타일(폰트, 배경, 채팅 버블,
+상단 네비, 입력창 등)을 정의하는 거대한 CSS 문자열과,
+이를 Streamlit 앱에 주입하기 위한 헬퍼 함수들을 포함한다.
+
+이미지/폰트 파일은 data URI 로 변환해 CSS 안에 임베드되며,
+각 페이지 마커(`.maple-chat-page-marker` 등)에 따라
+다른 레이아웃이 자동으로 적용된다.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,6 +18,8 @@ import streamlit as st
 from app.common.assets import asset_path, path_to_data_uri
 
 
+# === 에셋 경로 상수 ===
+# 채팅 UI 에서 사용되는 아바타, 배경, 버튼, 폰트 파일 경로 모음
 ASSISTANT_AVATAR_PATH = asset_path("assistant_avatar.png")
 USER_AVATAR_PATH = asset_path("user_avatar.png")
 BACKGROUND_PATH = asset_path("background_home.png")
@@ -19,10 +32,21 @@ MAPLESTORY_LIGHT_PATH = asset_path("Maplestory-Light.ttf")
 
 
 def image_to_data_uri(path: Path) -> str:
+    """주어진 파일 경로를 base64 data URI 문자열로 변환한다.
+
+    CSS 의 `url(...)` 안에 직접 임베드해서 외부 요청 없이
+    이미지/폰트를 로드하기 위한 헬퍼 함수.
+    """
     return path_to_data_uri(path, default_mime="image/jpeg")
 
 
 def get_maple_chat_css() -> str:
+    """전체 채팅 UI 스타일이 포함된 `<style>` 태그 문자열을 반환한다.
+
+    이미지/폰트 파일을 data URI 로 변환한 뒤, CSS 문자열 안의
+    `__PLACEHOLDER__` 토큰들을 실제 값으로 치환해 완성된 CSS 를 만든다.
+    """
+    # 각 에셋을 data URI 로 미리 변환 (CSS 안에 임베드하기 위함)
     background_image = image_to_data_uri(BACKGROUND_PATH)
     chat_background_image = image_to_data_uri(CHAT_BACKGROUND_PATH)
     home_button = image_to_data_uri(HOME_BUTTON_PATH)
@@ -32,6 +56,8 @@ def get_maple_chat_css() -> str:
 
     return """
 <style>
+/* === 메이플스토리 커스텀 폰트 정의 === */
+/* Light/Bold 두 종류 폰트를 data URI 로 임베드하여 외부 요청 없이 로드 */
 @font-face {
     font-family: "MaplestoryLight";
     src: url("__MAPLE_LIGHT__") format("truetype");
@@ -48,6 +74,10 @@ def get_maple_chat_css() -> str:
     font-display: swap;
 }
 
+/* === 전역 CSS 변수 (색상 팔레트 & 레이아웃 비율) === */
+/* 채팅 배경/오버레이의 크기·위치를 화면 비율에 맞춰 계산하기 위한
+   변수들. 화면 크기에 상관없이 메이플 배경 이미지 위 정확한 위치에
+   채팅 패널·입력창·ENTER 버튼이 오도록 비율 기반으로 좌표를 잡는다. */
 :root {
     --bg: #020202;
     --orange: #ffc889;
@@ -85,6 +115,9 @@ def get_maple_chat_css() -> str:
     --chat-enter-h: calc(var(--chat-overlay-h) * 0.046);
 }
 
+/* === 기본 리셋 & Streamlit 기본 UI 숨김 === */
+/* Streamlit 의 기본 헤더/툴바/사이드바를 모두 숨기고
+   전체 화면을 풀스크린 캔버스처럼 사용한다. */
 html,
 body,
 .stApp,
@@ -128,6 +161,8 @@ footer {
     box-shadow: none !important;
 }
 
+/* === 홈 화면 배경 (그라데이션 + 이미지) === */
+/* ::before 는 홈 배경, ::after 는 보라색 전체 테두리(보더 프레임) */
 [data-testid="stAppViewContainer"]::before {
     content: "";
     position: fixed;
@@ -155,6 +190,8 @@ footer {
     z-index: 9999;
 }
 
+/* === 상단 네비게이션 바 === */
+/* 화면 최상단 고정 영역(배경 띠 + 메뉴 버튼들 + 홈 배지) */
 .maple-nav-bg {
     position: fixed;
     top: 1px;
@@ -211,6 +248,8 @@ footer {
     background: var(--orange);
 }
 
+/* === 좌상단 홈 배지 버튼 === */
+/* 텍스트는 숨기고 배경 이미지만 노출하는 아이콘 형태 버튼 */
 .st-key-maple-home-badge {
     position: fixed !important;
     top: 0.24rem !important;
@@ -238,6 +277,8 @@ footer {
     font-size: 0 !important;
 }
 
+/* === 홈 화면 - 중앙 브랜드 로고 영역 === */
+/* 화면 중앙 상단에 메이플 타이틀 로고 이미지를 배치 */
 .st-key-maple-brand-bar {
     position: fixed !important;
     top: var(--home-title-center-y) !important;
@@ -262,16 +303,20 @@ footer {
     padding: 0 !important;
 }
 
+/* 홈 hero 영역 - 네비게이션 높이를 제외한 전체 높이 확보 */
 .maple-hero {
     min-height: calc(100vh - 4.1rem);
 }
 
+/* 사용하지 않는 기본 영역들 숨김 (legacy 요소 정리) */
 .maple-title,
 .maple-input-space,
 .maple-message-panel {
     display: none !important;
 }
 
+/* === 홈 화면 - 메인 입력창 === */
+/* 로고 바로 아래 검색바 형태로 배치되는 텍스트 입력 영역 */
 .st-key-maple-home-input {
     position: fixed !important;
     left: 50% !important;
@@ -323,6 +368,8 @@ footer {
     color: rgba(255, 247, 232, 0.78) !important;
 }
 
+/* === 홈 화면 - 추천 칩(빠른 질문) 버튼 행 === */
+/* 입력창 아래에 가로로 배치되는 추천 질문 버튼들 */
 .st-key-maple-chip-row {
     position: fixed !important;
     left: 50% !important;
@@ -356,6 +403,9 @@ footer {
     background: rgba(70, 43, 18, 0.58) !important;
 }
 
+/* === 페이지 마커 기반 분기 === */
+/* `:has()` 셀렉터로 현재 어떤 페이지(chat/game/sub) 인지 판별해
+   불필요한 홈 화면 요소들을 자동으로 숨긴다. */
 [data-testid="stAppViewContainer"]:has(.maple-chat-page-marker)::before,
 [data-testid="stAppViewContainer"]:has(.maple-game-page-marker)::before {
     display: none !important;
@@ -380,6 +430,8 @@ footer {
     display: none !important;
 }
 
+/* === 채팅 페이지 전체 배경 === */
+/* 채팅 화면에서만 보이는 메이플 풍 배경 이미지 (전체 화면) */
 .maple-chat-page {
     position: fixed;
     inset: 0;
@@ -391,6 +443,9 @@ footer {
         #020202;
 }
 
+/* === 채팅 페이지 - 포털(차원의 문) 장식 === */
+/* 배경 이미지 위에 원형 포털 효과를 덧입히는 장식용 캔버스 영역.
+   클릭 막기 위해 pointer-events: none, 마스크로 가장자리 페이드 처리 */
 .maple-portal-canvas {
     position: fixed;
     left: calc(var(--chat-bg-left) + var(--chat-bg-w) * 0.140);
@@ -407,6 +462,8 @@ footer {
     -webkit-mask-image: radial-gradient(ellipse at center, black 40%, rgba(0, 0, 0, 0.58) 63%, transparent 92%);
 }
 
+/* === 채팅 페이지 - 오버레이 프레임 이미지 === */
+/* 채팅 영역을 감싸는 메이플 풍 UI 프레임 이미지 */
 .maple-chat-overlay {
     position: fixed;
     left: var(--chat-overlay-left);
@@ -688,4 +745,6 @@ footer {
 
 
 def render_style() -> None:
+    """Streamlit 페이지에 Maple Guide 전역 CSS를 주입한다."""
+    # unsafe_allow_html=True가 필요하다. CSS <style> 태그를 그대로 넣기 때문이다.
     st.markdown(get_maple_chat_css(), unsafe_allow_html=True)
