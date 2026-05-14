@@ -470,6 +470,7 @@ class Neo4jGraphRetriever:
         terms = _graph_terms(query)
         if not terms:
             terms = [query.strip().lower()]
+        normalized_query = _normalize_graph_text(query)
 
         try:
             from neo4j import GraphDatabase
@@ -488,6 +489,7 @@ class Neo4jGraphRetriever:
                     requirement_rows = session.run(
                         _GRAPH_BOSS_REQUIREMENT_QUERY,
                         terms=terms,
+                        normalized_query=normalized_query,
                         limit=max(top_k * 2, top_k),
                     ).data()
                 relation_rows = session.run(
@@ -498,10 +500,16 @@ class Neo4jGraphRetriever:
                 reward_rows = session.run(
                     _GRAPH_BOSS_REWARD_QUERY,
                     terms=terms,
+                    normalized_query=normalized_query,
                     limit=max(top_k * 2, top_k),
                 ).data()
         finally:
             driver.close()
+
+        requirement_rows = _filter_best_exact_alias_rows(requirement_rows)
+        reward_rows = _filter_best_exact_alias_rows(reward_rows)
+        if requirement_rows or reward_rows:
+            relation_rows = []
 
         results = [
             _graph_requirement_row_to_result(row, terms)
@@ -733,7 +741,19 @@ _GRAPH_BOSS_REQUIREMENT_QUERY = """
 MATCH (boss:Boss)-[:HAS_REQUIREMENT]->(requirement:StatRequirement)
 OPTIONAL MATCH (alias:BossAlias)-[:ALIAS_OF]->(boss)
 WITH boss, requirement, collect(DISTINCT alias) AS aliases
-WHERE any(term IN $terms WHERE
+WITH boss, requirement, aliases,
+     reduce(score = 0, alias IN aliases |
+        CASE
+            WHEN $normalized_query CONTAINS toLower(replace(coalesce(alias.normalized_name, ''), ' ', ''))
+                 AND size(toLower(replace(coalesce(alias.normalized_name, ''), ' ', ''))) > score
+            THEN size(toLower(replace(coalesce(alias.normalized_name, ''), ' ', '')))
+            WHEN $normalized_query CONTAINS toLower(replace(coalesce(alias.name, ''), ' ', ''))
+                 AND size(toLower(replace(coalesce(alias.name, ''), ' ', ''))) > score
+            THEN size(toLower(replace(coalesce(alias.name, ''), ' ', '')))
+            ELSE score
+        END
+     ) AS exact_alias_score
+WHERE exact_alias_score > 0 OR any(term IN $terms WHERE
     toLower(coalesce(boss.name, '')) CONTAINS term OR
     toLower(coalesce(requirement.boss_name, '')) CONTAINS term OR
     any(alias IN aliases WHERE
@@ -749,7 +769,9 @@ RETURN
     boss.boss_type AS boss_type,
     properties(boss) AS boss_props,
     properties(requirement) AS requirement_props,
-    [alias IN aliases WHERE alias.name IS NOT NULL | alias.name] AS aliases
+    [alias IN aliases WHERE alias.name IS NOT NULL | alias.name] AS aliases,
+    exact_alias_score AS exact_alias_score
+ORDER BY exact_alias_score DESC, boss.name ASC
 LIMIT $limit
 """
 
@@ -784,7 +806,19 @@ _GRAPH_BOSS_REWARD_QUERY = """
 MATCH (boss:Boss)-[:DROPS_REWARD]->(reward:Reward)
 OPTIONAL MATCH (alias:BossAlias)-[:ALIAS_OF]->(boss)
 WITH boss, reward, collect(DISTINCT alias) AS aliases
-WHERE any(term IN $terms WHERE
+WITH boss, reward, aliases,
+     reduce(score = 0, alias IN aliases |
+        CASE
+            WHEN $normalized_query CONTAINS toLower(replace(coalesce(alias.normalized_name, ''), ' ', ''))
+                 AND size(toLower(replace(coalesce(alias.normalized_name, ''), ' ', ''))) > score
+            THEN size(toLower(replace(coalesce(alias.normalized_name, ''), ' ', '')))
+            WHEN $normalized_query CONTAINS toLower(replace(coalesce(alias.name, ''), ' ', ''))
+                 AND size(toLower(replace(coalesce(alias.name, ''), ' ', ''))) > score
+            THEN size(toLower(replace(coalesce(alias.name, ''), ' ', '')))
+            ELSE score
+        END
+     ) AS exact_alias_score
+WHERE exact_alias_score > 0 OR any(term IN $terms WHERE
     toLower(coalesce(boss.name, '')) CONTAINS term OR
     toLower(coalesce(boss.difficulty, '')) CONTAINS term OR
     toLower(coalesce(reward.name, '')) CONTAINS term OR
@@ -802,7 +836,9 @@ RETURN
     boss.difficulty AS difficulty,
     properties(boss) AS boss_props,
     properties(reward) AS reward_props,
-    [alias IN aliases WHERE alias.name IS NOT NULL | alias.name] AS aliases
+    [alias IN aliases WHERE alias.name IS NOT NULL | alias.name] AS aliases,
+    exact_alias_score AS exact_alias_score
+ORDER BY exact_alias_score DESC, boss.name ASC, reward.name ASC
 LIMIT $limit
 """
 
@@ -839,7 +875,7 @@ def _graph_requirement_row_to_result(
         content=content,
         source_url=None,
         reliability=GRAPH_RELIABILITY,
-        score=_score_graph_text(f"{title} {content}", terms) + 1.0,
+        score=_score_graph_text(f"{title} {content}", terms) + 1.0 + _exact_alias_boost(row),
         entity_type="Boss->StatRequirement",
         retrieval_method="graph_requirement",
     )
@@ -875,7 +911,7 @@ def _graph_reward_row_to_result(
         content=content,
         source_url=None,
         reliability=GRAPH_RELIABILITY,
-        score=_score_graph_text(f"{title} {content}", terms) + 0.8,
+        score=_score_graph_text(f"{title} {content}", terms) + 0.8 + _exact_alias_boost(row),
         entity_type="Boss->Reward",
         retrieval_method="graph_reward",
     )
@@ -933,9 +969,37 @@ def _score_graph_text(text: str, terms: list[str]) -> float:
     return round(hits / len(terms), 6)
 
 
+def _exact_alias_boost(row: dict[str, Any]) -> float:
+    try:
+        exact_alias_score = int(row.get("exact_alias_score") or 0)
+    except (TypeError, ValueError):
+        exact_alias_score = 0
+    if exact_alias_score <= 0:
+        return 0.0
+    return 10.0 + (exact_alias_score / 100.0)
+
+
+def _filter_best_exact_alias_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    best_score = max(
+        (int(row.get("exact_alias_score") or 0) for row in rows),
+        default=0,
+    )
+    if best_score <= 0:
+        return rows
+    return [
+        row
+        for row in rows
+        if int(row.get("exact_alias_score") or 0) == best_score
+    ]
+
+
+def _normalize_graph_text(value: str) -> str:
+    return "".join(str(value or "").lower().split())
+
+
 def _graph_terms(query: str) -> list[str]:
     terms = []
-    normalized_query = "".join(str(query or "").lower().split())
+    normalized_query = _normalize_graph_text(query)
     if len(normalized_query) >= 2:
         terms.append(normalized_query)
     for raw_term in query.replace(",", " ").replace("?", " ").split():
