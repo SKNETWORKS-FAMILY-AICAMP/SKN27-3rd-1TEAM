@@ -25,16 +25,19 @@ RETRY_LIMIT_ANSWER = (
 
 
 def build_retry_limit_state(state: AgentState) -> AgentState:
+    existing_final_answer = str(state.get("final_answer") or "").strip()
+    final_answer = existing_final_answer or RETRY_LIMIT_ANSWER
     tool_results = dict(state.get("tool_results", {}))
     tool_results["supervisor_retry_limit"] = {
         "reason": "retry_count exceeded",
         "retry_count": int(state.get("retry_count", 0)),
+        "preserved_final_answer": bool(existing_final_answer),
     }
 
     return {
         **state,
-        "draft_answer": RETRY_LIMIT_ANSWER,
-        "final_answer": RETRY_LIMIT_ANSWER,
+        "draft_answer": state.get("draft_answer") or final_answer,
+        "final_answer": final_answer,
         "validation_passed": False,
         "is_complete": True,
         "next_agent": "FINISH",
@@ -42,9 +45,24 @@ def build_retry_limit_state(state: AgentState) -> AgentState:
         "tool_results": tool_results,
     }
 
+def nexon_api_node(state: AgentState) -> AgentState:
+    from src.collectors.nexon_api import nexon_api_node
+    return nexon_api_node(state)
+
 
 def supervisor(state: AgentState) -> AgentState:
-    if int(state.get("retry_count", 0)) >= MAX_RETRY_COUNT:
+    plan = list(state.get("plan") or [])
+    has_research_evidence = bool(
+        str(state.get("context") or "").strip()
+        or state.get("retrieved_docs")
+    )
+    has_final_answer = bool(str(state.get("final_answer") or "").strip())
+    can_finish_forced_plan = (
+        has_research_evidence
+        and "final_answer" in plan
+        and not has_final_answer
+    )
+    if int(state.get("retry_count", 0)) >= MAX_RETRY_COUNT and not can_finish_forced_plan:
         return build_retry_limit_state(state)
 
     from src.agents.supervisor import supervisor as supervisor_agent
@@ -61,6 +79,12 @@ def research(state: AgentState) -> AgentState:
         "world_name": state.get("world_name", ""),
     }
     return research_agent(next_state)
+
+
+def evidence_formatter(state: AgentState) -> AgentState:
+    from src.rag.evidence_formatter import format_evidence_for_answer
+
+    return format_evidence_for_answer(state)
 
 
 def analystic(state: AgentState) -> AgentState:
@@ -172,6 +196,7 @@ def maple_chat_graph():
     graph = StateGraph(AgentState)
     graph.add_node("supervisor", supervisor)
     graph.add_node("research", research)
+    graph.add_node("evidence_formatter", evidence_formatter)
     graph.add_node("analystic", analystic)
     graph.add_node("calculator", calculator)
     graph.add_node("final_answer", final_answer)
@@ -189,7 +214,8 @@ def maple_chat_graph():
             "end": END,
         },
     )
-    graph.add_edge("research", "supervisor")
+    graph.add_edge("research", "evidence_formatter")
+    graph.add_edge("evidence_formatter", "supervisor")
     graph.add_edge("analystic", "supervisor")
     graph.add_edge("calculator", "supervisor")
     graph.add_edge("final_answer", "evaluation")
