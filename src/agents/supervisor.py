@@ -63,8 +63,78 @@ CHITCHAT_PATTERNS = (
     "넌 누구",
 )
 
-AGENT_ORDER = ("research", "analystic", "calculator", "final_answer")
+AGENT_ORDER = ("research", "calculator", "analystic", "final_answer")
 TRUTHY_VALUES = {"true", "yes", "y", "1"}
+CHARACTER_LOOKUP_KEYWORDS = (
+    "내 캐릭터",
+    "내캐릭",
+    "내 스펙",
+    "제 스펙",
+    "내 장비",
+    "제 장비",
+    "내 전투력",
+    "제 전투력",
+    "내 주스탯",
+    "제 주스탯",
+    "내 유니온",
+    "제 유니온",
+    "내가",
+    "제가",
+    "닉네임",
+    "캐릭터명",
+    "캐릭터 조회",
+    "캐릭터 정보",
+    "캐릭터 스탯",
+    "스탯조회",
+    "스탯 조회",
+    "스펙조회",
+    "스펙 조회",
+    "api조회",
+    "api 조회",
+    "API조회",
+    "API 조회",
+    "오픈api",
+    "오픈 api",
+    "전투력 조회",
+    "장비 조회",
+    "유니온 조회",
+    "스펙 분석",
+)
+CHARACTER_DATA_LOOKUP_KEYWORDS = (
+    "스탯조회",
+    "스탯 조회",
+    "스펙조회",
+    "스펙 조회",
+    "api조회",
+    "api 조회",
+    "API조회",
+    "API 조회",
+    "오픈api",
+    "오픈 api",
+    "캐릭터 조회",
+    "캐릭터 정보",
+    "캐릭터 스탯",
+    "전투력 조회",
+    "장비 조회",
+    "유니온 조회",
+)
+CHARACTER_PROCESSING_KEYWORDS = (
+    "분석",
+    "추천",
+    "비교",
+    "가능",
+    "갈 수",
+    "갈수",
+    "보스",
+    "효율",
+    "계산",
+    "컷",
+    "성장",
+    "개선",
+    "바꿔",
+    "뭐부터",
+    "어떻게",
+)
 RESEARCH_FEEDBACK_MARKERS = (
     "missing_context",
     "no retrieved context",
@@ -100,6 +170,37 @@ def has_character_analysis_state(state: AgentState) -> bool:
     )
 
 
+def has_character_lookup_state(state: AgentState) -> bool:
+    return bool(state.get("character_profile") and state.get("character_stats"))
+
+
+def requires_character_lookup_query(query: str) -> bool:
+    text = str(query or "").strip()
+    if not text:
+        return False
+    normalized = text.lower()
+    if any(keyword.lower() in normalized for keyword in CHARACTER_LOOKUP_KEYWORDS):
+        return True
+    try:
+        from src.collectors.nexon_api import extract_character_name_from_query
+
+        return bool(extract_character_name_from_query(text))
+    except Exception:
+        return False
+
+
+def is_character_data_lookup_query(query: str) -> bool:
+    text = str(query or "").strip()
+    normalized = text.lower()
+    return any(keyword.lower() in normalized for keyword in CHARACTER_DATA_LOOKUP_KEYWORDS)
+
+
+def requires_character_processing_query(query: str) -> bool:
+    text = str(query or "").strip()
+    normalized = text.lower()
+    return any(keyword.lower() in normalized for keyword in CHARACTER_PROCESSING_KEYWORDS)
+
+
 def _fallback_supervisor_response(state: AgentState, error: Exception | None = None) -> dict:
     user_query = str(state.get("user_query") or "")
     existing_plan = list(state.get("plan") or [])
@@ -117,6 +218,22 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     )
     requires_search = False
     requires_calculation = any(keyword in user_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
+    lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
+    requires_character_lookup = bool(
+        state.get("requires_character_lookup")
+        or requires_character_lookup_query(user_query)
+    )
+    character_data_lookup = requires_character_lookup and is_character_data_lookup_query(user_query)
+    simple_character_lookup = (
+        character_data_lookup
+        and not requires_character_processing_query(user_query)
+    )
+    if has_character_lookup_state(state) or lookup_attempted:
+        requires_character_lookup = False
+        character_data_lookup = False
+        simple_character_lookup = False
+    if character_data_lookup:
+        feedback_requires_research = False
     task_type = "general_qa"
     errors = list(state.get("errors", []) or [])
 
@@ -125,6 +242,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
 
     if is_chitchat_query(user_query):
         task_type = "chitchat"
+        requires_character_lookup = False
         plan = ["final_answer"]
     elif existing_plan and (not feedback_requires_research or has_research_evidence):
         plan = [
@@ -132,20 +250,30 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             for agent in remaining_plan
             if agent in AGENT_ORDER
         ]
-        if "analystic" in plan and not has_character_analysis_state(state):
+        if (
+            "analystic" in plan
+            and "calculator" not in plan
+            and not has_character_analysis_state(state)
+        ):
             plan = [agent for agent in plan if agent != "analystic"]
         if not plan:
             plan = ["final_answer"]
     else:
-        try:
-            from src.agents.research_agent import classify_research_route
+        if character_data_lookup:
+            requires_search = False
+            task_type = "character_status_analysis"
+            if not simple_character_lookup:
+                requires_calculation = True
+        else:
+            try:
+                from src.agents.research_agent import classify_research_route
 
-            route = classify_research_route(user_query)
-            requires_search = bool(route.get("use_graph") or route.get("use_web"))
-            if requires_search:
-                task_type = "boss_strategy" if route.get("use_graph") else "general_qa"
-        except Exception as exc:
-            errors.append(f"supervisor fallback route classification failed: {exc}")
+                route = classify_research_route(user_query)
+                requires_search = bool(route.get("use_graph") or route.get("use_web"))
+                if requires_search:
+                    task_type = "boss_strategy" if route.get("use_graph") else "general_qa"
+            except Exception as exc:
+                errors.append(f"supervisor fallback route classification failed: {exc}")
 
         plan = []
         if requires_search or (feedback_requires_research and not has_research_evidence):
@@ -154,6 +282,14 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             plan.append("calculator")
         plan.append("final_answer")
 
+    if character_data_lookup:
+        plan = [agent for agent in plan if agent != "research"]
+        if simple_character_lookup:
+            plan = [agent for agent in plan if agent not in ("calculator", "analystic")]
+        elif "calculator" not in plan:
+            plan = ["calculator", *plan]
+        task_type = "character_status_analysis"
+
     if error is not None:
         errors.append(f"supervisor llm failed; used fallback route: {error}")
 
@@ -161,6 +297,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
         **state,
         "intent": "fallback supervisor routing",
         "task_type": task_type,
+        "requires_character_lookup": requires_character_lookup,
         "plan": plan,
         "next_agent": plan[0],
         "completed_agents": completed_agents,
@@ -175,7 +312,7 @@ def _parse_supervisor_response(
     remaining_plan: list[str],
     retry_count: int,
     errors: list[str],
-) -> tuple[dict, str, str, list[str], int, list[str]]:
+) -> tuple[dict, str, str, bool, list[str], int, list[str]]:
     try:
         response_list = json.loads(content)
         if not isinstance(response_list, list):
@@ -197,6 +334,23 @@ def _parse_supervisor_response(
     if task_type not in TASK_TYPES:
         task_type = "unknown"
 
+    lookup_value = response_dict.get(
+        "requires_character_lookup",
+        state.get("requires_character_lookup", False),
+    )
+    requires_character_lookup = (
+        lookup_value
+        if isinstance(lookup_value, bool)
+        else str(lookup_value).strip().lower() in TRUTHY_VALUES
+    )
+    requires_character_lookup = (
+        requires_character_lookup
+        or requires_character_lookup_query(str(state.get("user_query") or ""))
+    )
+    lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
+    if has_character_lookup_state(state) or lookup_attempted:
+        requires_character_lookup = False
+
     plan = response_dict.get("plan")
     if plan is None:
         # LLM이 plan을 반환하지 못한 경우 기존 흐름을 최대한 유지
@@ -207,7 +361,7 @@ def _parse_supervisor_response(
         retry_count += 1
         plan = ["final_answer"]
 
-    return response_dict, intent, task_type, plan, retry_count, errors
+    return response_dict, intent, task_type, requires_character_lookup, plan, retry_count, errors
 
 
 def _guard_research_plan(
@@ -280,7 +434,11 @@ def _finalize_plan(
         # plan이 비어도 이전 next_agent가 있으면 기존 라우팅을 이어감
         ordered_plan = [state["next_agent"]]
 
-    if "analystic" in ordered_plan and not has_character_analysis_state(state):
+    if (
+        "analystic" in ordered_plan
+        and "calculator" not in ordered_plan
+        and not has_character_analysis_state(state)
+    ):
         ordered_plan = [agent for agent in ordered_plan if agent != "analystic"]
 
     if "final_answer" not in ordered_plan:
@@ -301,6 +459,7 @@ def supervisor(state:AgentState):
             **state,
             "intent": "일상 대화 또는 인사",
             "task_type": "chitchat",
+            "requires_character_lookup": False,
             "plan": ["final_answer"],
             "next_agent": "final_answer",
             "completed_agents": state.get("completed_agents", []),
@@ -347,6 +506,7 @@ TASK_TYPES:
 {TASK_TYPES}
 
 "requires_search" : 최신 정보, 외부 정보, DB/RAG 조회가 필요한 경우 True, 필요하지 않은 경우 False
+"requires_character_lookup" : 특정 유저 캐릭터의 현재 스펙, 장비, 전투력, 유니온, 보스 가능 여부처럼 Nexon Open API 캐릭터 조회가 필요한 경우 True, 일반 보스 정보/보상/요구 스탯처럼 캐릭터 조회가 필요 없는 경우 False
 "requires_calculation" : 사용자 질문에 {CALCULATION_TRIGGER_KEYWORDS}가 포함되어 있거나 calculator가 필요한 경우 True, 필요하지 않은 경우 False
 "requires_analytics" : 캐릭터 상태, 장비, 스펙, 선택지 비교, 성장 방향 판단처럼 analystic의 해석이 필요한 경우 True, 필요하지 않은 경우 False
 
@@ -354,10 +514,13 @@ TASK_TYPES:
 plan에는 아래 목록의 에이전트만 포함할 수 있습니다.
 {AgentName}
 
-에이전트 실행 순서는 research -> analystic -> calculator -> final_answer 입니다.
+에이전트 실행 순서는 research -> calculator -> analystic -> final_answer 입니다.
 - requires_search가 True이면 research를 추가합니다.
-- requires_analytics가 True이면 analystic을 추가합니다.
 - requires_calculation이 True이면 calculator를 추가합니다.
+- requires_analytics가 True이면 analystic을 추가합니다.
+- requires_character_lookup은 plan에 nexon_api를 추가하지 않고 state에만 저장합니다.
+- 캐릭터 스탯조회/API조회/캐릭터 정보 조회처럼 특정 캐릭터의 현재 API 데이터만 필요한 단순 조회 질문은 requires_character_lookup=True, requires_search=False로 두고 final_answer만 실행합니다.
+- 캐릭터 조회가 필요하더라도 분석/추천/비교/보스 가능 여부 판단이 함께 있으면 calculator 또는 analystic을 추가합니다.
 - final_answer는 항상 plan의 마지막에 추가합니다.
 - next_agent는 plan의 첫 번째 에이전트입니다.
 - 처음 실행이면 사용자 질문을 기준으로 새 plan을 만듭니다.
@@ -379,6 +542,7 @@ feedback: {feedback}
   {{"key": "intent", "value": "사용자 질문 의도 요약"}},
   {{"key": "task_type", "value": "TASK_TYPES key 중 하나"}},
   {{"key": "requires_search", "value": true}},
+  {{"key": "requires_character_lookup", "value": false}},
   {{"key": "requires_analytics", "value": false}},
   {{"key": "requires_calculation", "value": false}},
   {{"key": "plan", "value": ["에이전트명", "에이전트명", ...]}},
@@ -392,26 +556,58 @@ feedback: {feedback}
     except Exception as exc:
         return _fallback_supervisor_response(state, exc)
 
-    response_dict, intent, task_type, plan, retry_count, errors = _parse_supervisor_response(
+    (
+        response_dict,
+        intent,
+        task_type,
+        requires_character_lookup,
+        plan,
+        retry_count,
+        errors,
+    ) = _parse_supervisor_response(
         content,
         state,
         remaining_plan,
         retry_count,
         errors,
     )
+    character_data_lookup = (
+        requires_character_lookup
+        and is_character_data_lookup_query(user_query)
+    )
+    simple_character_lookup = (
+        character_data_lookup
+        and not requires_character_processing_query(user_query)
+    )
+    if character_data_lookup:
+        response_dict["requires_search"] = False
+        task_type = "character_status_analysis"
+
     plan, retry_count, errors, replan_state = _guard_research_plan(
         state,
         response_dict,
         plan,
         completed_agent,
-        feedback,
+        "" if character_data_lookup else feedback,
         retry_count,
         errors,
     )
     if replan_state:
         return supervisor(replan_state)
 
-    plan = _finalize_plan(plan, state, completed_agent, feedback)
+    if character_data_lookup:
+        plan = [agent for agent in plan if agent != "research"]
+        if simple_character_lookup:
+            plan = [agent for agent in plan if agent not in ("calculator", "analystic")]
+        elif "calculator" not in plan:
+            plan = ["calculator", *plan]
+
+    plan = _finalize_plan(
+        plan,
+        state,
+        completed_agent,
+        "" if character_data_lookup else feedback,
+    )
 
     next_agent = response_dict.get("next_agent") or plan[0]
     if next_agent != plan[0]:
@@ -426,6 +622,7 @@ feedback: {feedback}
         **state,
         "intent": intent,
         "task_type": task_type,
+        "requires_character_lookup": requires_character_lookup,
         "plan": plan,
         "next_agent": next_agent,
         "completed_agents": completed_agents,

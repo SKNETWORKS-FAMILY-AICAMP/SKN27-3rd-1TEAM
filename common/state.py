@@ -42,6 +42,7 @@ class AgentState(TypedDict, total=False):
     # Request analysis
     intent: str  # supervisor가 해석한 사용자 의도
     task_type: str  # 요청 처리를 위한 작업 유형
+    requires_character_lookup: bool  # Nexon Open API 캐릭터 조회 필요 여부
     plan: list[str]  # supervisor가 세운 처리 계획
 
     # Supervisor routing
@@ -107,6 +108,7 @@ AgentStateField = Literal[
     "messages",
     "intent",
     "task_type",
+    "requires_character_lookup",
     "plan",
     "next_agent",
     "completed_agents",
@@ -153,7 +155,13 @@ AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
     "supervisor": {
         "required_inputs": ("user_query", "messages"),
         "optional_inputs": (),
-        "required_outputs": ("intent", "task_type", "plan", "next_agent"),
+        "required_outputs": (
+            "intent",
+            "task_type",
+            "requires_character_lookup",
+            "plan",
+            "next_agent",
+        ),
     },
     "calculator": {
         "required_inputs": (),
