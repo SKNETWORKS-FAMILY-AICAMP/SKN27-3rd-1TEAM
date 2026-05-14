@@ -11,7 +11,7 @@ ensure_app_import_paths()
 from app.common.chat_render import render_style, render_top_navigation  # noqa: E402
 
 st.set_page_config(
-    page_title="허접한 인내의 숲",
+    page_title="Game",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -24,37 +24,38 @@ st.markdown(
     """
     <style>
     .block-container {
-        max-width: 1040px;
-        padding-top: 1.2rem;
+        max-width: 960px !important;
+        padding-top: 4.1rem !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 0 !important;
     }
 
-    h1 {
-        font-size: 1.55rem !important;
-        margin-bottom: 0.2rem !important;
+    .maple-game-page-marker {
+        display: none;
     }
 
-    .stCaption {
-        margin-bottom: 0.35rem;
+    [data-testid="stElementContainer"]:has(.maple-game-page-marker) {
+        display: none !important;
     }
 
+    [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) [data-testid="stVerticalBlock"] {
+        gap: 0 !important;
+    }
+
+    [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) iframe {
+        display: block;
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-st.title("허접한 인내의 숲")
-st.caption("화살표 또는 WASD 이동, Space 점프")
 
 GAME_ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
 
 
 def game_asset_path(filename: str) -> Path:
     return GAME_ASSET_DIR / filename
-
-
-bgm_path = game_asset_path("엘리니아 필드.mp3")
-if bgm_path.exists():
-    st.audio(bgm_path, format="audio/mpeg", loop=True, autoplay=True, width=320)
 
 
 def image_to_data_url(path: Path | None = None, uploaded_file=None) -> str:
@@ -65,6 +66,7 @@ def image_to_data_url(path: Path | None = None, uploaded_file=None) -> str:
             ".jpg": "image/jpeg",
             ".jpeg": "image/jpeg",
             ".webp": "image/webp",
+            ".mp3": "audio/mpeg",
         }.get(path.suffix.lower(), "image/png")
     elif uploaded_file is not None:
         image_bytes = uploaded_file.getvalue()
@@ -76,6 +78,8 @@ def image_to_data_url(path: Path | None = None, uploaded_file=None) -> str:
     return f"data:{mime_type};base64,{encoded_image}"
 
 
+bgm_path = game_asset_path("엘리니아 필드.mp3")
+bgm_data_url = image_to_data_url(bgm_path) if bgm_path.exists() else ""
 default_spritesheet = game_asset_path("spritesheet.webp")
 default_character = game_asset_path("character.png")
 default_exit_portal = game_asset_path("exit_portal.png")
@@ -132,11 +136,8 @@ else:
 
 game_html = """
     <div class="game-shell">
-      <canvas id="game" width="960" height="680" aria-label="bad forest platform game"></canvas>
+      <canvas id="game" width="960" height="600" aria-label="bad forest platform game"></canvas>
       <div class="hud">
-        <button id="restart">처음부터</button>
-        <button id="prev-stage">이전</button>
-        <button id="next-stage">다음</button>
         <span id="status">대충 시작!</span>
       </div>
     </div>
@@ -148,7 +149,7 @@ game_html = """
     }
 
     .game-shell {
-      width: min(960px, 100%);
+      width: min(960px, 100%, calc((100vh - 42px) * 1.6));
       margin: 0 auto;
       user-select: none;
       font-family: Arial, sans-serif;
@@ -156,7 +157,7 @@ game_html = """
 
     #game {
       width: 100%;
-      aspect-ratio: 24 / 17;
+      aspect-ratio: 8 / 5;
       display: block;
       background: #132f24;
       image-rendering: pixelated;
@@ -181,24 +182,12 @@ game_html = """
       display: none;
     }
 
-    button {
-      border: 1px solid rgba(224, 255, 203, 0.35);
-      border-radius: 6px;
-      background: linear-gradient(#284b34, #14281f);
-      color: #eaffdf;
-      padding: 5px 10px;
-      font-weight: 700;
-      cursor: pointer;
-    }
     </style>
 
     <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
     const statusText = document.getElementById("status");
-    const restartButton = document.getElementById("restart");
-    const prevStageButton = document.getElementById("prev-stage");
-    const nextStageButton = document.getElementById("next-stage");
     const suppliedBackground = "__BACKGROUND_DATA_URL__";
     const suppliedCharacter = "__CHARACTER_DATA_URL__";
     const suppliedPortal = "__PORTAL_DATA_URL__";
@@ -206,6 +195,7 @@ game_html = """
     const suppliedNpc = "__NPC_DATA_URL__";
     const suppliedElliniaEmblem = "__ELLINIA_EMBLEM_DATA_URL__";
     const suppliedElixir = "__ELIXIR_DATA_URL__";
+    const suppliedBgm = "__BGM_DATA_URL__";
     const backgroundImage = new Image();
     const characterImage = new Image();
     const portalImage = new Image();
@@ -233,6 +223,37 @@ game_html = """
     let hasCharacterSheet = false;
     let characterSpriteBounds = { x: 0, y: 0, w: 1, h: 1 };
     let npcSpriteBounds = { x: 0, y: 0, w: 52, h: 70 };
+    const gameBgm = suppliedBgm ? new Audio(suppliedBgm) : null;
+    let bgmVolume = 0.42;
+    let bgmMuted = false;
+    let bgmStarted = false;
+    let menuOpen = false;
+    let menuRects = {};
+    let npcDialogOpen = false;
+    let npcDialogButtonRect = null;
+    let npcScreenRect = null;
+
+    if (gameBgm) {
+      gameBgm.loop = true;
+      gameBgm.volume = bgmVolume;
+      gameBgm.preload = "auto";
+    }
+
+    function syncBgm() {
+      if (!gameBgm) return;
+      gameBgm.volume = bgmMuted ? 0 : bgmVolume;
+      gameBgm.muted = bgmMuted;
+    }
+
+    function startBgm() {
+      if (!gameBgm || bgmStarted) return;
+      syncBgm();
+      gameBgm.play().then(() => {
+        bgmStarted = true;
+      }).catch(() => {
+        statusText.textContent = "MENU에서 음악을 켤 수 있습니다.";
+      });
+    }
 
     if (suppliedBackground) {
       backgroundImage.src = suppliedBackground;
@@ -1220,9 +1241,7 @@ game_html = """
     }
 
     function updateNpcBubble() {
-      if (frame >= npcBubbleNextFrame) {
-        startNpcBubble();
-      }
+      return;
     }
 
     function getNpcBubbleAlpha() {
@@ -1298,6 +1317,11 @@ game_html = """
     function update() {
       frame += 1;
       updateNpcBubble();
+
+      if (menuOpen || npcDialogOpen) {
+        keys.clear();
+        return;
+      }
 
       if (gameOver) {
         gameOverFrame += 1;
@@ -2258,11 +2282,10 @@ game_html = """
       const x = Math.round(centerX - drawW / 2);
       const y = Math.round(baseY - drawH - cameraY);
       const screenBaseY = Math.round(baseY - cameraY);
-      const bubbleAlpha = getNpcBubbleAlpha();
+      npcScreenRect = { x, y, w: drawW, h: drawH };
 
       ctx.save();
       ctx.imageSmoothingEnabled = false;
-      drawNpcSpeechBubble(centerX, y + 8, npcBubbleText, bubbleAlpha);
       ctx.fillStyle = "rgba(0,0,0,0.22)";
       ctx.beginPath();
       ctx.ellipse(centerX, screenBaseY + 2, Math.max(14, drawW * 0.28), 4, 0, 0, Math.PI * 2);
@@ -2278,6 +2301,14 @@ game_html = """
         drawW,
         drawH
       );
+      ctx.fillStyle = "rgba(255, 247, 164, 0.92)";
+      ctx.strokeStyle = "rgba(59, 43, 13, 0.75)";
+      ctx.lineWidth = 3;
+      ctx.font = "bold 20px Arial";
+      ctx.textAlign = "center";
+      ctx.strokeText("?", centerX, y - 8);
+      ctx.fillText("?", centerX, y - 8);
+      ctx.textAlign = "left";
       ctx.restore();
     }
 
@@ -3542,6 +3573,200 @@ game_html = """
       drawResultButton(x + 194, y + 396, 144, 42, "retry");
     }
 
+    function drawSmallMapleButton(rect, label, active = false) {
+      const grad = ctx.createLinearGradient(rect.x, rect.y, rect.x, rect.y + rect.h);
+      if (active) {
+        grad.addColorStop(0, "#f7d85b");
+        grad.addColorStop(1, "#b87315");
+      } else {
+        grad.addColorStop(0, "#8fb5d7");
+        grad.addColorStop(1, "#315f91");
+      }
+      ctx.fillStyle = grad;
+      roundedPanelPath(rect.x, rect.y, rect.w, rect.h, 6);
+      ctx.fill();
+      ctx.strokeStyle = active ? "#6f3c00" : "#183b60";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.lineWidth = 1;
+      roundedPanelPath(rect.x + 3, rect.y + 3, rect.w - 6, rect.h - 6, 4);
+      ctx.stroke();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 15px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText(label, rect.x + rect.w / 2, rect.y + rect.h / 2 + 5);
+      ctx.textAlign = "left";
+    }
+
+    function drawGameMenu() {
+      if (!menuOpen) return;
+
+      const x = 310;
+      const y = 102;
+      const w = 340;
+      const h = 374;
+      const closeRect = { x: x + w - 42, y: y + 14, w: 24, h: 24 };
+      const restartRect = { x: x + 36, y: y + 104, w: 268, h: 34 };
+      const prevRect = { x: x + 36, y: y + 148, w: 126, h: 34 };
+      const nextRect = { x: x + 178, y: y + 148, w: 126, h: 34 };
+      const muteRect = { x: x + 36, y: y + 248, w: 96, h: 34 };
+      const minusRect = { x: x + 36, y: y + 306, w: 42, h: 34 };
+      const plusRect = { x: x + w - 78, y: y + 306, w: 42, h: 34 };
+      const sliderRect = { x: x + 92, y: y + 313, w: 154, h: 20 };
+      menuRects = {
+        close: closeRect,
+        restart: restartRect,
+        prev: prevRect,
+        next: nextRect,
+        mute: muteRect,
+        minus: minusRect,
+        plus: plusRect,
+        slider: sliderRect,
+      };
+
+      ctx.save();
+      ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const panel = ctx.createLinearGradient(x, y, x, y + h);
+      panel.addColorStop(0, "#f6e1a3");
+      panel.addColorStop(0.18, "#d4a15a");
+      panel.addColorStop(1, "#7d4c1d");
+      ctx.fillStyle = panel;
+      roundedPanelPath(x, y, w, h, 12);
+      ctx.fill();
+      ctx.strokeStyle = "#4a260b";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = "#fff2b7";
+      ctx.lineWidth = 2;
+      roundedPanelPath(x + 6, y + 6, w - 12, h - 12, 8);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(39, 21, 8, 0.82)";
+      roundedPanelPath(x + 18, y + 54, w - 36, h - 74, 8);
+      ctx.fill();
+      ctx.fillStyle = "#fff0b2";
+      ctx.font = "bold 24px Arial";
+      ctx.textAlign = "center";
+      ctx.fillText("MENU", x + w / 2, y + 36);
+      ctx.textAlign = "left";
+
+      drawSmallMapleButton(closeRect, "X");
+
+      ctx.fillStyle = "#fff8d6";
+      ctx.font = "bold 17px Arial";
+      ctx.fillText("스테이지 설정", x + 36, y + 86);
+      ctx.font = "bold 13px Arial";
+      ctx.fillStyle = "rgba(255,248,214,0.78)";
+      ctx.fillText(`${stage.hidden ? "Hidden" : "Stage"} ${currentStage + 1}`, x + 36, y + 106);
+
+      drawSmallMapleButton(restartRect, "처음부터", true);
+      drawSmallMapleButton(prevRect, "이전", false);
+      drawSmallMapleButton(nextRect, "다음", false);
+
+      ctx.fillStyle = "#fff8d6";
+      ctx.font = "bold 17px Arial";
+      ctx.fillText("음악", x + 36, y + 216);
+      ctx.font = "bold 13px Arial";
+      ctx.fillStyle = "rgba(255,248,214,0.78)";
+      ctx.fillText(gameBgm ? "엘리니아 필드 BGM" : "음악 파일 없음", x + 36, y + 240);
+
+      drawSmallMapleButton(muteRect, bgmMuted ? "켜기" : "음소거", bgmMuted);
+      drawSmallMapleButton(minusRect, "-", false);
+      drawSmallMapleButton(plusRect, "+", false);
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+      roundedPanelPath(sliderRect.x, sliderRect.y + 6, sliderRect.w, 8, 4);
+      ctx.fill();
+      const fillW = Math.round(sliderRect.w * bgmVolume);
+      const fill = ctx.createLinearGradient(sliderRect.x, sliderRect.y, sliderRect.x + sliderRect.w, sliderRect.y);
+      fill.addColorStop(0, "#7ee8ff");
+      fill.addColorStop(1, "#f8e35a");
+      ctx.fillStyle = fill;
+      roundedPanelPath(sliderRect.x, sliderRect.y + 6, fillW, 8, 4);
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(sliderRect.x + fillW, sliderRect.y + 10, 9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#3a2814";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#fff8d6";
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "right";
+      ctx.fillText(`${Math.round(bgmVolume * 100)}%`, x + w - 36, y + 272);
+      ctx.textAlign = "left";
+      ctx.restore();
+    }
+
+    function drawNpcInstructionDialog() {
+      if (!npcDialogOpen) return;
+
+      const dialogW = 780;
+      const dialogH = 168;
+      const x = Math.round((canvas.width - dialogW) / 2);
+      const y = canvas.height - classicHudHeight - dialogH - 16;
+      npcDialogButtonRect = { x: x + dialogW - 92, y: y + dialogH - 42, w: 70, h: 28 };
+
+      ctx.save();
+      ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height - classicHudHeight);
+
+      ctx.fillStyle = "#f3e0b4";
+      roundedPanelPath(x, y, dialogW, dialogH, 10);
+      ctx.fill();
+      ctx.strokeStyle = "#5b3514";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = "#fff4ca";
+      ctx.lineWidth = 2;
+      roundedPanelPath(x + 6, y + 6, dialogW - 12, dialogH - 12, 7);
+      ctx.stroke();
+
+      const portrait = { x: x + 18, y: y + 18, w: 128, h: 132 };
+      ctx.fillStyle = "#47311e";
+      roundedPanelPath(portrait.x, portrait.y, portrait.w, portrait.h, 6);
+      ctx.fill();
+      ctx.strokeStyle = "#2a1709";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      if (hasNpcImage) {
+        const scale = Math.min((portrait.w - 18) / npcSpriteBounds.w, (portrait.h - 18) / npcSpriteBounds.h);
+        const drawW = Math.round(npcSpriteBounds.w * scale);
+        const drawH = Math.round(npcSpriteBounds.h * scale);
+        ctx.drawImage(
+          npcCanvas,
+          npcSpriteBounds.x,
+          npcSpriteBounds.y,
+          npcSpriteBounds.w,
+          npcSpriteBounds.h,
+          portrait.x + Math.round((portrait.w - drawW) / 2),
+          portrait.y + portrait.h - drawH - 6,
+          drawW,
+          drawH
+        );
+      }
+
+      ctx.fillStyle = "#6a3f19";
+      ctx.font = "bold 18px Arial";
+      ctx.fillText("토벤머리 안내자", x + 166, y + 38);
+      ctx.fillStyle = "#2f2117";
+      ctx.font = "bold 16px Arial";
+      const lines = [
+        "이동: 방향키 또는 WASD",
+        "점프: Space    로프: 위/아래 방향키",
+        "천천히 착지점을 보고 움직이면 더 멀리 올라갈 수 있어.",
+      ];
+      lines.forEach((line, index) => ctx.fillText(line, x + 166, y + 72 + index * 27));
+
+      drawSmallMapleButton(npcDialogButtonRect, "확인", true);
+      ctx.restore();
+    }
+
     function render() {
       const playHeight = canvas.height - classicHudHeight;
       const targetCameraY = Math.max(0, Math.min(world.height - playHeight, player.y - playHeight * 0.65));
@@ -3570,6 +3795,9 @@ game_html = """
           drawStageResultWindow();
         }
       }
+
+      drawNpcInstructionDialog();
+      drawGameMenu();
     }
 
     function loop() {
@@ -3600,6 +3828,13 @@ game_html = """
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "Enter", "a", "d", "w", "s", "Shift"].includes(key)) {
         event.preventDefault();
       }
+      startBgm();
+      if (key === "Escape") {
+        menuOpen = false;
+        npcDialogOpen = false;
+        return;
+      }
+      if (menuOpen || npcDialogOpen) return;
       if (player.won && (key === " " || key === "Enter")) {
         advanceResultWindow();
         return;
@@ -3619,12 +3854,96 @@ game_html = """
       if (document.hidden) keys.clear();
     });
 
+    function pointInRect(x, y, rect) {
+      return rect && x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
+    }
+
+    function handleMenuClick(x, y) {
+      if (!menuOpen) return false;
+
+      if (pointInRect(x, y, menuRects.close)) {
+        menuOpen = false;
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.restart)) {
+        loadStage(currentStage, currentStage === hiddenStageIndex);
+        statusText.textContent = `${stage.name} 다시 시작`;
+        menuOpen = false;
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.prev)) {
+        loadVisibleStage(currentStage - 1);
+        menuOpen = false;
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.next)) {
+        loadVisibleStage(currentStage + 1);
+        menuOpen = false;
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.mute)) {
+        bgmMuted = !bgmMuted;
+        syncBgm();
+        if (!bgmMuted) startBgm();
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.minus)) {
+        bgmVolume = Math.max(0, Math.round((bgmVolume - 0.1) * 10) / 10);
+        syncBgm();
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.plus)) {
+        bgmVolume = Math.min(1, Math.round((bgmVolume + 0.1) * 10) / 10);
+        bgmMuted = false;
+        syncBgm();
+        startBgm();
+        return true;
+      }
+
+      if (pointInRect(x, y, menuRects.slider)) {
+        bgmVolume = Math.max(0, Math.min(1, (x - menuRects.slider.x) / menuRects.slider.w));
+        bgmMuted = bgmVolume <= 0;
+        syncBgm();
+        if (!bgmMuted) startBgm();
+        return true;
+      }
+
+      return true;
+    }
+
     canvas.addEventListener("click", (event) => {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
+      startBgm();
+
+      if (handleMenuClick(x, y)) return;
+
+      if (npcDialogOpen) {
+        if (pointInRect(x, y, npcDialogButtonRect)) {
+          npcDialogOpen = false;
+        }
+        return;
+      }
+
+      const menuButtonRect = { x: 882, y: canvas.height - classicHudHeight + 31 + 8, w: 60, h: 45 };
+      if (pointInRect(x, y, menuButtonRect)) {
+        menuOpen = true;
+        return;
+      }
+
+      if (pointInRect(x, y, npcScreenRect)) {
+        npcDialogOpen = true;
+        return;
+      }
 
       if (gameOver && gameOverButtonRect) {
         const gameOverHit =
@@ -3648,14 +3967,6 @@ game_html = """
 
       advanceResultWindow();
     });
-
-    restartButton.addEventListener("click", () => {
-      loadStage(currentStage);
-      statusText.textContent = `${stage.name} 다시 시작`;
-    });
-
-    prevStageButton.addEventListener("click", () => loadVisibleStage(currentStage - 1));
-    nextStageButton.addEventListener("click", () => loadVisibleStage(currentStage + 1));
 
     loadStage(0);
     loop();
@@ -3681,7 +3992,10 @@ components.html(
     ).replace(
         "__ELIXIR_DATA_URL__",
         elixir_data_url,
+    ).replace(
+        "__BGM_DATA_URL__",
+        bgm_data_url,
     ),
-    height=720,
+    height=642,
     scrolling=False,
 )
