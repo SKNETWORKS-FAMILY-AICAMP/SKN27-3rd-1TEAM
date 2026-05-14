@@ -178,6 +178,7 @@ def evaluate_final_answer_record(
     says_insufficient_info = contains_insufficient_info_phrase(answer_text)
 
     question_overlap = compute_overlap(answer_text, [question])
+    question_context_overlap = compute_overlap(question, contexts)
     context_overlap = compute_overlap(answer_text, contexts)
     reference_overlap = compute_overlap(answer_text, [reference] if reference else [])
 
@@ -189,7 +190,7 @@ def evaluate_final_answer_record(
         reference_overlap_threshold=reference_overlap_threshold,
     ) or (
         bool(contexts)
-        and context_overlap >= context_overlap_threshold
+        and question_context_overlap >= question_overlap_threshold
         and has_answer
     )
     grounded_in_context = (
