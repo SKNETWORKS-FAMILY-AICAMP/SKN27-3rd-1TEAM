@@ -46,6 +46,9 @@ WELCOME_MESSAGE = {
 }
 
 ANSWER_KEYS = ("final_answer", "answer", "analysis", "draft_answer")
+RANKING_TOP100_PROMPT = "전체 랭킹 100위까지 보여줘."
+WEEKLY_EVENT_PROMPT = "이번주 이벤트 내용 알려줘."
+CASH_UPDATE_PROMPT = "캐시샵 업데이트 내용 알려줘."
 CHAT_STATE_KEYS = (
     "messages",
     "agent_messages",
@@ -180,8 +183,117 @@ def fallback_answer(user_input: str, error: Exception) -> str:
     )
 
 
+def is_ranking_top100_request(user_input: str) -> bool:
+    normalized = " ".join(str(user_input or "").split())
+    return normalized == RANKING_TOP100_PROMPT or (
+        "랭킹" in normalized
+        and "100" in normalized
+        and any(keyword in normalized for keyword in ("전체", "top", "TOP"))
+    )
+
+
+def format_ranking_top100_answer() -> str:
+    from src.collectors.nexon_api import fetch_overall_ranking_top100
+
+    rankings = fetch_overall_ranking_top100()
+    if not rankings:
+        return "전체 랭킹 정보를 가져오지 못했습니다. API 기준 날짜 또는 API 키를 확인해 주세요."
+
+    lines = [
+        "전체 랭킹 TOP 100입니다.",
+        "",
+    ]
+    for index, row in enumerate(rankings, start=1):
+        rank = row.get("ranking") or index
+        character_name = row.get("character_name") or "-"
+        world_name = row.get("world_name") or "-"
+        class_name = row.get("class_name") or row.get("class") or "-"
+        level = row.get("character_level") or "-"
+        lines.append(f"{rank}. {character_name} / {world_name} / {class_name} / Lv.{level}")
+    return "\n".join(lines)
+
+
+def is_weekly_event_request(user_input: str) -> bool:
+    normalized = " ".join(str(user_input or "").split())
+    return normalized == WEEKLY_EVENT_PROMPT or (
+        "이벤트" in normalized
+        and any(keyword in normalized for keyword in ("이번주", "이번 주", "현재", "진행"))
+    )
+
+
+def format_weekly_event_answer() -> str:
+    from src.collectors.nexon_api import fetch_current_event_notices
+
+    events = fetch_current_event_notices(max_events=5)
+    if not events:
+        return "이번주 이벤트 정보를 가져오지 못했습니다. Nexon API 키와 이벤트 공지 데이터를 확인해 주세요."
+
+    lines = ["이번주 진행 중인 메이플스토리 이벤트입니다.", ""]
+    for event in events:
+        title = str(event.get("title") or "제목 없음").strip()
+        url = str(event.get("url") or "").strip()
+        start_date = str(event.get("date_event_start") or "").strip()[:10] or "unknown"
+        end_date = str(event.get("date_event_end") or "").strip()[:10] or "unknown"
+        link = f"[바로가기]({url})" if url else "URL 없음"
+        lines.extend(
+            [
+                f"## {title}",
+                f"### 이벤트 기간",
+                f"{start_date} ~ {end_date}",
+                f"### URL",
+                link,
+                "",
+            ]
+        )
+    return "\n".join(lines)
+
+
+def is_cash_update_request(user_input: str) -> bool:
+    normalized = " ".join(str(user_input or "").split())
+    return normalized == CASH_UPDATE_PROMPT or (
+        "캐시" in normalized
+        and any(keyword in normalized for keyword in ("업데이트", "공지", "신규", "코디"))
+    )
+
+
+def format_cash_update_answer() -> str:
+    from src.collectors.nexon_api import fetch_recent_update_cash_sections
+
+    notices = fetch_recent_update_cash_sections(max_notices=3)
+    if not notices:
+        return "최근 업데이트 공지에서 캐시 관련 내용을 찾지 못했습니다. Nexon API 키와 업데이트 공지 데이터를 확인해 주세요."
+
+    lines = ["최근 업데이트 공지의 캐시 관련 내용입니다.", ""]
+    for notice in notices:
+        title = str(notice.get("title") or "제목 없음").strip()
+        url = str(notice.get("url") or "").strip()
+        notice_date = str(notice.get("date") or "").strip()[:10] or "unknown"
+        link = f"[바로가기]({url})" if url else "URL 없음"
+        lines.extend(
+            [
+                f"## {title}",
+                f"### 공지일",
+                notice_date,
+                f"### URL",
+                link,
+                f"### 캐시 관련 내용",
+            ]
+        )
+        for section in notice.get("cash_sections", []):
+            lines.append(section)
+            lines.append("")
+    return "\n".join(lines)
+
+
 def get_assistant_response(user_input: str) -> str:
     try:
+        if is_ranking_top100_request(user_input):
+            return format_ranking_top100_answer()
+        if is_weekly_event_request(user_input):
+            return format_weekly_event_answer()
+        if is_cash_update_request(user_input):
+            return format_cash_update_answer()
+
         graph = load_graph()
         compacted_messages, memory_summary = compact_agent_history(
             st.session_state.agent_messages,

@@ -95,10 +95,16 @@ WEB_KEYWORDS = (
     "\uc5c5\ub370\uc774\ud2b8",
     "\uc774\ubca4\ud2b8",
     "\ubc84\ub2dd",
-    "\ubcf4\uc0c1",
     "\ud14c\uc12d",
     "\ud14c\uc2a4\ud2b8\uc6d4\ub4dc",
     "\uce90\uc2dc\uc0f5",
+)
+
+BOSS_REWARD_KEYWORDS = (
+    "\ubcf4\uc0c1",
+    "\ub4dc\ub86d",
+    "\uacb0\uc815\uc11d",
+    "\uac15\ub82c\ud55c \ud798\uc758 \uacb0\uc815",
 )
 
 
@@ -131,12 +137,18 @@ def classify_research_route(query: str) -> ResearchRouting:
 
     normalized_query = query.lower()
 
+    structured_boss_reward = is_structured_boss_reward_query(query)
+
     needs_graph = any(keyword.lower() in normalized_query for keyword in graph_route_keywords())
 
     needs_web = any(keyword.lower() in normalized_query for keyword in WEB_KEYWORDS)
+    if structured_boss_reward:
+        needs_web = False
 
     if needs_web and needs_graph:
         reason = "latest_structured_fact"
+    elif structured_boss_reward:
+        reason = "boss_reward_graph_fact"
     elif needs_web:
         reason = "latest_or_notice"
     elif needs_graph:
@@ -195,6 +207,7 @@ def build_research_route(query: str, *, use_llm: bool = True) -> tuple[ResearchR
     route["use_db"] = route["use_db"] or fallback_route["use_db"]
     route["use_graph"] = route["use_graph"] or fallback_route["use_graph"]
     route["use_web"] = route["use_web"] or fallback_route["use_web"]
+    route = apply_structured_boss_reward_guard(query, route)
     if route["use_web"]:
         route["official_only"] = True
     route["parser_source"] = "llm"
@@ -279,6 +292,36 @@ def normalize_search_query(value: Any, default: str) -> str:
     return query or default
 
 
+def apply_structured_boss_reward_guard(
+    query: str,
+    route: ResearchRouting,
+) -> ResearchRouting:
+    if not is_structured_boss_reward_query(query):
+        return route
+
+    guarded_route: ResearchRouting = {
+        **route,
+        "use_graph": True,
+        "use_web": False,
+        "reason": "boss_reward_graph_fact",
+    }
+    return guarded_route
+
+
+def is_structured_boss_reward_query(query: str) -> bool:
+    normalized_query = query.lower()
+    has_boss_alias = any(
+        keyword.lower() in normalized_query
+        for keyword in load_boss_alias_keywords()
+    )
+    if not has_boss_alias:
+        return False
+
+    has_reward_intent = any(keyword in normalized_query for keyword in BOSS_REWARD_KEYWORDS)
+    has_web_intent = any(keyword in normalized_query for keyword in WEB_KEYWORDS)
+    return has_reward_intent and not has_web_intent
+
+
 def retrieve_web_evidence(
     *,
     state: AgentState,
@@ -351,6 +394,8 @@ def run_research(
             state["user_query"],
             use_llm=use_llm_parser,
         )
+    else:
+        route = apply_structured_boss_reward_guard(state["user_query"], route)
 
     docs: list[RetrievedDocument] = []
     user_query = state["user_query"]
@@ -421,6 +466,15 @@ def run_research(
             research_result["errors"].append(message)
     else:
         research_result["graph_skipped"] = True
+
+    structured_boss_reward_query = (
+        is_structured_boss_reward_query(user_query)
+        or is_structured_boss_reward_query(search_query)
+    )
+    if structured_boss_reward_query and any(_is_graph_document(document) for document in docs):
+        docs = [document for document in docs if _is_graph_document(document)]
+        route = apply_structured_boss_reward_guard(user_query, route)
+        research_result["structured_boss_reward_guard"] = True
 
     web_reason = "route_requested" if route["use_web"] else web_fallback_reason(
         route,

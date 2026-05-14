@@ -4,13 +4,14 @@ import json
 import os
 import re
 import sys
+from html import unescape
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, "../../"))
 sys.path.append(project_root)
 
 from dataclasses import asdict, is_dataclass
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -136,6 +137,38 @@ class NexonOpenAPIClient:
 
     def get_hyper_stat(self, ocid: str, api_date: str | None = None) -> dict[str, Any]:
         return self.request("character/hyper-stat", {"ocid": ocid, "date": api_date})
+
+    def get_overall_ranking(
+        self,
+        *,
+        api_date: str,
+        page: int = 1,
+        world_name: str | None = None,
+        world_type: str | None = None,
+        class_name: str | None = None,
+    ) -> dict[str, Any]:
+        return self.request(
+            "ranking/overall",
+            {
+                "date": api_date,
+                "page": page,
+                "world_name": world_name,
+                "world_type": world_type,
+                "class": class_name,
+            },
+        )
+
+    def get_event_notice_list(self) -> dict[str, Any]:
+        return self.request("notice-event")
+
+    def get_event_notice_detail(self, notice_id: int | str) -> dict[str, Any]:
+        return self.request("notice-event/detail", {"notice_id": notice_id})
+
+    def get_update_notice_list(self) -> dict[str, Any]:
+        return self.request("notice-update")
+
+    def get_update_notice_detail(self, notice_id: int | str) -> dict[str, Any]:
+        return self.request("notice-update/detail", {"notice_id": notice_id})
 
     def fetch_raw_character_bundle(
         self,
@@ -570,6 +603,201 @@ def make_json_safe(value: Any) -> Any:
     return value
 
 
+def fetch_overall_ranking_top100(
+    api_date: str | None = None,
+    *,
+    client: NexonOpenAPIClient | None = None,
+    world_name: str | None = None,
+    world_type: str | None = None,
+    class_name: str | None = None,
+) -> list[dict[str, Any]]:
+    api = client or NexonOpenAPIClient()
+    ranking_date = api_date or (date.today() - timedelta(days=1)).isoformat()
+    rankings: list[dict[str, Any]] = []
+    page = 1
+
+    while len(rankings) < 100:
+        payload = api.get_overall_ranking(
+            api_date=ranking_date,
+            page=page,
+            world_name=world_name,
+            world_type=world_type,
+            class_name=class_name,
+        )
+        rows = payload.get("ranking") or []
+        if not isinstance(rows, list) or not rows:
+            break
+        rankings.extend(row for row in rows if isinstance(row, dict))
+        page += 1
+
+    return rankings[:100]
+
+
+def fetch_current_event_notices(
+    *,
+    client: NexonOpenAPIClient | None = None,
+    today: date | None = None,
+    max_events: int = 5,
+    include_detail: bool = True,
+) -> list[dict[str, Any]]:
+    api = client or NexonOpenAPIClient()
+    base_date = today or date.today()
+    payload = api.get_event_notice_list()
+    rows = payload.get("event_notice") or []
+    if not isinstance(rows, list):
+        return []
+
+    current_events = [
+        row
+        for row in rows
+        if isinstance(row, dict) and _is_event_active(row, base_date)
+    ][:max_events]
+
+    if not include_detail:
+        return current_events
+
+    detailed_events: list[dict[str, Any]] = []
+    for event in current_events:
+        notice_id = event.get("notice_id")
+        if notice_id in (None, ""):
+            detailed_events.append(event)
+            continue
+        try:
+            detail = api.get_event_notice_detail(notice_id)
+        except NexonAPIError:
+            detailed_events.append(event)
+            continue
+        detailed_events.append({**event, **detail})
+    return detailed_events
+
+
+def fetch_recent_update_cash_sections(
+    *,
+    client: NexonOpenAPIClient | None = None,
+    max_notices: int = 1,
+) -> list[dict[str, Any]]:
+    api = client or NexonOpenAPIClient()
+    payload = api.get_update_notice_list()
+    rows = payload.get("update_notice") or []
+    if not isinstance(rows, list):
+        return []
+
+    results: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        notice_id = row.get("notice_id")
+        if notice_id in (None, ""):
+            continue
+        try:
+            detail = api.get_update_notice_detail(notice_id)
+        except NexonAPIError:
+            continue
+        sections = extract_keyword_sections(str(detail.get("contents") or ""), keyword="캐시")
+        if not sections:
+            continue
+        results.append({**row, **detail, "cash_sections": sections})
+        if len(results) >= max_notices:
+            break
+    return results
+
+
+def extract_keyword_sections(contents: str, *, keyword: str) -> list[str]:
+    lines = _clean_notice_lines(contents)
+    section = _extract_heading_section(lines, keyword)
+    if section:
+        return [_format_notice_section(section)]
+    return []
+
+
+def _clean_notice_lines(contents: str) -> list[str]:
+    text = unescape(str(contents or ""))
+    text = re.sub(r"(?i)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?i)</p\s*>", "\n", text)
+    text = re.sub(r"(?i)</div\s*>", "\n", text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = unescape(text).replace("\xa0", " ")
+    return [
+        re.sub(r"\s+", " ", line).strip()
+        for line in text.splitlines()
+        if re.sub(r"\s+", " ", line).strip()
+    ]
+
+
+def _extract_heading_section(lines: list[str], keyword: str) -> list[str]:
+    start_index = -1
+    for index, line in enumerate(lines):
+        if _is_table_of_contents_line(line):
+            continue
+        if line.strip("■ ").strip() == keyword:
+            start_index = index
+            break
+    if start_index < 0:
+        return []
+
+    section: list[str] = []
+    for line in lines[start_index + 1:]:
+        if _is_next_notice_heading(line):
+            break
+        if _is_table_of_contents_line(line):
+            continue
+        section.append(line)
+    return section
+
+
+def _format_notice_section(lines: list[str]) -> str:
+    formatted: list[str] = []
+    for line in lines:
+        normalized = line.strip()
+        if not normalized:
+            continue
+        if normalized == "캐시":
+            continue
+        if normalized.startswith("■ "):
+            formatted.append("")
+            formatted.append(f"#### {normalized[2:].strip()}")
+        elif normalized.startswith(("· ", "- ", "※ ")):
+            formatted.append(normalized)
+        elif normalized.startswith("ㅣ"):
+            formatted.append("")
+            formatted.append(f"#### {normalized.lstrip('ㅣ').strip()}")
+        else:
+            formatted.append(normalized)
+    return "\n".join(line for line in formatted if line).strip()
+
+
+def _is_next_notice_heading(line: str) -> bool:
+    stripped = line.strip()
+    if stripped.startswith("■ ") and len(stripped) <= 40:
+        return True
+    return bool(re.fullmatch(r"\d+\.\s*[^.]{1,40}", stripped))
+
+
+def _is_table_of_contents_line(line: str) -> bool:
+    stripped = line.strip()
+    return bool(re.fullmatch(r"\d+\.\s*[^.]{1,40}", stripped))
+
+
+def _is_event_active(event: dict[str, Any], base_date: date) -> bool:
+    start_date = _parse_openapi_date(event.get("date_event_start"))
+    end_date = _parse_openapi_date(event.get("date_event_end"))
+    if start_date and base_date < start_date:
+        return False
+    if end_date and base_date > end_date:
+        return False
+    return bool(start_date or end_date)
+
+
+def _parse_openapi_date(value: Any) -> date | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text[:10])
+    except ValueError:
+        return None
+
+
 def _read_error_body(exc: HTTPError) -> str:
     try:
         body = exc.read().decode("utf-8")
@@ -581,6 +809,9 @@ def _read_error_body(exc: HTTPError) -> str:
 __all__ = [
     "NexonAPIError",
     "NexonOpenAPIClient",
+    "fetch_overall_ranking_top100",
+    "fetch_current_event_notices",
+    "fetch_recent_update_cash_sections",
     "fetch_character_state",
     "nexon_api_node",
     "normalise_raw_character_bundle",
