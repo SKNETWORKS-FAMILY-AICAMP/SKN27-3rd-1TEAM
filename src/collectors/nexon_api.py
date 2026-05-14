@@ -271,14 +271,17 @@ def nexon_api_node(
 ) -> AgentState:
     """LangGraph-friendly node that enriches AgentState with Nexon data."""
 
-    character_name = state.get("character_name") or extract_character_name_from_query(
-        state.get("user_query", "")
+    lookup_query = state.get("contextualized_query") or state.get("user_query", "")
+    character_name = (
+        state.get("character_name")
+        or extract_character_name_from_query(lookup_query)
+        or extract_character_name_from_query(state.get("user_query", ""))
     )
     fetched = fetch_character_state(
         character_name=character_name,
         ocid=state.get("ocid"),
         world_name=state.get("world_name"),
-        user_query=state.get("user_query"),
+        user_query=lookup_query,
         api_date=api_date,
         api_key=api_key,
         client=client,

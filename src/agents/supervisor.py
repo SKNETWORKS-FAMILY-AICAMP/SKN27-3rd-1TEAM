@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from common.state import AgentState, AgentName
 from common.get_model import get_llm
@@ -78,8 +79,6 @@ CHARACTER_LOOKUP_KEYWORDS = (
     "제 주스탯",
     "내 유니온",
     "제 유니온",
-    "내가",
-    "제가",
     "닉네임",
     "캐릭터명",
     "캐릭터 조회",
@@ -99,6 +98,23 @@ CHARACTER_LOOKUP_KEYWORDS = (
     "장비 조회",
     "유니온 조회",
     "스펙 분석",
+)
+CHARACTER_NAME_HINT_KEYWORDS = (
+    "닉네임",
+    "캐릭터명",
+    "캐릭터 이름",
+    "캐릭 이름",
+    "이름",
+    "스펙",
+    "스탯",
+    "전투력",
+    "장비",
+    "유니온",
+    "보스",
+    "가능",
+    "컷",
+    "분석",
+    "추천",
 )
 CHARACTER_DATA_LOOKUP_KEYWORDS = (
     "스탯조회",
@@ -151,6 +167,19 @@ RESEARCH_REPLAN_FEEDBACK = (
 )
 
 
+def format_messages_for_prompt(messages: list[Any]) -> str:
+    lines = []
+    for message in messages:
+        role = str(getattr(message, "type", "") or message.__class__.__name__)
+        if role == "human":
+            role = "user"
+        elif role == "ai":
+            role = "assistant"
+        content = str(getattr(message, "content", message)).strip()
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+
+
 def is_chitchat_query(query: str) -> bool:
     normalized = str(query or "").strip().lower()
     compact = "".join(normalized.split())
@@ -181,6 +210,8 @@ def requires_character_lookup_query(query: str) -> bool:
     normalized = text.lower()
     if any(keyword.lower() in normalized for keyword in CHARACTER_LOOKUP_KEYWORDS):
         return True
+    if not any(keyword.lower() in normalized for keyword in CHARACTER_NAME_HINT_KEYWORDS):
+        return False
     try:
         from src.collectors.nexon_api import extract_character_name_from_query
 
@@ -203,6 +234,7 @@ def requires_character_processing_query(query: str) -> bool:
 
 def _fallback_supervisor_response(state: AgentState, error: Exception | None = None) -> dict:
     user_query = str(state.get("user_query") or "")
+    contextualized_query = str(state.get("contextualized_query") or user_query).strip() or user_query
     existing_plan = list(state.get("plan") or [])
     feedback = str(state.get("feedback") or "")
     feedback_requires_research = any(
@@ -217,16 +249,16 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
         or state.get("retrieved_docs")
     )
     requires_search = False
-    requires_calculation = any(keyword in user_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
+    requires_calculation = any(keyword in contextualized_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
     lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
     requires_character_lookup = bool(
         state.get("requires_character_lookup")
-        or requires_character_lookup_query(user_query)
+        or requires_character_lookup_query(contextualized_query)
     )
-    character_data_lookup = requires_character_lookup and is_character_data_lookup_query(user_query)
+    character_data_lookup = requires_character_lookup and is_character_data_lookup_query(contextualized_query)
     simple_character_lookup = (
         character_data_lookup
-        and not requires_character_processing_query(user_query)
+        and not requires_character_processing_query(contextualized_query)
     )
     if has_character_lookup_state(state) or lookup_attempted:
         requires_character_lookup = False
@@ -240,7 +272,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     if completed_agent and completed_agent not in completed_agents:
         completed_agents.append(completed_agent)
 
-    if is_chitchat_query(user_query):
+    if is_chitchat_query(contextualized_query):
         task_type = "chitchat"
         requires_character_lookup = False
         plan = ["final_answer"]
@@ -268,7 +300,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             try:
                 from src.agents.research_agent import classify_research_route
 
-                route = classify_research_route(user_query)
+                route = classify_research_route(contextualized_query)
                 requires_search = bool(route.get("use_graph") or route.get("use_web"))
                 if requires_search:
                     task_type = "boss_strategy" if route.get("use_graph") else "general_qa"
@@ -296,6 +328,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     return {
         **state,
         "intent": "fallback supervisor routing",
+        "contextualized_query": contextualized_query,
         "task_type": task_type,
         "requires_character_lookup": requires_character_lookup,
         "plan": plan,
@@ -343,8 +376,15 @@ def _parse_supervisor_response(
         if isinstance(lookup_value, bool)
         else str(lookup_value).strip().lower() in TRUTHY_VALUES
     )
+    lookup_query = str(
+        response_dict.get("contextualized_query")
+        or state.get("contextualized_query")
+        or state.get("user_query")
+        or ""
+    )
     requires_character_lookup = (
         requires_character_lookup
+        or requires_character_lookup_query(lookup_query)
         or requires_character_lookup_query(str(state.get("user_query") or ""))
     )
     lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
@@ -454,10 +494,12 @@ def _finalize_plan(
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
     user_query = str(state.get("user_query") or "")
+    contextualized_query = str(state.get("contextualized_query") or user_query).strip() or user_query
     if is_chitchat_query(user_query):
         return {
             **state,
             "intent": "일상 대화 또는 인사",
+            "contextualized_query": contextualized_query,
             "task_type": "chitchat",
             "requires_character_lookup": False,
             "plan": ["final_answer"],
@@ -484,6 +526,7 @@ def supervisor(state:AgentState):
 
 
     messages = state["messages"]
+    formatted_messages = format_messages_for_prompt(messages)
     prompt = f"""
 # System
 당신은 메이플스토리 게임 전문가이자 agent에게 지시를 내리는 supervisor입니다.
@@ -509,6 +552,7 @@ TASK_TYPES:
 "requires_character_lookup" : 특정 유저 캐릭터의 현재 스펙, 장비, 전투력, 유니온, 보스 가능 여부처럼 Nexon Open API 캐릭터 조회가 필요한 경우 True, 일반 보스 정보/보상/요구 스탯처럼 캐릭터 조회가 필요 없는 경우 False
 "requires_calculation" : 사용자 질문에 {CALCULATION_TRIGGER_KEYWORDS}가 포함되어 있거나 calculator가 필요한 경우 True, 필요하지 않은 경우 False
 "requires_analytics" : 캐릭터 상태, 장비, 스펙, 선택지 비교, 성장 방향 판단처럼 analystic의 해석이 필요한 경우 True, 필요하지 않은 경우 False
+"contextualized_query" : 원문 질문이 이전 대화의 지시어/생략 표현에 의존하면 messages를 참고해 검색과 판단에 쓸 수 있는 완전한 질문으로 다시 씁니다. 독립 질문이면 원문과 동일하게 둡니다.
 
 #plan
 plan에는 아래 목록의 에이전트만 포함할 수 있습니다.
@@ -534,12 +578,16 @@ remaining_plan: {remaining_plan}
 feedback: {feedback}
 
 # User
-사용자의 질문: {messages}
+원문 질문 user_query: {user_query}
+현재 contextualized_query: {contextualized_query}
+대화 메시지 messages:
+{formatted_messages}
 
 #output format
 아래 JSON 리스트 형식으로만 답변하세요.
 [
   {{"key": "intent", "value": "사용자 질문 의도 요약"}},
+  {{"key": "contextualized_query", "value": "맥락을 반영해 완성한 질문. 독립 질문이면 원문과 동일"}},
   {{"key": "task_type", "value": "TASK_TYPES key 중 하나"}},
   {{"key": "requires_search", "value": true}},
   {{"key": "requires_character_lookup", "value": false}},
@@ -571,13 +619,18 @@ feedback: {feedback}
         retry_count,
         errors,
     )
+    contextualized_query = str(
+        response_dict.get("contextualized_query")
+        or state.get("contextualized_query")
+        or user_query
+    ).strip() or user_query
     character_data_lookup = (
         requires_character_lookup
-        and is_character_data_lookup_query(user_query)
+        and is_character_data_lookup_query(contextualized_query)
     )
     simple_character_lookup = (
         character_data_lookup
-        and not requires_character_processing_query(user_query)
+        and not requires_character_processing_query(contextualized_query)
     )
     if character_data_lookup:
         response_dict["requires_search"] = False
@@ -621,6 +674,7 @@ feedback: {feedback}
     return {
         **state,
         "intent": intent,
+        "contextualized_query": contextualized_query,
         "task_type": task_type,
         "requires_character_lookup": requires_character_lookup,
         "plan": plan,

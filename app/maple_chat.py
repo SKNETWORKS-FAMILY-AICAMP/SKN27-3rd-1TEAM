@@ -313,6 +313,7 @@ def get_assistant_response(user_input: str) -> str:
         )
         state = {
             "user_query": user_input,
+            "contextualized_query": user_input,
             "messages": to_langchain_messages(agent_messages),
             "completed_agents": [],
             "retry_count": 0,

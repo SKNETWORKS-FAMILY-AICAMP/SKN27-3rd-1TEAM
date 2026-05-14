@@ -17,6 +17,7 @@ NEXT_AGENT_VALUES = {
 STATE_FIELD_TYPES = {
     "user_query": "str",
     "messages": "list",
+    "contextualized_query": "str",
     "intent": "str",
     "task_type": "str",
     "requires_character_lookup": "bool",

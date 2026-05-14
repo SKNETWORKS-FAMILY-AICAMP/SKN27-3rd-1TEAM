@@ -33,7 +33,7 @@ def format_evidence_for_answer(state: AgentState) -> AgentState:
     documents = list(state.get("selected_evidence") or state.get("retrieved_docs") or [])
     original_context = str(state.get("context") or "")
     formatted_context = build_answer_context(
-        question=str(state.get("user_query") or ""),
+        question=str(state.get("contextualized_query") or state.get("user_query") or ""),
         documents=documents,
         original_context=original_context,
     )

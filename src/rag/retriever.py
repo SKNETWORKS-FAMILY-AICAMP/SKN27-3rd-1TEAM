@@ -1162,7 +1162,8 @@ class Wrapper:
 
     def update_state(self, state: AgentState, **kwargs: Any) -> AgentState:
         kwargs.setdefault("character_context", state.get("character_profile") or state)
-        retrieved_docs = self.retrieve_docs(state["user_query"], **kwargs)
+        query = str(state.get("contextualized_query") or state["user_query"])
+        retrieved_docs = self.retrieve_docs(query, **kwargs)
         return {
             **state,
             "retrieved_docs": retrieved_docs,
