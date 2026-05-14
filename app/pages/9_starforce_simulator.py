@@ -1,20 +1,35 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import random
+import sys
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from dataclasses import dataclass, field
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+for path in (PROJECT_ROOT, SRC_ROOT):
+    path_text = str(path)
+    if path_text not in sys.path:
+        sys.path.insert(0, path_text)
+
+from app.common.assets import asset_path, path_to_data_uri  # noqa: E402
+from app.common.bgm import render_bgm_control_button, render_page_bgm  # noqa: E402
+from app.common.chat_render import render_top_navigation  # noqa: E402
+from app.common.chat_style import render_style  # noqa: E402
 
 # ═══════════════════════════════════════════════════════
 # 1. 스타포스 데이터 (KMS 30성 기준)
 # ═══════════════════════════════════════════════════════
 
 def calc_cost(item_level: int, star: int) -> int:
-    """KMS 공식 기반 강화 비용 계산"""
+    """강화 비용 추정치 계산."""
     base = round(item_level ** 3 * (star + 1) / 2500 + 10) * 1000
     return base
 
-# 성수별 확률 테이블 [성공%, 유지%, 하락%, 파괴%]
+# 성수별 확률 테이블 [성공%, 유지%, 실패(유지)%, 파괴%]
 PROB_TABLE = {
     0:  [95.0,  5.0,  0.0,  0.0],
     1:  [90.0, 10.0,  0.0,  0.0],
@@ -27,25 +42,25 @@ PROB_TABLE = {
     8:  [60.0, 40.0,  0.0,  0.0],
     9:  [55.0, 45.0,  0.0,  0.0],
     10: [50.0, 50.0,  0.0,  0.0],
-    11: [45.0,  0.0, 55.0,  0.0],
-    12: [40.0,  0.0, 59.4,  0.6],
-    13: [35.0,  0.0, 64.1,  0.9],
-    14: [30.0,  0.0, 68.6,  1.4],
+    11: [45.0, 55.0,  0.0,  0.0],
+    12: [40.0, 60.0,  0.0,  0.0],
+    13: [35.0, 65.0,  0.0,  0.0],
+    14: [30.0, 70.0,  0.0,  0.0],
     15: [30.0,  0.0, 67.9,  2.1],
-    16: [30.0,  0.0, 66.4,  3.6],
-    17: [30.0,  0.0, 63.7,  6.3],
-    18: [30.0,  0.0, 58.1, 11.9],
-    19: [30.0,  0.0, 55.6, 14.4],
-    20: [30.0,  0.0, 53.0, 17.0],
-    21: [30.0,  0.0, 44.0, 26.0],
-    22: [3.0,   0.0, 77.6, 19.4],
-    23: [2.0,   0.0, 77.6, 20.4],
-    24: [1.0,   0.0, 75.6, 23.4],
-    25: [1.0,   0.0, 75.6, 23.4],
-    26: [0.7,   0.0, 74.4, 24.9],
-    27: [0.5,   0.0, 74.0, 25.5],
-    28: [0.3,   0.0, 73.6, 26.1],
-    29: [0.1,   0.0, 72.9, 27.0],
+    16: [30.0,  0.0, 67.9,  2.1],
+    17: [15.0,  0.0, 78.2,  6.8],
+    18: [15.0,  0.0, 78.2,  6.8],
+    19: [15.0,  0.0, 76.5,  8.5],
+    20: [30.0,  0.0, 59.5, 10.5],
+    21: [15.0,  0.0, 72.25, 12.75],
+    22: [15.0,  0.0, 68.0, 17.0],
+    23: [10.0,  0.0, 72.0, 18.0],
+    24: [10.0,  0.0, 72.0, 18.0],
+    25: [10.0,  0.0, 72.0, 18.0],
+    26: [7.0,   0.0, 74.4, 18.6],
+    27: [5.0,   0.0, 76.0, 19.0],
+    28: [3.0,   0.0, 77.6, 19.4],
+    29: [1.0,   0.0, 79.2, 19.8],
 }
 
 SAFE_STARS = {5, 10, 15}
@@ -134,14 +149,9 @@ def simulate_once(cfg: EnhanceConfig) -> dict:
                 next_star = current
                 consecutive_fail += 1
             elif roll < s + m + d:
-                if current in SAFE_STARS:
-                    result = 'maintain'
-                    next_star = current
-                    consecutive_fail += 1
-                else:
-                    result = 'down'
-                    next_star = current - 1
-                    consecutive_fail += 1
+                result = 'maintain'
+                next_star = current
+                consecutive_fail += 1
             else:
                 if current in SAFE_STARS:
                     result = 'maintain'
@@ -149,7 +159,7 @@ def simulate_once(cfg: EnhanceConfig) -> dict:
                     consecutive_fail += 1
                 elif current in cfg.safeguard:
                     result = 'safeguard'
-                    next_star = current - 1
+                    next_star = current
                     consecutive_fail += 1
                 else:
                     result = 'destroy'
@@ -226,7 +236,7 @@ def calc_expected(cfg: EnhanceConfig) -> pd.DataFrame:
             '강화 단계': f"{s}⭐ → {s+1}⭐",
             '성공률': f"{p[0]:.2f}%",
             '유지': f"{p[1]:.2f}%",
-            '하락': f"{p[2]:.2f}%",
+            '실패(유지)': f"{p[2]:.2f}%",
             '파괴': f"{p[3]:.2f}%",
             '1회 비용': f"{cost:,}",
             '구간 기댓값': f"{expected_cost/1e8:.2f}억",
@@ -241,45 +251,345 @@ def calc_expected(cfg: EnhanceConfig) -> pd.DataFrame:
 
 st.set_page_config(page_title="스타포스 시뮬레이터", page_icon="⭐", layout="wide")
 
+render_style()
+render_page_bgm("starforce")
+st.markdown(
+    '<div class="maple-sub-page-marker maple-starforce-page-marker"></div>',
+    unsafe_allow_html=True,
+)
+render_top_navigation(active_menu_key="starforce")
+render_bgm_control_button()
+
+meisterville_background = path_to_data_uri(asset_path("마이스터빌.webp"), "image/webp")
+if meisterville_background:
+    st.markdown(
+        f"""
+<style>
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) {{
+    background:
+        linear-gradient(180deg, rgba(8, 7, 6, 0.34), rgba(8, 7, 6, 0.72)),
+        url("{meisterville_background}") center top / cover fixed no-repeat !important;
+}}
+
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker)::before {{
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 50% 18%, rgba(255, 211, 145, 0.12), transparent 32%),
+        rgba(0, 0, 0, 0.08);
+    z-index: 0;
+}}
+
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) .main,
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) .block-container {{
+    position: relative;
+    z-index: 1;
+}}
+</style>
+""",
+        unsafe_allow_html=True,
+    )
+
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
-*, html, body { font-family: 'Noto Sans KR', sans-serif !important; }
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) .st-key-maple-brand-bar,
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) .st-key-maple-home-badge {
+    display: none !important;
+}
+
+[data-testid="stAppViewContainer"]:has(.maple-starforce-page-marker) .block-container {
+    max-width: 1180px !important;
+    padding: calc(4.1rem - 10px) 1.25rem 2rem !important;
+}
 
 .sf-header {
-    background: linear-gradient(135deg, #0d0d1a, #1a0d2e, #0d1a2e);
-    border-bottom: 2px solid #FFD70033;
-    padding: 1.5rem 2rem;
-    margin: -1rem -1rem 1.5rem -1rem;
+    background: rgba(8, 7, 6, 0.86) !important;
+    border: 1px solid rgba(255, 200, 137, 0.26) !important;
+    border-radius: 8px !important;
+    padding: 1.2rem 1.35rem !important;
+    margin: 0 0 1rem 0 !important;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28) !important;
 }
+
 .sf-header h1 {
-    font-size: 2rem; font-weight: 900; margin: 0;
-    background: linear-gradient(90deg, #FFD700, #FFA500);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-family: "MaplestoryBold", Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 1.45rem !important;
+    font-weight: 400 !important;
+    margin: 0 !important;
+    color: #ffc889 !important;
+    background: none !important;
+    -webkit-text-fill-color: #ffc889 !important;
 }
-.sf-header p { color: #888; font-size: 0.85rem; margin: 0.3rem 0 0 0; }
+
+.sf-header p {
+    color: rgba(255, 247, 232, 0.72) !important;
+    font-size: 0.82rem !important;
+    margin: 0.42rem 0 0 0 !important;
+}
 
 .section-label {
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
-    color: #FFD700; text-transform: uppercase;
-    margin: 1rem 0 0.4rem 0;
+    font-family: "MaplestoryBold", Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0.05em !important;
+    color: #ffc889 !important;
+    margin: 1rem 0 0.45rem 0 !important;
+    text-transform: none !important;
 }
+
 .metric-card {
-    background: #111827; border: 1px solid #1f2937;
-    border-radius: 12px; padding: 1rem 1.2rem; text-align: center;
+    background: rgba(8, 7, 6, 0.84) !important;
+    border: 1px solid rgba(255, 200, 137, 0.22) !important;
+    border-radius: 8px !important;
+    padding: 0.95rem 1rem !important;
 }
-.metric-card .m-label { color: #6b7280; font-size: 0.78rem; margin-bottom: 0.3rem; }
-.metric-card .m-value { font-size: 1.6rem; font-weight: 900; color: #FFD700; }
-.metric-card .m-sub { color: #9ca3af; font-size: 0.75rem; margin-top: 0.2rem; }
+
+.metric-card .m-label { color: rgba(255, 247, 232, 0.6) !important; font-size: 0.76rem !important; }
+.metric-card .m-value { color: #ffc889 !important; font-size: 1.45rem !important; }
+.metric-card .m-sub { color: rgba(255, 247, 232, 0.56) !important; font-size: 0.73rem !important; }
+
+[data-testid="stExpander"] {
+    background: rgba(8, 7, 6, 0.84) !important;
+    border: 1px solid rgba(255, 200, 137, 0.2) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26) !important;
+}
+
+[data-testid="stExpander"] details,
+[data-testid="stDataFrame"],
+[data-testid="stPlotlyChart"],
+[data-testid="stTabs"] [data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(8, 7, 6, 0.82) !important;
+}
+
+[data-testid="stTabs"] {
+    background: rgba(8, 7, 6, 0.82) !important;
+    border: 1px solid rgba(255, 200, 137, 0.2) !important;
+    border-radius: 8px !important;
+    padding: 0.95rem !important;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28) !important;
+    backdrop-filter: blur(3px);
+}
+
+[data-testid="stTabs"] [role="tablist"] {
+    background: rgba(13, 11, 9, 0.74) !important;
+    border: 1px solid rgba(255, 200, 137, 0.14) !important;
+    border-radius: 8px !important;
+    padding: 0.3rem !important;
+    gap: 0.25rem;
+}
+
+[data-testid="stTabs"] button[role="tab"] {
+    border-radius: 7px !important;
+    color: rgba(255, 247, 232, 0.72) !important;
+}
+
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+    background: rgba(255, 200, 137, 0.18) !important;
+    color: #ffc889 !important;
+}
+
+button[kind="primary"],
+.stButton button[kind="primary"] {
+    background: rgba(255, 200, 137, 0.92) !important;
+    color: #130d08 !important;
+    border: 1px solid rgba(255, 232, 190, 0.68) !important;
+    border-radius: 8px !important;
+}
+
+.stButton button,
+[data-testid="stBaseButton-secondary"],
+[data-testid="stBaseButton-tertiary"] {
+    border-radius: 8px !important;
+}
+
+label,
+[data-testid="stWidgetLabel"],
+[data-testid="stMarkdownContainer"],
+[data-testid="stCaptionContainer"] {
+    color: rgba(255, 247, 232, 0.82) !important;
+}
+
+div[data-baseweb="select"] > div,
+div[data-testid="stNumberInput"] input {
+    background: #0d0b09 !important;
+    border-color: rgba(255, 200, 137, 0.28) !important;
+    color: #fff7e8 !important;
+}
+
+div[data-testid="stCheckbox"] label {
+    min-height: 2rem;
+    align-items: center;
+}
+
+div[data-testid="stCheckbox"] p {
+    margin: 0 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+svg[aria-label^="_arrow"],
+svg[aria-label*="_arrow"],
+[aria-label^="_arrow"],
+[aria-label*="_arrow"],
+[title^="_arrow"],
+[title*="_arrow"] {
+    color: transparent !important;
+    font-size: 0 !important;
+    overflow: hidden !important;
+}
+
+.stSelectSlider [data-baseweb="slider"] {
+    padding-top: 0.75rem;
+}
+
+hr {
+    border-color: rgba(255, 200, 137, 0.18) !important;
+}
+
+.sf-guide {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(255, 200, 137, 0.22);
+    border-radius: 8px;
+    background: rgba(8, 7, 6, 0.84);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+.sf-source-note {
+    margin: 0 0 1rem 0;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid rgba(255, 200, 137, 0.18);
+    border-radius: 8px;
+    background: rgba(8, 7, 6, 0.82);
+    color: rgba(255, 247, 232, 0.72);
+    font-size: 0.8rem;
+    line-height: 1.65;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18);
+}
+
+.sf-guide-title {
+    margin: 0 0 0.6rem 0;
+    color: #ffc889;
+    font-family: "MaplestoryBold", Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 0.95rem;
+}
+
+.sf-guide-list {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: rgba(255, 247, 232, 0.76);
+    font-size: 0.82rem;
+    line-height: 1.7;
+}
+
+.sf-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.sf-guide-card {
+    padding: 0.85rem 0.9rem;
+    border: 1px solid rgba(255, 200, 137, 0.16);
+    border-radius: 8px;
+    background: rgba(13, 11, 9, 0.82);
+}
+
+.sf-guide-card strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #ffc889;
+    font-family: "MaplestoryBold", Inter, ui-sans-serif, system-ui, sans-serif !important;
+    font-size: 0.78rem;
+}
+
+.sf-guide-card p {
+    margin: 0;
+    color: rgba(255, 247, 232, 0.72);
+    font-size: 0.8rem;
+    line-height: 1.65;
+}
+
+@media (max-width: 760px) {
+    .sf-guide-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
+components.html(
+    """
+<script>
+(() => {
+  const parentDoc = window.parent.document;
+  const hiddenAttr = "data-maple-arrow-hidden";
+
+  const hideElement = (element) => {
+    if (!element || element.getAttribute(hiddenAttr) === "true") return;
+    element.style.setProperty("font-size", "0", "important");
+    element.style.setProperty("color", "transparent", "important");
+    element.style.setProperty("line-height", "0", "important");
+    element.style.setProperty("max-width", "0", "important");
+    element.style.setProperty("overflow", "hidden", "important");
+    element.setAttribute("aria-hidden", "true");
+    element.setAttribute(hiddenAttr, "true");
+  };
+
+  const cleanArrowText = () => {
+    parentDoc
+      .querySelectorAll('[aria-label*="_arrow"], [title*="_arrow"], [data-testid*="_arrow"]')
+      .forEach(hideElement);
+
+    const walker = parentDoc.createTreeWalker(parentDoc.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.nodeValue && node.nodeValue.includes("_arrow")) nodes.push(node);
+    }
+    for (const node of nodes) {
+      const element = node.parentElement;
+      if (!element) continue;
+      hideElement(element);
+    }
+  };
+
+  cleanArrowText();
+  [100, 250, 700, 1200, 2200].forEach((delay) => {
+    parentDoc.defaultView.setTimeout(cleanArrowText, delay);
+  });
+
+  if (parentDoc.defaultView.__mapleStarforceArrowObserver) {
+    parentDoc.defaultView.__mapleStarforceArrowObserver.disconnect();
+  }
+  const observer = new MutationObserver(() => cleanArrowText());
+  observer.observe(parentDoc.body, { childList: true, subtree: true, characterData: true });
+  parentDoc.defaultView.__mapleStarforceArrowObserver = observer;
+})();
+</script>
+""",
+    height=0,
+)
+
 st.markdown("""
 <div class="sf-header">
-    <h1>⭐ 스타포스 시뮬레이터</h1>
-    <p>KMS 공식 확률 기반 · 30성 지원 · 파괴방지 · 흔적복구 · 이벤트/할인 반영</p>
+    <h1>스타포스 시뮬레이터</h1>
+    <p>공식 안내와 업데이트 확률표를 기준으로 강화 비용과 편차를 가볍게 확인하는 도구입니다.</p>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown(
+    """
+<div class="sf-source-note">
+근거: 최대 스타포스/파괴방지/흔적 복구 규칙은 메이플스토리 공식 가이드,
+15~30성 확률표와 21성 이하 파괴확률 30% 감소 이벤트는 스타포스 개편 업데이트 공지 기준입니다.
+메소 비용은 페이지 내부 공식으로 계산한 추정치이므로 실제 게임 UI와 차이가 있을 수 있습니다.
+</div>
+""",
+    unsafe_allow_html=True,
+)
 
 # ─── 설정 패널 ────────────────────────────────────────
 with st.expander("⚙️ 강화 설정", expanded=True):
@@ -449,8 +759,8 @@ with tab_single:
                        annotation_font_color="#FFD700", annotation_font_size=11)
         fig1.update_layout(
             title=f"성수 변화 ({current_star}⭐ → {target_star}⭐)",
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(17,24,39,1)',
-            font=dict(color='#d1d5db', family='Noto Sans KR'),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(8,7,6,0.62)',
+            font=dict(color='#d1d5db', family='MaplestoryLight, Inter, sans-serif'),
             xaxis=dict(gridcolor='#1f2937', title='시도 횟수', zeroline=False),
             yaxis=dict(gridcolor='#1f2937', title='성수', range=[-0.5, max_s+0.5]),
             height=320, showlegend=False, margin=dict(l=40, r=40, t=40, b=40),
@@ -467,8 +777,8 @@ with tab_single:
         ))
         fig2.update_layout(
             title="누적 메소 소모",
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(17,24,39,1)',
-            font=dict(color='#d1d5db', family='Noto Sans KR'),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(8,7,6,0.62)',
+            font=dict(color='#d1d5db', family='MaplestoryLight, Inter, sans-serif'),
             xaxis=dict(gridcolor='#1f2937', title='시도 횟수', zeroline=False),
             yaxis=dict(gridcolor='#1f2937', title='억 메소'),
             height=240, showlegend=False, margin=dict(l=40, r=40, t=40, b=40),
@@ -480,7 +790,7 @@ with tab_single:
             emoji_map = {
                 'success': '✅ 성공', 'success_bonus': '✅ 성공(1+1)',
                 'maintain': '🔵 유지', 'down': '🔻 하락',
-                'destroy': '💥 파괴', 'safeguard': '🛡 파방(하락)',
+                'destroy': '💥 파괴', 'safeguard': '🛡 파방(유지)',
             }
             ds = df_h.tail(100).copy()
             ds['결과'] = ds['result'].map(emoji_map)
@@ -494,7 +804,10 @@ with tab_single:
                 use_container_width=True, hide_index=True,
             )
     else:
-        st.info("👆 위 설정을 마치고 **강화 시작** 또는 **100회 평균** 버튼을 누르세요")
+        st.markdown(
+            '<div class="sf-source-note">위 설정을 마치고 강화 시작 또는 100회 평균 버튼을 눌러주세요.</div>',
+            unsafe_allow_html=True,
+        )
 
 # ════════ 탭2: 통계 분석 ═══════════════════════════════
 with tab_bulk:
@@ -552,8 +865,8 @@ with tab_bulk:
                            annotation_text=label, annotation_font_color=color)
         fig3.update_layout(
             title=f"{target_star}성 달성 비용 분포 ({sim_n:,}회)",
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(17,24,39,1)',
-            font=dict(color='#d1d5db', family='Noto Sans KR'),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(8,7,6,0.62)',
+            font=dict(color='#d1d5db', family='MaplestoryLight, Inter, sans-serif'),
             xaxis=dict(gridcolor='#1f2937', title='소모 비용 (억 메소)'),
             yaxis=dict(gridcolor='#1f2937', title='횟수'),
             height=350, margin=dict(l=40, r=40, t=40, b=40),
@@ -572,8 +885,8 @@ with tab_bulk:
         ))
         fig4.update_layout(
             title="누적 달성 확률 곡선",
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(17,24,39,1)',
-            font=dict(color='#d1d5db', family='Noto Sans KR'),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(8,7,6,0.62)',
+            font=dict(color='#d1d5db', family='MaplestoryLight, Inter, sans-serif'),
             xaxis=dict(gridcolor='#1f2937', title='비용 (억 메소)'),
             yaxis=dict(gridcolor='#1f2937', title='누적 확률 (%)', range=[0, 100]),
             height=270, margin=dict(l=40, r=40, t=40, b=40),
@@ -588,7 +901,10 @@ with tab_bulk:
         st.dataframe(pd.DataFrame(q_rows), use_container_width=True, hide_index=True)
 
     else:
-        st.info("👆 시뮬레이션 횟수를 선택하고 **분석** 버튼을 누르세요")
+        st.markdown(
+            '<div class="sf-source-note">시뮬레이션 횟수를 선택하고 분석 버튼을 눌러주세요.</div>',
+            unsafe_allow_html=True,
+        )
 
 # ════════ 탭3: 기댓값 테이블 ═══════════════════════════
 with tab_expect:
@@ -614,8 +930,8 @@ with tab_expect:
                       color_continuous_scale=['#34d399', '#fbbf24', '#f87171'],
                       title="구간별 기댓값 비용")
         fig5.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(17,24,39,1)',
-            font=dict(color='#d1d5db', family='Noto Sans KR'),
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(8,7,6,0.62)',
+            font=dict(color='#d1d5db', family='MaplestoryLight, Inter, sans-serif'),
             xaxis=dict(gridcolor='#1f2937'),
             yaxis=dict(gridcolor='#1f2937', title='기댓값 (억 메소)'),
             coloraxis_showscale=False, height=300,
@@ -623,7 +939,10 @@ with tab_expect:
         )
         st.plotly_chart(fig5, use_container_width=True)
     else:
-        st.warning("목표 성수를 현재 성수보다 높게 설정해주세요")
+        st.markdown(
+            '<div class="sf-source-note">목표 성수를 현재 성수보다 높게 설정해주세요.</div>',
+            unsafe_allow_html=True,
+        )
 
 # ════════ 탭4: 확률표 ═════════════════════════════════
 with tab_prob:
@@ -642,7 +961,7 @@ with tab_prob:
             '성수': f"{s}⭐ → {s+1}⭐",
             '성공': f"{ep[0]:.2f}%",
             '유지': f"{ep[1]:.2f}%",
-            '하락': f"{ep[2]:.2f}%",
+            '실패(유지)': f"{ep[2]:.2f}%",
             '파괴': f"{ep[3]:.2f}%",
             '1회 비용': f"{base_cost:,}",
         }
@@ -651,10 +970,54 @@ with tab_prob:
         rows.append(row)
 
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True, height=500)
-    st.caption("※ KMS 공식 확률 기준 · 패치에 따라 변경될 수 있습니다")
+    st.caption("※ 메이플스토리 공식 가이드/업데이트 공지 기준 · 패치에 따라 변경될 수 있습니다")
+
+st.divider()
+st.markdown(
+    """
+<section class="sf-guide">
+  <p class="sf-guide-title">시뮬레이터 사용법</p>
+  <div class="sf-guide-grid">
+    <div class="sf-guide-card">
+      <strong>1. 장비 레벨</strong>
+      <p>강화하려는 장비의 착용 레벨입니다. 예를 들어 카루타 장비는 보통 150, 앱솔랩스는 160, 아케인셰이드는 200을 고르면 됩니다. 장비 레벨에 따라 가능한 최대 스타포스와 1회 강화 비용이 달라집니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>2. 현재 성수와 목표 성수</strong>
+      <p>현재 성수는 지금 장비에 붙어 있는 별 개수, 목표 성수는 도착하고 싶은 별 개수입니다. 처음 써본다면 10성에서 15성, 15성에서 17성처럼 짧은 구간부터 보는 게 이해하기 쉽습니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>3. 파괴방지</strong>
+      <p>파괴가 가능한 구간에서 장비가 터지는 일을 막는 설정입니다. 대신 해당 성수의 강화 비용이 2배로 계산됩니다. 비싼 장비를 15성, 16성, 17성 근처에서 올릴 때 켜는 상황을 가정하면 됩니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>4. 흔적 복구</strong>
+      <p>장비가 파괴됐을 때 같은 장비를 다시 구해 복구하는 상황을 비용에 넣는 옵션입니다. 입력한 장비 가격의 일부를 복구 비용처럼 더합니다. 장비 가격을 0으로 두면 복구 횟수만 집계됩니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>5. 이벤트와 할인</strong>
+      <p>샤타포스 30% 할인, 5/10/15성 100%, 파괴 확률 감소 같은 이벤트를 켜고 끌 수 있습니다. 지금 게임에서 실제로 진행 중인 이벤트만 켜야 현실과 비슷한 결과가 나옵니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>6. 어떤 탭을 보면 되나</strong>
+      <p>단일 시뮬은 한 번 강화했을 때의 흐름을 보여줍니다. 통계 분석은 여러 번 반복해서 평균, 최악에 가까운 비용, 파괴 횟수를 봅니다. 실제 예산을 잡을 때는 통계 분석의 75%~95% 구간을 같이 보는 편이 좋습니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>7. 기댓값과 실제 결과 차이</strong>
+      <p>기댓값은 확률상 평균에 가까운 계산입니다. 하지만 스타포스는 운이 크게 흔들리기 때문에 실제 한 번의 결과는 평균보다 훨씬 싸거나 비쌀 수 있습니다. 그래서 기댓값 표보다 통계 분석의 분포가 뉴비에게 더 직관적입니다.</p>
+    </div>
+    <div class="sf-guide-card">
+      <strong>8. 추천 첫 사용법</strong>
+      <p>장비 레벨을 고르고, 현재 10성 목표 15성으로 맞춘 뒤 단일 시뮬을 한 번 눌러보세요. 그다음 목표를 17성으로 바꾸고 통계 분석을 1,000회로 돌리면 강화 비용이 왜 넉넉히 필요하다는 말이 나오는지 감이 옵니다.</p>
+    </div>
+  </div>
+</section>
+""",
+    unsafe_allow_html=True,
+)
 
 st.divider()
 st.markdown("""<div style="text-align:center; color:#4b5563; font-size:0.78rem; padding: 0.5rem 0 1rem;">
-    ⭐ 스타포스 시뮬레이터 · KMS 공식 확률 기반<br>
-    메수라이브 · 환산주스탯 · 메애기 참고 · 실제 게임 결과와 다를 수 있음 · 파괴 없는 강화를 빕니다 🍀
+    스타포스 시뮬레이터 · 공식 가이드/업데이트 확률표 기반<br>
+    메소 비용과 기댓값은 앱 내부 계산식 기반 추정치이며 실제 게임 결과와 다를 수 있습니다.
 </div>""", unsafe_allow_html=True)

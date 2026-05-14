@@ -169,7 +169,7 @@ footer {
     position: fixed !important;
     top: 0.55rem !important;
     left: 50% !important;
-    width: 24rem !important;
+    width: 30rem !important;
     transform: translateX(-50%) !important;
     z-index: 100 !important;
 }
@@ -655,11 +655,11 @@ footer {
     }
 
     .st-key-maple-nav-bar {
-        width: 18rem !important;
+        width: 22rem !important;
     }
 
     .st-key-maple-nav-bar button {
-        font-size: 0.58rem !important;
+        font-size: 0.54rem !important;
     }
 
     .st-key-maple-chip-row {

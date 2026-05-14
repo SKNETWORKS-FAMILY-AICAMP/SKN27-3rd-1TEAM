@@ -8,6 +8,7 @@ from app.common.maple_paths import ensure_app_import_paths
 
 ensure_app_import_paths()
 
+from app.common.bgm import render_bgm_control_button, render_page_bgm  # noqa: E402
 from app.common.chat_render import render_style, render_top_navigation  # noqa: E402
 
 st.set_page_config(
@@ -17,8 +18,10 @@ st.set_page_config(
 )
 
 render_style()
+render_page_bgm("game")
 st.markdown('<div class="maple-game-page-marker"></div>', unsafe_allow_html=True)
 render_top_navigation(active_menu_key="game")
+render_bgm_control_button()
 
 st.markdown(
     """
@@ -66,7 +69,6 @@ def image_to_data_url(path: Path | None = None, uploaded_file=None) -> str:
             ".jpg": "image/jpeg",
             ".jpeg": "image/jpeg",
             ".webp": "image/webp",
-            ".mp3": "audio/mpeg",
         }.get(path.suffix.lower(), "image/png")
     elif uploaded_file is not None:
         image_bytes = uploaded_file.getvalue()
@@ -77,9 +79,6 @@ def image_to_data_url(path: Path | None = None, uploaded_file=None) -> str:
     encoded_image = base64.b64encode(image_bytes).decode("ascii")
     return f"data:{mime_type};base64,{encoded_image}"
 
-
-bgm_path = game_asset_path("엘리니아 필드.mp3")
-bgm_data_url = image_to_data_url(bgm_path) if bgm_path.exists() else ""
 default_spritesheet = game_asset_path("spritesheet.webp")
 default_character = game_asset_path("character.png")
 default_exit_portal = game_asset_path("exit_portal.png")
@@ -195,7 +194,6 @@ game_html = """
     const suppliedNpc = "__NPC_DATA_URL__";
     const suppliedElliniaEmblem = "__ELLINIA_EMBLEM_DATA_URL__";
     const suppliedElixir = "__ELIXIR_DATA_URL__";
-    const suppliedBgm = "__BGM_DATA_URL__";
     const backgroundImage = new Image();
     const characterImage = new Image();
     const portalImage = new Image();
@@ -223,37 +221,11 @@ game_html = """
     let hasCharacterSheet = false;
     let characterSpriteBounds = { x: 0, y: 0, w: 1, h: 1 };
     let npcSpriteBounds = { x: 0, y: 0, w: 52, h: 70 };
-    const gameBgm = suppliedBgm ? new Audio(suppliedBgm) : null;
-    let bgmVolume = 0.42;
-    let bgmMuted = false;
-    let bgmStarted = false;
     let menuOpen = false;
     let menuRects = {};
     let npcDialogOpen = false;
     let npcDialogButtonRect = null;
     let npcScreenRect = null;
-
-    if (gameBgm) {
-      gameBgm.loop = true;
-      gameBgm.volume = bgmVolume;
-      gameBgm.preload = "auto";
-    }
-
-    function syncBgm() {
-      if (!gameBgm) return;
-      gameBgm.volume = bgmMuted ? 0 : bgmVolume;
-      gameBgm.muted = bgmMuted;
-    }
-
-    function startBgm() {
-      if (!gameBgm || bgmStarted) return;
-      syncBgm();
-      gameBgm.play().then(() => {
-        bgmStarted = true;
-      }).catch(() => {
-        statusText.textContent = "MENU에서 음악을 켤 수 있습니다.";
-      });
-    }
 
     if (suppliedBackground) {
       backgroundImage.src = suppliedBackground;
@@ -3603,26 +3575,18 @@ game_html = """
       if (!menuOpen) return;
 
       const x = 310;
-      const y = 102;
+      const y = 160;
       const w = 340;
-      const h = 374;
+      const h = 214;
       const closeRect = { x: x + w - 42, y: y + 14, w: 24, h: 24 };
       const restartRect = { x: x + 36, y: y + 104, w: 268, h: 34 };
       const prevRect = { x: x + 36, y: y + 148, w: 126, h: 34 };
       const nextRect = { x: x + 178, y: y + 148, w: 126, h: 34 };
-      const muteRect = { x: x + 36, y: y + 248, w: 96, h: 34 };
-      const minusRect = { x: x + 36, y: y + 306, w: 42, h: 34 };
-      const plusRect = { x: x + w - 78, y: y + 306, w: 42, h: 34 };
-      const sliderRect = { x: x + 92, y: y + 313, w: 154, h: 20 };
       menuRects = {
         close: closeRect,
         restart: restartRect,
         prev: prevRect,
         next: nextRect,
-        mute: muteRect,
-        minus: minusRect,
-        plus: plusRect,
-        slider: sliderRect,
       };
 
       ctx.save();
@@ -3665,41 +3629,6 @@ game_html = """
       drawSmallMapleButton(restartRect, "처음부터", true);
       drawSmallMapleButton(prevRect, "이전", false);
       drawSmallMapleButton(nextRect, "다음", false);
-
-      ctx.fillStyle = "#fff8d6";
-      ctx.font = "bold 17px Arial";
-      ctx.fillText("음악", x + 36, y + 216);
-      ctx.font = "bold 13px Arial";
-      ctx.fillStyle = "rgba(255,248,214,0.78)";
-      ctx.fillText(gameBgm ? "엘리니아 필드 BGM" : "음악 파일 없음", x + 36, y + 240);
-
-      drawSmallMapleButton(muteRect, bgmMuted ? "켜기" : "음소거", bgmMuted);
-      drawSmallMapleButton(minusRect, "-", false);
-      drawSmallMapleButton(plusRect, "+", false);
-
-      ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
-      roundedPanelPath(sliderRect.x, sliderRect.y + 6, sliderRect.w, 8, 4);
-      ctx.fill();
-      const fillW = Math.round(sliderRect.w * bgmVolume);
-      const fill = ctx.createLinearGradient(sliderRect.x, sliderRect.y, sliderRect.x + sliderRect.w, sliderRect.y);
-      fill.addColorStop(0, "#7ee8ff");
-      fill.addColorStop(1, "#f8e35a");
-      ctx.fillStyle = fill;
-      roundedPanelPath(sliderRect.x, sliderRect.y + 6, fillW, 8, 4);
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(sliderRect.x + fillW, sliderRect.y + 10, 9, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#3a2814";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = "#fff8d6";
-      ctx.font = "bold 16px Arial";
-      ctx.textAlign = "right";
-      ctx.fillText(`${Math.round(bgmVolume * 100)}%`, x + w - 36, y + 272);
-      ctx.textAlign = "left";
       ctx.restore();
     }
 
@@ -3828,7 +3757,6 @@ game_html = """
       if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "Enter", "a", "d", "w", "s", "Shift"].includes(key)) {
         event.preventDefault();
       }
-      startBgm();
       if (key === "Escape") {
         menuOpen = false;
         npcDialogOpen = false;
@@ -3885,35 +3813,6 @@ game_html = """
         return true;
       }
 
-      if (pointInRect(x, y, menuRects.mute)) {
-        bgmMuted = !bgmMuted;
-        syncBgm();
-        if (!bgmMuted) startBgm();
-        return true;
-      }
-
-      if (pointInRect(x, y, menuRects.minus)) {
-        bgmVolume = Math.max(0, Math.round((bgmVolume - 0.1) * 10) / 10);
-        syncBgm();
-        return true;
-      }
-
-      if (pointInRect(x, y, menuRects.plus)) {
-        bgmVolume = Math.min(1, Math.round((bgmVolume + 0.1) * 10) / 10);
-        bgmMuted = false;
-        syncBgm();
-        startBgm();
-        return true;
-      }
-
-      if (pointInRect(x, y, menuRects.slider)) {
-        bgmVolume = Math.max(0, Math.min(1, (x - menuRects.slider.x) / menuRects.slider.w));
-        bgmMuted = bgmVolume <= 0;
-        syncBgm();
-        if (!bgmMuted) startBgm();
-        return true;
-      }
-
       return true;
     }
 
@@ -3923,7 +3822,6 @@ game_html = """
       const scaleY = canvas.height / rect.height;
       const x = (event.clientX - rect.left) * scaleX;
       const y = (event.clientY - rect.top) * scaleY;
-      startBgm();
 
       if (handleMenuClick(x, y)) return;
 
@@ -3992,9 +3890,6 @@ components.html(
     ).replace(
         "__ELIXIR_DATA_URL__",
         elixir_data_url,
-    ).replace(
-        "__BGM_DATA_URL__",
-        bgm_data_url,
     ),
     height=642,
     scrolling=False,

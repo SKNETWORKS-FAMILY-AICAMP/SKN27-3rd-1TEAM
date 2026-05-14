@@ -22,6 +22,7 @@ from app.common.markdown_render import markdown_to_html
 MENU_ITEMS = (
     ("home", "Home", "maple_chat.py"),
     ("chat", "Chat", "pages/7_Chat.py"),
+    ("starforce", "Starforce", "pages/9_starforce_simulator.py"),
     ("game", "Game", "pages/8_game.py"),
 )
 
@@ -68,30 +69,6 @@ def _submit_home_prompt() -> None:
 
 def render_top_navigation(active_menu_key: str | None = "chat") -> None:
     """고정 상단 내비게이션과 홈 배지를 렌더링합니다."""
-    if active_menu_key == "game":
-        components.html(
-            """
-<script>
-(() => {
-  const parentDoc = window.parent.document;
-  const button = parentDoc.getElementById("maple-bgm-toggle");
-  if (button) button.remove();
-
-  const frame = parentDoc.getElementById("maple-bgm-player");
-  if (frame?.contentWindow) {
-    frame.contentWindow.postMessage(
-      JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
-      "*"
-    );
-  }
-  const wrapper = parentDoc.getElementById("maple-bgm-player-wrap");
-  if (wrapper) wrapper.remove();
-})();
-</script>
-""",
-            height=0,
-        )
-
     # 고정 메뉴 배경입니다. 크기와 색상은 CSS에서 조정합니다.
     st.markdown('<div class="maple-nav-bg"></div>', unsafe_allow_html=True)
 
