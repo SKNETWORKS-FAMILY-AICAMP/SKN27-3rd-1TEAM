@@ -1,7 +1,9 @@
-from langchain_openai import OpenAIEmbeddings
-from langchain_groq import ChatGroq
 from dotenv import load_dotenv
+
 load_dotenv()
+
+from langchain_groq import ChatGroq  # noqa: E402
+from langchain_openai import OpenAIEmbeddings  # noqa: E402
 
 
 def get_embedding_model() -> OpenAIEmbeddings:
