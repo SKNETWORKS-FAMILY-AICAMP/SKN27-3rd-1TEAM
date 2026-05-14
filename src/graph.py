@@ -91,24 +91,53 @@ def evaluation(state: AgentState) -> AgentState:
     has_context = bool(str(state.get("context") or "").strip())
     has_retrieved_docs = bool(state.get("retrieved_docs") or [])
     if final_answer_text and not has_context and not has_retrieved_docs:
+        if state.get("task_type") == "chitchat":
+            tool_results = dict(state.get("tool_results", {}))
+            tool_results["evaluation"] = {
+                "agent": "evaluation",
+                "is_pass": True,
+                "route": "PASS",
+                "next_agent": "FINISH",
+                "retry_target": "FINISH",
+                "feedback": "Chitchat does not require retrieved context.",
+                "warnings": [],
+            }
+            return {
+                **state,
+                "tool_results": tool_results,
+                "validation_passed": True,
+                "feedback": "Chitchat does not require retrieved context.",
+                "is_complete": True,
+                "next_agent": "FINISH",
+                "retry_target": "FINISH",
+            }
+
+        retry_count = int(state.get("retry_count", 0))
         tool_results = dict(state.get("tool_results", {}))
         tool_results["evaluation"] = {
             "agent": "evaluation",
-            "is_pass": True,
-            "route": "PASS",
-            "next_agent": "FINISH",
-            "retry_target": "FINISH",
-            "feedback": "No retrieved context was required for this answer.",
-            "warnings": [],
+            "is_pass": False,
+            "route": "REPLAN",
+            "next_agent": "supervisor",
+            "retry_target": "supervisor",
+            "feedback": (
+                "missing_context: no retrieved context or documents were available. "
+                "Send back to supervisor and run research with web fallback before final_answer."
+            ),
+            "warnings": ["contexts are empty", "retrieved_docs are empty"],
+            "failure_type": "missing_context",
+            "retry_count": retry_count,
+            "max_retry_count": MAX_RETRY_COUNT,
         }
         return {
             **state,
             "tool_results": tool_results,
-            "validation_passed": True,
-            "feedback": "No retrieved context was required for this answer.",
-            "is_complete": True,
-            "next_agent": "FINISH",
-            "retry_target": "FINISH",
+            "validation_passed": False,
+            "feedback": tool_results["evaluation"]["feedback"],
+            "is_complete": False,
+            "next_agent": "supervisor",
+            "retry_target": "supervisor",
+            "retry_count": retry_count + 1,
         }
 
     from src.evaluation.final_answer_eval import run_final_answer_evaluation

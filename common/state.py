@@ -67,6 +67,9 @@ class AgentState(TypedDict, total=False):
     # Search/RAG context
     retrieved_docs: list[RetrievedDocument]  # RAG 검색으로 가져온 문서 목록
     context: str  # 답변 생성에 사용할 병합 컨텍스트
+    evidence_summary: dict[str, JsonValue]  # research agent가 선택한 핵심 근거 요약
+    selected_evidence: list[RetrievedDocument]  # research agent가 답변 근거로 고른 문서
+    relevance_reason: str  # research agent가 근거를 선택한 이유
 
     # Stat/equipment analysis
     stat_summary: dict[str, JsonValue]  # calculator가 만든 스탯 요약
@@ -119,6 +122,9 @@ AgentStateField = Literal[
     "union_status",
     "retrieved_docs",
     "context",
+    "evidence_summary",
+    "selected_evidence",
+    "relevance_reason",
     "stat_summary",
     "equipment_summary",
     "bottleneck_analysis",
