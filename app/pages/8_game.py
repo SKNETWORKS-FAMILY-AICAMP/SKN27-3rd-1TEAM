@@ -98,6 +98,37 @@ elixir_data_url = ""
 if default_background.exists():
     background_data_url = image_to_data_url(default_background)
 
+if background_data_url:
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) {{
+            background:
+                linear-gradient(180deg, rgba(7, 18, 13, 0.18), rgba(7, 18, 13, 0.72)),
+                url("{background_data_url}") center top / cover fixed no-repeat !important;
+        }}
+
+        [data-testid="stAppViewContainer"]:has(.maple-game-page-marker)::before {{
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 50% 18%, rgba(191, 255, 206, 0.16), transparent 34%),
+                rgba(0, 0, 0, 0.10);
+            z-index: 0;
+        }}
+
+        [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .main,
+        [data-testid="stAppViewContainer"]:has(.maple-game-page-marker) .block-container {{
+            position: relative;
+            z-index: 1;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
 if default_exit_portal.exists():
     portal_data_url = image_to_data_url(default_exit_portal)
 
