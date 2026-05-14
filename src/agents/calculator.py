@@ -14,9 +14,7 @@ sys.path.append(project_root)
 
 
 
-from langchain.agents import create_agent
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
@@ -779,37 +777,135 @@ CALCULATOR_STATE_SYSTEM_PROMPT = f"""
 """.strip()
 
 
+def _format_meso(value: Any) -> str:
+    amount = int(_parse_number(value, 0))
+    if amount >= 100_000_000:
+        return f"{amount / 100_000_000:g}억 메소"
+    if amount >= 10_000:
+        return f"{amount / 10_000:g}만 메소"
+    return f"{amount:,} 메소"
+
+
+def _fallback_calculator_interpretation(state: AgentState) -> Dict[str, Any]:
+    payload = _calculator_state_payload(state)
+    forecast = payload["equipment_summary"].get("growth_forecast", []) or []
+    top_items = []
+    for item in forecast[:3]:
+        target = item.get("target") or "성장 항목"
+        action = item.get("action") or "성장 진행"
+        cp_gain = int(_parse_number(item.get("expected_cp_gain"), 0))
+        cost = _format_meso(item.get("estimated_cost_meso"))
+        days = int(_parse_number(item.get("estimated_days"), 0))
+        top_items.append(
+            {
+                "target": target,
+                "action": action,
+                "reason": f"예상 전투력 +{cp_gain:,}, 예상 비용 {cost}, 예상 기간 {days}일",
+                "expected_cp_gain": cp_gain,
+            }
+        )
+
+    if top_items:
+        summary = "전투력 상승 효율은 " + ", ".join(str(item["target"]) for item in top_items) + " 순서가 높습니다."
+    else:
+        summary = "계산 가능한 성장 후보가 충분하지 않습니다."
+
+    return {
+        "query_intent": "장비/성장 후보별 전투력 상승량 비교",
+        "calculation_scope": "현재 캐릭터 스탯, 장비 약점, 성장 예측값 요약",
+        "priority_summary": summary,
+        "top_growth_actions": top_items,
+        "caveats": [
+            "전투력 상승량은 프로젝트의 상대 성장 공식 기반 추정입니다.",
+            "실제 상승량은 잠재 옵션, 세트 효과, 버프, 이벤트, 강화 운에 따라 달라질 수 있습니다.",
+        ],
+        "analytics_handoff_context": summary,
+        "source": "deterministic_fallback",
+    }
+
+
+def _calculator_interpretation_prompt(state: AgentState) -> str:
+    payload = _calculator_state_payload(state)
+    return "\n".join(
+        [
+            master_prompt.strip(),
+            "",
+            "You are the calculator interpretation layer.",
+            "The numeric calculation is already finished by deterministic code.",
+            "Do not call tools. Do not invent new stats, costs, combat power gains, boss requirements, or item names.",
+            "Your job is only to classify the calculation request and write a short handoff summary for analytics.",
+            "Return only a JSON object with these keys:",
+            "- query_intent: short Korean phrase",
+            "- calculation_scope: short Korean phrase",
+            "- priority_summary: one Korean sentence",
+            "- top_growth_actions: array of at most 3 objects from the provided growth_forecast, each with target, action, reason, expected_cp_gain",
+            "- caveats: array of 1-2 short Korean caveats",
+            "- analytics_handoff_context: 2-4 Korean sentences analytics can reuse",
+            "",
+            f"Input JSON: {json.dumps(payload, ensure_ascii=False, default=str)}",
+        ]
+    )
+
+
+def _normalize_llm_interpretation(parsed: Dict[str, Any], state: AgentState) -> Dict[str, Any]:
+    fallback = _fallback_calculator_interpretation(state)
+    if not parsed:
+        return fallback
+
+    result = {
+        "query_intent": str(parsed.get("query_intent") or fallback["query_intent"]),
+        "calculation_scope": str(parsed.get("calculation_scope") or fallback["calculation_scope"]),
+        "priority_summary": str(parsed.get("priority_summary") or fallback["priority_summary"]),
+        "analytics_handoff_context": str(
+            parsed.get("analytics_handoff_context") or fallback["analytics_handoff_context"]
+        ),
+        "source": "llm_summary",
+    }
+
+    caveats = parsed.get("caveats")
+    result["caveats"] = [str(item) for item in caveats[:2]] if isinstance(caveats, list) else fallback["caveats"]
+
+    allowed_forecasts = {}
+    for item in ((_value(state.get("equipment_summary") or {}, "growth_forecast", []) or [])[:10]):
+        if not isinstance(item, dict):
+            continue
+        target = str(item.get("target") or "")
+        if target and target not in allowed_forecasts:
+            allowed_forecasts[target] = item
+    top_actions = []
+    for item in parsed.get("top_growth_actions", []) if isinstance(parsed.get("top_growth_actions"), list) else []:
+        if not isinstance(item, dict):
+            continue
+        target = str(item.get("target") or "")
+        source = allowed_forecasts.get(target)
+        if not source:
+            continue
+        cp_gain = int(_parse_number(source.get("expected_cp_gain"), 0))
+        top_actions.append(
+            {
+                "target": target,
+                "action": str(item.get("action") or source.get("action") or ""),
+                "reason": str(item.get("reason") or f"예상 전투력 +{cp_gain:,}"),
+                "expected_cp_gain": cp_gain,
+            }
+        )
+    result["top_growth_actions"] = top_actions[:3] or fallback["top_growth_actions"]
+    return result
+
+
 def _generate_agent_state_update(
     state: AgentState,
     model: str | BaseChatModel | None,
 ) -> Dict[str, Any]:
-    if model is None:
+    if model is None or isinstance(model, str) or not hasattr(model, "invoke"):
         model = get_llm()
 
-    calculator = create_agent(
-        model=model,
-        tools=CALCULATOR_TOOLS,
-        system_prompt=CALCULATOR_STATE_SYSTEM_PROMPT,
-    )
-    result = calculator.invoke(
-        {
-            "messages": [
-                HumanMessage(
-                    content=(
-                        "Return only a JSON object for AgentState update. "
-                        f"Input: {json.dumps(_calculator_state_payload(state), ensure_ascii=False)}"
-                    )
-                )
-            ]
-        }
-    )
-    parsed = _parse_json_object(result["messages"][-1].content)
-    allowed = {"stat_summary", "equipment_summary", "bottleneck_analysis", "llm_interpretation"}
-    parsed = {key: value for key, value in parsed.items() if key in allowed}
-    for key in ("stat_summary", "equipment_summary", "bottleneck_analysis", "llm_interpretation"):
-        if key in parsed and not isinstance(parsed[key], dict):
-            parsed.pop(key, None)
-    return parsed
+    response = model.invoke(_calculator_interpretation_prompt(state))
+    content = getattr(response, "content", response)
+    if isinstance(content, list):
+        content = "\n".join(str(item) for item in content)
+    interpretation = _normalize_llm_interpretation(_parse_json_object(str(content)), state)
+    return {"llm_interpretation": interpretation}
 
 
 def _merge_calculator_state_update(state: AgentState, agent_update: Dict[str, Any]) -> AgentState:
@@ -842,6 +938,8 @@ def _merge_calculator_state_update(state: AgentState, agent_update: Dict[str, An
         tool_results = dict(_value(new_state, "tool_results", {}) or {})
         calculator_result = dict(_value(tool_results, "calculator", {}) or {})
         calculator_result["llm_interpretation"] = llm_interpretation
+        if agent_update.get("llm_interpretation_error"):
+            calculator_result["llm_interpretation_error"] = str(agent_update["llm_interpretation_error"])
         tool_results["calculator"] = calculator_result
         new_state["tool_results"] = tool_results
     return new_state
@@ -864,8 +962,10 @@ def calculator_agent(
                 model = get_llm()
             agent_update = _generate_agent_state_update(state, model)
         except Exception as exc:
-            state = _append_state_error(state, f"calculator create_agent state generation failed: {exc}")
-            agent_update = {}
+            agent_update = {
+                "llm_interpretation": _fallback_calculator_interpretation(state),
+                "llm_interpretation_error": exc,
+            }
     else:
         agent_update = {}
 

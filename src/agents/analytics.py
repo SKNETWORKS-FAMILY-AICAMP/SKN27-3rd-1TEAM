@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 from datetime import datetime
 from typing import Any
 
+from common.get_model import get_llm
 from common.state import AgentState, RetrievedDocument
 from common.validator import validate_agent_inputs, validate_agent_outputs
 
@@ -613,6 +615,364 @@ def _append_analysis_to_context(context: str, result: dict[str, Any]) -> str:
     return f"{context.rstrip()}\n\n{addition}"
 
 
+def _format_answer_number(value: Any, suffix: str = "") -> str:
+    number = _parse_number(value, 0)
+    if number == int(number):
+        text = f"{int(number):,}"
+    else:
+        text = f"{number:,.2f}".rstrip("0").rstrip(".")
+    return f"{text}{suffix}"
+
+
+def _format_answer_gap(actual: Any, required: Any) -> str:
+    gap = max(0.0, _parse_number(required, 0) - _parse_number(actual, 0))
+    return _format_answer_number(gap)
+
+
+def _subject_particle(text: Any) -> str:
+    label = str(text or "")
+    if not label:
+        return "이"
+    code = ord(label[-1])
+    if 0xAC00 <= code <= 0xD7A3:
+        return "이" if (code - 0xAC00) % 28 else "가"
+    return "이"
+
+
+def _action_for_status(analysis: dict[str, Any]) -> dict[str, Any]:
+    boss_name = str(analysis.get("boss_name") or analysis.get("target_boss") or "대상 보스")
+    status = str(analysis.get("clear_status") or "unknown")
+    score = float(analysis.get("challenge_fit_score") or 0)
+    if status == "recommended":
+        description = f"{boss_name}는 현재 분석 기준으로 권장 도전권입니다. 보스 패턴 숙련, 버프, 도핑을 준비하고 도전하세요."
+        priority = 1
+    elif status == "challengeable":
+        description = f"{boss_name}는 도전 가능권입니다. 적합도 {score:.2f} 기준으로 큰 결격은 없지만 버프와 패턴 숙련을 챙기는 편이 안전합니다."
+        priority = 1
+    elif status == "risky":
+        description = f"{boss_name}는 도전 자체는 가능할 수 있지만 위험권입니다. 부족 스탯을 보완한 뒤 재평가하는 것을 권장합니다."
+        priority = 1
+    else:
+        description = f"{boss_name}는 현재 수치만으로는 어렵습니다. 아래 부족 스탯과 성장 우선순위를 먼저 보완하세요."
+        priority = 1
+    return {
+        "category": "BOSS_CHALLENGE",
+        "target": boss_name,
+        "priority": priority,
+        "expected_cp_gain": 0,
+        "description": description,
+    }
+
+
+def _stat_action_description(item: dict[str, Any]) -> str:
+    stat = str(item.get("stat") or "")
+    label = str(item.get("label") or stat or "스탯")
+    actual = item.get("actual")
+    required = item.get("required")
+    base = (
+        f"{label}{_subject_particle(label)} 요구치보다 낮습니다. "
+        f"현재 {_format_answer_number(actual)}, 기준 {_format_answer_number(required)}, "
+        f"부족 {_format_answer_gap(actual, required)}입니다."
+    )
+    if stat == "level":
+        return f"{base} 먼저 레벨을 기준까지 올린 뒤 보스 적합도를 다시 확인하세요."
+    if stat == "force":
+        return f"{base} 아케인/어센틱 심볼을 장착하고 일일 퀘스트, 이벤트 보상, 심볼 강화를 통해 포스를 확보하세요."
+    if stat == "main_stat":
+        return f"{base} 장비 스타포스, 잠재능력, 심볼 성장, 세트 효과를 우선 점검하세요."
+    if stat == "boss_damage":
+        return f"{base} 무기/보조무기/엠블렘 잠재, 링크 스킬, 유니온, 보스 도핑으로 보스 데미지를 보강하세요."
+    if stat == "ignore_def":
+        return f"{base} 방어율 무시는 무기/보조무기/엠블렘 잠재와 링크/유니온에서 우선 확보하세요."
+    if stat == "combat_power":
+        return f"{base} 장비 강화와 잠재 개선으로 기본 전투력을 먼저 끌어올리는 것이 좋습니다."
+    return f"{base} 이 항목을 올릴 수 있는 장비 강화, 잠재, 유니온, 링크 구성을 우선 확인하세요."
+
+
+def _actions_for_lacking_stats(analysis: dict[str, Any]) -> list[dict[str, Any]]:
+    actions = []
+    for index, item in enumerate((analysis.get("lacking_stats") or [])[:4], start=1):
+        label = item.get("label") or item.get("stat")
+        actions.append(
+            {
+                "category": "STAT_IMPROVEMENT",
+                "target": str(label),
+                "priority": index + 1,
+                "expected_cp_gain": 0,
+                "description": _stat_action_description(item),
+            }
+        )
+    return actions
+
+
+def _growth_forecast_actions(state: AgentState, start_priority: int = 6) -> list[dict[str, Any]]:
+    forecasts = _value(state.get("equipment_summary") or {}, "growth_forecast", []) or []
+    if not isinstance(forecasts, list):
+        return []
+
+    actions = []
+    for index, forecast in enumerate(forecasts[:3], start=0):
+        target = str(_value(forecast, "target", "") or "성장 항목")
+        action = str(_value(forecast, "action", "") or "성장 진행")
+        category = str(_value(forecast, "category", "") or "GROWTH")
+        cp_gain = int(_parse_number(_value(forecast, "expected_cp_gain"), 0))
+        damage_gain = _parse_number(_value(forecast, "expected_damage_gain_percent"), 0)
+        cost = int(_parse_number(_value(forecast, "estimated_cost_meso"), 0))
+        days = int(_parse_number(_value(forecast, "estimated_days"), 0))
+        details = [f"{target}: {action}"]
+        if cp_gain:
+            details.append(f"예상 전투력 +{cp_gain:,}")
+        if damage_gain:
+            details.append(f"예상 데미지 +{_format_answer_number(damage_gain, '%')}")
+        if cost:
+            details.append(f"예상 비용 {_format_answer_number(cost)} 메소")
+        if days:
+            details.append(f"예상 기간 {days}일")
+        actions.append(
+            {
+                "category": category,
+                "target": target,
+                "priority": start_priority + index,
+                "expected_cp_gain": cp_gain,
+                "description": ". ".join(details) + ".",
+            }
+        )
+    return actions
+
+
+def _recommended_actions(analysis: dict[str, Any], state: AgentState | None = None) -> list[dict[str, Any]]:
+    actions = [_action_for_status(analysis), *_actions_for_lacking_stats(analysis)]
+    if state is not None:
+        actions.extend(_growth_forecast_actions(state, start_priority=len(actions) + 1))
+    return actions[:8]
+
+
+def _answer_guidance(
+    character: dict[str, Any],
+    result: dict[str, Any],
+    actions: list[dict[str, Any]],
+) -> str:
+    lines = [
+        "Analytics final answer guide:",
+        "답변 기준: research와 calculator 결과만 사용했습니다. 근거에 없는 권장 스펙, 커뮤니티 기준, 공식 기준, 보스 패턴 설명은 제외합니다.",
+        "보스 요구 스탯 근거가 없으면 가능/불가능을 단정하지 않고 계산된 성장 우선순위만 안내합니다.",
+        (
+            "캐릭터: "
+            f"{character.get('character_name') or 'unknown'}"
+            f"({character.get('world_name') or '월드 미상'}, {character.get('job_name') or '직업 미상'})"
+        ),
+    ]
+
+    if result.get("error"):
+        lines.append(f"판정: {result['error']} 보스 가능 여부는 단정하지 말고, 계산된 성장 우선순위만 안내하세요.")
+    elif result.get("boss_name") or result.get("target_boss"):
+        boss_name = result.get("boss_name") or result.get("target_boss")
+        difficulty = result.get("difficulty") or "난이도 미상"
+        lines.append(
+            f"판정: {boss_name} {difficulty} - {result.get('status_label')} "
+            f"(적합도 {result.get('challenge_fit_score')}, 도전 가능={result.get('challengeable')})"
+        )
+        lacking_stats = result.get("lacking_stats") or []
+        if lacking_stats:
+            lines.append("부족 스탯:")
+            for item in lacking_stats[:5]:
+                lines.append(
+                    "- "
+                    f"{item.get('label') or item.get('stat')}: "
+                    f"현재 {_format_answer_number(item.get('actual'))}, "
+                    f"기준 {_format_answer_number(item.get('required'))}, "
+                    f"충족률 {_format_answer_number(float(item.get('ratio') or 0) * 100, '%')}"
+                )
+        else:
+            lines.append("부족 스탯: 주요 요구치를 충족했습니다.")
+    else:
+        summary = result.get("summary") or {}
+        lines.append(
+            "판정: 추천 가능 보스 목록 "
+            f"권장 {summary.get('recommended_count', 0)}개, "
+            f"도전 가능 {summary.get('challengeable_count', 0)}개, "
+            f"위험 {summary.get('risky_count', 0)}개"
+        )
+
+    if actions:
+        lines.append("다음 추천 행동:")
+        for action in sorted(actions, key=lambda item: int(item.get("priority") or 999))[:8]:
+            cp_gain = int(_parse_number(action.get("expected_cp_gain"), 0))
+            description = str(action.get("description") or "")
+            cp_text = f" 예상 전투력 +{cp_gain:,}." if cp_gain and "예상 전투력" not in description else ""
+            lines.append(
+                "- "
+                f"[{action.get('priority')}] {action.get('category')} / {action.get('target')}: "
+                f"{description}{cp_text}"
+            )
+
+    lines.append("주의: analytics는 이미 state에 있는 research/calculator 결과만 사용하며, 직접 DB/API를 다시 조회하지 않습니다.")
+    return "\n".join(lines)
+
+
+def _append_answer_guidance_to_context(context: str, guidance: str) -> str:
+    guidance = str(guidance or "").strip()
+    if not guidance:
+        return context
+    if not context:
+        return guidance
+    if guidance in context:
+        return context
+    return f"{guidance}\n\n{context.rstrip()}"
+
+
+def _parse_json_object(content: str) -> dict[str, Any]:
+    text = str(content or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        match = re.search(r"\{[\s\S]*\}", text)
+        if not match:
+            return {}
+        try:
+            parsed = json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _calculator_interpretation(state: AgentState) -> dict[str, Any]:
+    tool_results = state.get("tool_results") or {}
+    if not isinstance(tool_results, dict):
+        return {}
+    calculator = tool_results.get("calculator") or {}
+    if not isinstance(calculator, dict):
+        return {}
+    interpretation = calculator.get("llm_interpretation") or {}
+    return interpretation if isinstance(interpretation, dict) else {}
+
+
+def _action_identity(action: dict[str, Any]) -> str:
+    return f"{action.get('category', '')}|{action.get('target', '')}"
+
+
+def _normalize_llm_actions(
+    parsed_actions: Any,
+    fallback_actions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not isinstance(parsed_actions, list):
+        return fallback_actions
+
+    by_identity = {
+        _action_identity(action): action
+        for action in fallback_actions
+        if isinstance(action, dict)
+    }
+    by_target = {
+        str(action.get("target") or ""): action
+        for action in fallback_actions
+        if isinstance(action, dict)
+    }
+    normalized = []
+    used = set()
+    for item in parsed_actions:
+        if not isinstance(item, dict):
+            continue
+        source = by_identity.get(_action_identity(item)) or by_target.get(str(item.get("target") or ""))
+        if not source:
+            continue
+        identity = _action_identity(source)
+        if identity in used:
+            continue
+        used.add(identity)
+        normalized.append(
+            {
+                **source,
+                "priority": int(_parse_number(item.get("priority"), source.get("priority", len(normalized) + 1))),
+                "description": str(item.get("description") or source.get("description") or ""),
+            }
+        )
+    normalized.sort(key=lambda action: int(action.get("priority") or 999))
+    return normalized[:5] or fallback_actions
+
+
+def _analytics_llm_prompt(
+    state: AgentState,
+    character: dict[str, Any],
+    result: dict[str, Any],
+    actions: list[dict[str, Any]],
+    deterministic_guidance: str,
+) -> str:
+    payload = {
+        "user_query": state.get("user_query", ""),
+        "character": {
+            "character_name": character.get("character_name"),
+            "world_name": character.get("world_name"),
+            "job_name": character.get("job_name"),
+            "level": character.get("level"),
+            "combat_power": character.get("combat_power"),
+        },
+        "analysis": {
+            "target_boss": result.get("target_boss") or result.get("boss_name"),
+            "difficulty": result.get("difficulty"),
+            "clear_status": result.get("clear_status"),
+            "status_label": result.get("status_label"),
+            "challenge_fit_score": result.get("challenge_fit_score"),
+            "challengeable": result.get("challengeable"),
+            "lacking_stats": (result.get("lacking_stats") or [])[:5],
+            "error": result.get("error"),
+        },
+        "calculator_interpretation": _calculator_interpretation(state),
+        "candidate_actions": actions[:8],
+        "deterministic_guidance": deterministic_guidance,
+    }
+    return "\n".join(
+        [
+            "You are the analytics recommendation writer.",
+            "The analysis and calculations are already finished by code.",
+            "Use only the provided analysis, calculator_interpretation, and candidate_actions.",
+            "Do not invent new stats, combat power gains, costs, boss requirements, item names, official/community standards, or boss patterns.",
+            "If analysis.error exists, do not decide boss challenge success/failure. Recommend only the calculated growth actions.",
+            "Write concise Korean for a MapleStory newbie.",
+            "Return only a JSON object with:",
+            "- answer_guidance: 4-8 short Korean lines final_answer can reuse",
+            "- recommended_actions: at most 5 actions selected from candidate_actions, preserving category and target",
+            "Each recommended action must include category, target, priority, description.",
+            "",
+            f"Input JSON: {json.dumps(payload, ensure_ascii=False, default=str)}",
+        ]
+    )
+
+
+def _llm_analytics_handoff(
+    state: AgentState,
+    character: dict[str, Any],
+    result: dict[str, Any],
+    actions: list[dict[str, Any]],
+    deterministic_guidance: str,
+) -> dict[str, Any]:
+    fallback = {
+        "answer_guidance": deterministic_guidance,
+        "recommended_actions": actions,
+        "source": "deterministic_fallback",
+    }
+    try:
+        response = get_llm().invoke(
+            _analytics_llm_prompt(state, character, result, actions, deterministic_guidance)
+        )
+    except Exception as exc:
+        return {**fallback, "llm_error": str(exc)}
+
+    content = getattr(response, "content", response)
+    if isinstance(content, list):
+        content = "\n".join(str(item) for item in content)
+    parsed = _parse_json_object(str(content))
+    answer_guidance = str(parsed.get("answer_guidance") or deterministic_guidance).strip()
+    return {
+        "answer_guidance": answer_guidance or deterministic_guidance,
+        "recommended_actions": _normalize_llm_actions(parsed.get("recommended_actions"), actions),
+        "source": "llm_summary" if parsed else "deterministic_fallback",
+    }
+
+
 def run_analystic(state: AgentState, **_: Any) -> AgentState:
     """Interpret research and calculator outputs without doing new DB/API/tool calls."""
 
@@ -622,7 +982,7 @@ def run_analystic(state: AgentState, **_: Any) -> AgentState:
 
     if not requirements:
         result = _empty_result("research 결과에서 보스 요구 스탯 근거를 찾지 못했습니다.")
-        actions: list[dict[str, Any]] = []
+        actions: list[dict[str, Any]] = _growth_forecast_actions(state, start_priority=1)
     else:
         target_requirement = _select_target_requirement(state, requirements)
         wants_available_list = any(
@@ -635,17 +995,34 @@ def run_analystic(state: AgentState, **_: Any) -> AgentState:
             actions = result.get("recommended_actions", []) or []
         elif target_requirement:
             result = _analyze_requirement(character, target_requirement)
-            actions = _recommended_actions(result)
+            actions = _recommended_actions(result, state)
         else:
             result = _empty_result("분석할 대상 보스를 선택하지 못했습니다.")
             actions = []
 
+    deterministic_actions = actions
+    deterministic_guidance = _answer_guidance(character, result, deterministic_actions)
+    handoff = _llm_analytics_handoff(
+        state,
+        character,
+        result,
+        deterministic_actions,
+        deterministic_guidance,
+    )
+    actions = handoff["recommended_actions"]
+    answer_guidance = handoff["answer_guidance"]
     tool_results = dict(state.get("tool_results") or {})
     tool_results["analystic"] = {
         **result,
         "character_input": character,
         "research_requirement_count": len(requirements),
+        "answer_guidance": answer_guidance,
+        "deterministic_answer_guidance": deterministic_guidance,
+        "deterministic_recommended_actions": deterministic_actions,
+        "llm_handoff_source": handoff.get("source"),
     }
+    if handoff.get("llm_error"):
+        tool_results["analystic"]["llm_handoff_error"] = handoff["llm_error"]
 
     next_state: AgentState = {
         **state,
@@ -653,7 +1030,10 @@ def run_analystic(state: AgentState, **_: Any) -> AgentState:
         "growth_report": _growth_report(state, character, result, actions),
         "recommended_actions": actions,
         "confidence_score": float(result.get("challenge_fit_score") or state.get("confidence_score") or 0.0),
-        "context": _append_analysis_to_context(str(state.get("context") or ""), result),
+        "context": _append_answer_guidance_to_context(
+            _append_analysis_to_context(str(state.get("context") or ""), result),
+            answer_guidance,
+        ),
     }
     if result.get("lacking_stats"):
         next_state["bottleneck_analysis"] = {
