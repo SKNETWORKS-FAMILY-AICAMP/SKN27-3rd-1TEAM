@@ -1,5 +1,11 @@
 # python 3.12
 
+# 실행
+```
+cd app
+streamlit run maple_chat.py
+```
+
 # 데이터
 ### neo4j
 > graph_loader.py 실행
