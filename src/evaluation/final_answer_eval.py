@@ -473,6 +473,8 @@ def choose_evaluation_route(
 ) -> str:
     if result.final_pass:
         return EVALUATION_PASS
+    if retry_count >= max_retry_count:
+        return EVALUATION_PASS
     return EVALUATION_REPLAN
 
 
@@ -486,6 +488,8 @@ def build_evaluation_feedback(result: FinalAnswerEvalResult, route: str) -> str:
     if result.final_pass:
         return "Final answer passed rule-based evaluation."
     warning_text = "; ".join(result.warnings) if result.warnings else "unknown failure"
+    if route == EVALUATION_PASS:
+        return f"Evaluation retry limit reached; finishing without another supervisor replan: {warning_text}"
     return f"Send back to supervisor: {warning_text}"
 
 

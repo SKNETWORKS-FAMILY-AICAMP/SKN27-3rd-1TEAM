@@ -11,6 +11,7 @@ load_dotenv()  # .env 파일에서 API 키 등 환경변수를 미리 로드
 
 import sys
 import time
+import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -75,6 +76,10 @@ RESPONSE_TAG_SYSTEM_FALLBACK = "system.fallback"        # 예외 발생 시 폴�
 RANKING_TOP100_PROMPT = "전체 랭킹 100위까지 보여줘."
 WEEKLY_EVENT_PROMPT = "이번주 이벤트 내용 알려줘."
 CASH_UPDATE_PROMPT = "캐시샵 업데이트 내용 알려줘."
+
+DEFAULT_RANKING_LIMIT = 100
+DEFAULT_EVENT_LIMIT = 5
+DEFAULT_CASH_NOTICE_LIMIT = 3
 
 # 채팅 한 세션을 구성하는 session_state 키 목록 (저장/복원 시 함께 다룸)
 CHAT_STATE_KEYS = (
@@ -144,6 +149,29 @@ class AssistantResponse:
                 if value not in ("", None)
             },
         )
+
+
+@dataclass(frozen=True)
+class RankingAPIQuery:
+    """Parsed parameters for Nexon ranking/overall."""
+
+    world_name: str = ""
+    target_rank: int | None = None
+    limit: int = DEFAULT_RANKING_LIMIT
+
+
+@dataclass(frozen=True)
+class EventNoticeAPIQuery:
+    """Parsed parameters for active event notices."""
+
+    max_events: int = DEFAULT_EVENT_LIMIT
+
+
+@dataclass(frozen=True)
+class CashUpdateAPIQuery:
+    """Parsed parameters for cash update notice sections."""
+
+    max_notices: int = DEFAULT_CASH_NOTICE_LIMIT
 
 
 def apply_chat_state(chat_state: dict[str, Any]) -> None:
@@ -281,44 +309,198 @@ def fallback_answer(user_input: str, error: Exception) -> str:
     )
 
 
+def normalize_direct_api_query(user_input: str) -> str:
+    """직접 API 라우팅에서 공통으로 쓰는 가벼운 질의 정규화."""
+
+    return " ".join(str(user_input or "").split()).strip()
+
+
+def parse_int_text(value: Any, default: int = 0) -> int:
+    match = re.search(r"\d+", str(value or "").replace(",", ""))
+    if not match:
+        return default
+    return int(match.group(0))
+
+
+def clamp_positive(value: int, default: int, maximum: int) -> int:
+    if value <= 0:
+        return default
+    return min(value, maximum)
+
+
+def parse_ranking_api_query(user_input: str) -> RankingAPIQuery | None:
+    """Return ranking API parameters only when the query maps to ranking/overall."""
+
+    normalized = normalize_direct_api_query(user_input)
+    if not normalized:
+        return None
+
+    lower_query = normalized.lower()
+    if "랭킹" not in normalized and "순위" not in normalized and not re.search(r"\btop\s*\d+", lower_query):
+        return None
+
+    limit = extract_ranking_limit(normalized)
+    target_rank = None if limit else extract_ranking_target_rank(normalized)
+    if limit is None and target_rank is None:
+        return None
+
+    from src.collectors.nexon_api import extract_world_name_from_query
+
+    world_name = extract_world_name_from_query(normalized)
+    fetch_limit = clamp_positive(
+        limit or target_rank or DEFAULT_RANKING_LIMIT,
+        DEFAULT_RANKING_LIMIT,
+        DEFAULT_RANKING_LIMIT,
+    )
+    return RankingAPIQuery(
+        world_name=world_name,
+        target_rank=target_rank,
+        limit=fetch_limit,
+    )
+
+
+def extract_ranking_limit(query: str) -> int | None:
+    patterns = (
+        r"\btop\s*(?P<limit>\d+)",
+        r"(?P<limit>\d+)\s*(?:위|등)\s*까지",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, query, flags=re.IGNORECASE)
+        if match:
+            return parse_int_text(match.group("limit"))
+    return None
+
+
+def extract_ranking_target_rank(query: str) -> int | None:
+    match = re.search(r"(?P<rank>\d+)\s*(?:위|등)(?!\s*까지)", query)
+    if not match:
+        return None
+    return parse_int_text(match.group("rank"))
+
+
+def parse_current_event_api_query(user_input: str) -> EventNoticeAPIQuery | None:
+    """Return active-event API parameters when the query asks for current events."""
+
+    normalized = normalize_direct_api_query(user_input)
+    if not normalized:
+        return None
+    if normalized == WEEKLY_EVENT_PROMPT:
+        return EventNoticeAPIQuery()
+    if "이벤트" not in normalized:
+        return None
+    if not re.search(r"이번\s*주|현재|진행\s*중|오늘|지금", normalized):
+        return None
+    return EventNoticeAPIQuery(
+        max_events=clamp_positive(
+            parse_int_text(normalized, DEFAULT_EVENT_LIMIT),
+            DEFAULT_EVENT_LIMIT,
+            DEFAULT_EVENT_LIMIT,
+        )
+    )
+
+
+def parse_cash_update_api_query(user_input: str, *, latest_only_once: bool = False) -> CashUpdateAPIQuery | None:
+    """Return cash-update API parameters when the query maps to update notices."""
+
+    normalized = normalize_direct_api_query(user_input)
+    if not normalized:
+        return None
+    if normalized == CASH_UPDATE_PROMPT:
+        return CashUpdateAPIQuery(max_notices=1 if latest_only_once else DEFAULT_CASH_NOTICE_LIMIT)
+    if "캐시" not in normalized:
+        return None
+    if not re.search(r"업데이트|공지|신규|최근|최신", normalized):
+        return None
+
+    requested_count = parse_int_text(normalized, 0)
+    max_notices = requested_count or (1 if latest_only_once else DEFAULT_CASH_NOTICE_LIMIT)
+    if re.search(r"최신|가장\s*최근|마지막", normalized):
+        max_notices = 1
+    return CashUpdateAPIQuery(
+        max_notices=clamp_positive(max_notices, DEFAULT_CASH_NOTICE_LIMIT, DEFAULT_CASH_NOTICE_LIMIT)
+    )
+
+
+def format_ranking_row(row: dict[str, Any], index: int) -> str:
+    rank = row.get("ranking") or index
+    character_name = row.get("character_name") or "-"
+    world_name = row.get("world_name") or "-"
+    class_name = row.get("class_name") or row.get("class") or "-"
+    level = row.get("character_level") or "-"
+    return f"{rank}. {character_name} / {world_name} / {class_name} / Lv.{level}"
+
+
+def ranking_row_rank(row: dict[str, Any], index: int) -> int:
+    return parse_int_text(row.get("ranking"), index)
+
+
+def build_ranking_answer(rankings: list[dict[str, Any]], query: RankingAPIQuery) -> str:
+    scope = f"{query.world_name} 월드" if query.world_name else "전체"
+    if not rankings:
+        return f"{scope} 랭킹 정보를 가져오지 못했습니다. API 기준 날짜 또는 API 키를 확인해 주세요."
+
+    if query.target_rank:
+        target = next(
+            (
+                row
+                for index, row in enumerate(rankings, start=1)
+                if ranking_row_rank(row, index) == query.target_rank
+            ),
+            None,
+        )
+        if target is None and 0 < query.target_rank <= len(rankings):
+            target = rankings[query.target_rank - 1]
+        if target is None:
+            return f"{scope} 랭킹 {query.target_rank}위 정보를 가져오지 못했습니다."
+
+        character_name = target.get("character_name") or "-"
+        world_name = target.get("world_name") or query.world_name or "-"
+        class_name = target.get("class_name") or target.get("class") or "-"
+        level = target.get("character_level") or "-"
+        rank = target.get("ranking") or query.target_rank
+        return "\n".join(
+            [
+                f"{scope} 랭킹 {rank}위는 {character_name}입니다.",
+                "",
+                f"- 월드: {world_name}",
+                f"- 직업: {class_name}",
+                f"- 레벨: {level}",
+                "- 출처: Nexon Open API ranking/overall",
+            ]
+        )
+
+    lines = [f"{scope} 랭킹 TOP {query.limit}입니다.", ""]
+    lines.extend(format_ranking_row(row, index) for index, row in enumerate(rankings[:query.limit], start=1))
+    return "\n".join(lines)
+
+
 def build_direct_api_response(user_input: str) -> AssistantResponse | None:
-    """랭킹/이벤트/캐시 단축 명령을 처리하고, 해당 없으면 None을 반환한다."""
-    normalized = " ".join(str(user_input or "").split())
+    """직접 API 파라미터로 해석되는 질문을 처리하고, 해당 없으면 None을 반환한다."""
 
-    if normalized == RANKING_TOP100_PROMPT or (
-        "랭킹" in normalized
-        and "100" in normalized
-        and any(keyword in normalized for keyword in ("전체", "top", "TOP"))
-    ):
-        from src.collectors.nexon_api import fetch_overall_ranking_top100
+    ranking_query = parse_ranking_api_query(user_input)
+    if ranking_query is not None:
+        from src.collectors.nexon_api import fetch_overall_ranking
 
-        rankings = fetch_overall_ranking_top100()
-        if not rankings:
-            answer = "전체 랭킹 정보를 가져오지 못했습니다. API 기준 날짜 또는 API 키를 확인해 주세요."
-        elif rankings:
-            lines = ["전체 랭킹 TOP 100입니다.", ""]
-            for index, row in enumerate(rankings, start=1):
-                rank = row.get("ranking") or index
-                character_name = row.get("character_name") or "-"
-                world_name = row.get("world_name") or "-"
-                class_name = row.get("class_name") or row.get("class") or "-"
-                level = row.get("character_level") or "-"
-                lines.append(f"{rank}. {character_name} / {world_name} / {class_name} / Lv.{level}")
-            answer = "\n".join(lines)
+        rankings = fetch_overall_ranking(
+            world_name=ranking_query.world_name or None,
+            limit=ranking_query.limit,
+        )
+        answer = build_ranking_answer(rankings, ranking_query)
         return AssistantResponse.create(
             answer,
             RESPONSE_TAG_API_RANKING_TOP100,
             source="nexon_open_api",
             result_kind="ranking_list",
+            world_name=ranking_query.world_name,
+            target_rank=ranking_query.target_rank,
+            limit=ranking_query.limit,
         )
 
-    if normalized == WEEKLY_EVENT_PROMPT or (
-        "이벤트" in normalized
-        and any(keyword in normalized for keyword in ("이번주", "이번 주", "현재", "진행"))
-    ):
+    event_query = parse_current_event_api_query(user_input)
+    if event_query is not None:
         from src.collectors.nexon_api import fetch_current_event_notices
 
-        events = fetch_current_event_notices(max_events=5)
+        events = fetch_current_event_notices(max_events=event_query.max_events)
         if not events:
             answer = "이번주 이벤트 정보를 가져오지 못했습니다. Nexon API 키와 이벤트 공지 데이터를 확인해 주세요."
         elif events:
@@ -345,16 +527,16 @@ def build_direct_api_response(user_input: str) -> AssistantResponse | None:
             RESPONSE_TAG_API_WEEKLY_EVENT,
             source="nexon_open_api",
             result_kind="notice_list",
+            max_events=event_query.max_events,
         )
 
-    if normalized == CASH_UPDATE_PROMPT or (
-        "캐시" in normalized
-        and any(keyword in normalized for keyword in ("업데이트", "공지", "신규", "코디"))
-    ):
+    latest_only = bool(st.session_state.get("cash_update_latest_only_once", False))
+    cash_query = parse_cash_update_api_query(user_input, latest_only_once=latest_only)
+    if cash_query is not None:
+        st.session_state.pop("cash_update_latest_only_once", False)
         from src.collectors.nexon_api import fetch_recent_update_cash_sections
 
-        latest_only = bool(st.session_state.pop("cash_update_latest_only_once", False))
-        notices = fetch_recent_update_cash_sections(max_notices=1 if latest_only else 3)
+        notices = fetch_recent_update_cash_sections(max_notices=cash_query.max_notices)
         if not notices:
             answer = "최근 업데이트 공지에서 캐시 관련 내용을 찾지 못했습니다. Nexon API 키와 업데이트 공지 데이터를 확인해 주세요."
         elif notices:
@@ -382,6 +564,7 @@ def build_direct_api_response(user_input: str) -> AssistantResponse | None:
             RESPONSE_TAG_API_CASH_UPDATE,
             source="nexon_open_api",
             result_kind="notice_list",
+            max_notices=cash_query.max_notices,
         )
 
     return None

@@ -271,16 +271,23 @@ def nexon_api_node(
 ) -> AgentState:
     """LangGraph-friendly node that enriches AgentState with Nexon data."""
 
-    lookup_query = state.get("contextualized_query") or state.get("user_query", "")
+    user_query = str(state.get("user_query") or "")
+    lookup_query = state.get("contextualized_query") or user_query
+    lookup = (
+        extract_character_lookup_from_query(user_query)
+        or extract_character_lookup_from_query(lookup_query)
+    )
     character_name = (
         state.get("character_name")
+        or lookup.get("character_name", "")
         or extract_character_name_from_query(lookup_query)
-        or extract_character_name_from_query(state.get("user_query", ""))
+        or extract_character_name_from_query(user_query)
     )
+    world_name = state.get("world_name") or lookup.get("world_name", "")
     fetched = fetch_character_state(
         character_name=character_name,
         ocid=state.get("ocid"),
-        world_name=state.get("world_name"),
+        world_name=world_name,
         user_query=lookup_query,
         api_date=api_date,
         api_key=api_key,
@@ -573,8 +580,130 @@ def optional_int(value: Any) -> int | None:
     return int(parse_number(value, 0))
 
 
+LOOKUP_ACTION_PATTERN = (
+    r"정보\s*조회|스탯\s*조회|스펙\s*조회|전투력\s*조회|"
+    r"정보조회|스탯조회|스펙조회|전투력조회|정보|스탯|스펙|전투력"
+)
+
+
+def extract_character_lookup_from_query(query: str) -> dict[str, str]:
+    """Extract MapleStory character lookup fields from a Korean query."""
+
+    text = normalise_lookup_query(query)
+    if not text:
+        return {}
+
+    world_name = extract_world_name_from_query(text)
+    character_name = ""
+    if world_name:
+        character_name = (
+            extract_character_name_near_world(text, world_name)
+            or extract_character_name_by_lookup_words(remove_world_phrase(text, world_name))
+        )
+    else:
+        character_name = extract_character_name_by_lookup_words(text)
+
+    if not character_name:
+        return {"world_name": world_name} if world_name else {}
+
+    result = {"character_name": character_name}
+    if world_name:
+        result["world_name"] = world_name
+    return result
+
+
+def normalise_lookup_query(query: str) -> str:
+    text = str(query or "").strip()
+    text = re.sub(r"[\"'`“”‘’]", " ", text)
+    text = re.sub(r"[()\[\]{}]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def extract_world_name_from_query(query: str) -> str:
+    text = str(query or "")
+    patterns = (
+        r"(?P<world>[가-힣A-Za-z0-9_]{2,20})\s*(?:서버|월드)",
+        r"(?:서버|월드)(?:는|은|이|가|:)?\s*(?P<world>[가-힣A-Za-z0-9_]{2,20})",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return clean_lookup_token(match.group("world"))
+    return ""
+
+
+def extract_character_name_near_world(query: str, world_name: str) -> str:
+    escaped_world = re.escape(world_name)
+    after_world_patterns = (
+        rf"{escaped_world}\s*(?:서버|월드)?\s*(?:에서|의|에)?\s*(?:캐릭터|캐릭|닉네임)?\s*([가-힣A-Za-z0-9_]+)",
+        rf"{escaped_world}\s*(?:서버|월드)의\s*([가-힣A-Za-z0-9_]+)",
+    )
+    for pattern in after_world_patterns:
+        match = re.search(pattern, query)
+        if match:
+            candidate = clean_character_name(match.group(1))
+            if is_valid_character_name_candidate(candidate):
+                return candidate
+
+    before_world_patterns = (
+        rf"([가-힣A-Za-z0-9_]+)\s*(?:캐릭터|캐릭)?\s*(?:은|는|이|가)?\s*{escaped_world}\s*(?:서버|월드)?",
+        rf"([가-힣A-Za-z0-9_]+)\s*(?:의)?\s*{escaped_world}\s*(?:서버|월드)?",
+    )
+    for pattern in before_world_patterns:
+        match = re.search(pattern, query)
+        if match:
+            candidate = clean_character_name(match.group(1))
+            if is_valid_character_name_candidate(candidate):
+                return candidate
+
+    return ""
+
+
+def remove_world_phrase(query: str, world_name: str) -> str:
+    escaped_world = re.escape(world_name)
+    patterns = (
+        rf"{escaped_world}\s*(?:서버|월드)?\s*(?:에서|의|에)?",
+        rf"(?:서버|월드)(?:는|은|이|가|:)?\s*{escaped_world}",
+    )
+    text = str(query or "")
+    for pattern in patterns:
+        text = re.sub(pattern, " ", text, count=1)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def extract_character_name_by_lookup_words(query: str) -> str:
+    patterns = (
+        r"(?:닉네임|캐릭터명|캐릭터\s*이름|캐릭\s*이름|이름)(?:은|는|이|가|:)?\s*([가-힣A-Za-z0-9_]+)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, query)
+        if match:
+            candidate = clean_character_name(match.group(1))
+            if is_valid_character_name_candidate(candidate):
+                return candidate
+
+    lookup_match = re.search(LOOKUP_ACTION_PATTERN, query)
+    if not lookup_match:
+        return ""
+
+    prefix = query[:lookup_match.start()].strip()
+    prefix = re.sub(r"(?:내|제)\s*(?:캐릭터|캐릭)?", " ", prefix).strip()
+    prefix = re.sub(r"(?:캐릭터|캐릭|닉네임|이름)(?:은|는|이|가|:)?", " ", prefix).strip()
+    tokens = re.findall(r"[가-힣A-Za-z0-9_]+", prefix)
+    for token in tokens:
+        candidate = clean_character_name(token)
+        if is_valid_character_name_candidate(candidate):
+            return candidate
+    return ""
+
+
 def extract_character_name_from_query(query: str) -> str:
     text = str(query or "").strip()
+    lookup = extract_character_lookup_from_query(text)
+    if lookup.get("character_name"):
+        return lookup["character_name"]
+
     patterns = (
         r"(?:내\s*)?캐릭터(?:는|가|명은|명)?\s*([가-힣A-Za-z0-9_]+?)(?:인데요|인데|이고|으로|로|은|는|이|가|\s|$)",
         r"나는\s*([가-힣A-Za-z0-9_]+?)(?:인데요|인데|이고|으로|로|은|는|이|가|\s|$)",
@@ -591,7 +720,33 @@ def extract_character_name_from_query(query: str) -> str:
 
 def clean_character_name(value: Any) -> str:
     text = str(value or "").strip()
-    return re.sub(r"(인데요|인데|입니다|이고|이라는|라는|은|는|이|가)$", "", text).strip()
+    lookup_suffix_pattern = (
+        rf"({LOOKUP_ACTION_PATTERN}|"
+        r"조회해줘|알려줘|보여줘|해주세요|해줘|조회|정보|스탯|스펙|전투력)$"
+    )
+    while text:
+        cleaned = re.sub(lookup_suffix_pattern, "", text).strip()
+        if cleaned == text:
+            break
+        text = cleaned
+    text = re.sub(r"(캐릭터|캐릭|닉네임)$", "", text).strip()
+    text = re.sub(r"(인데요|인데|입니다|이고|이라는|라는|은|는|이|가|의)$", "", text).strip()
+    return text
+
+
+def clean_lookup_token(value: Any) -> str:
+    text = str(value or "").strip()
+    text = re.sub(r"(?:서버|월드)$", "", text).strip()
+    return text
+
+
+def is_valid_character_name_candidate(value: str) -> bool:
+    text = str(value or "").strip()
+    if not text:
+        return False
+    if len(text) > 20:
+        return False
+    return bool(re.fullmatch(r"[가-힣A-Za-z0-9_]+", text))
 
 
 def make_json_safe(value: Any) -> Any:
@@ -606,20 +761,22 @@ def make_json_safe(value: Any) -> Any:
     return value
 
 
-def fetch_overall_ranking_top100(
+def fetch_overall_ranking(
     api_date: str | None = None,
     *,
     client: NexonOpenAPIClient | None = None,
     world_name: str | None = None,
     world_type: str | None = None,
     class_name: str | None = None,
+    limit: int = 100,
 ) -> list[dict[str, Any]]:
     api = client or NexonOpenAPIClient()
     ranking_date = api_date or (date.today() - timedelta(days=1)).isoformat()
+    target_limit = max(1, int(parse_number(limit, 100)))
     rankings: list[dict[str, Any]] = []
     page = 1
 
-    while len(rankings) < 100:
+    while len(rankings) < target_limit:
         payload = api.get_overall_ranking(
             api_date=ranking_date,
             page=page,
@@ -633,7 +790,25 @@ def fetch_overall_ranking_top100(
         rankings.extend(row for row in rows if isinstance(row, dict))
         page += 1
 
-    return rankings[:100]
+    return rankings[:target_limit]
+
+
+def fetch_overall_ranking_top100(
+    api_date: str | None = None,
+    *,
+    client: NexonOpenAPIClient | None = None,
+    world_name: str | None = None,
+    world_type: str | None = None,
+    class_name: str | None = None,
+) -> list[dict[str, Any]]:
+    return fetch_overall_ranking(
+        api_date=api_date,
+        client=client,
+        world_name=world_name,
+        world_type=world_type,
+        class_name=class_name,
+        limit=100,
+    )
 
 
 def fetch_current_event_notices(
@@ -903,11 +1078,15 @@ def _read_error_body(exc: HTTPError) -> str:
 __all__ = [
     "NexonAPIError",
     "NexonOpenAPIClient",
+    "fetch_overall_ranking",
     "fetch_overall_ranking_top100",
     "fetch_current_event_notices",
     "fetch_recent_update_cash_sections",
     "fetch_character_state",
     "nexon_api_node",
+    "extract_character_lookup_from_query",
+    "extract_character_name_from_query",
+    "extract_world_name_from_query",
     "normalise_raw_character_bundle",
     "normalise_character_stats",
     "normalise_equipment_items",
