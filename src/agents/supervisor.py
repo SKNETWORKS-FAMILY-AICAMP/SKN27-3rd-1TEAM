@@ -97,6 +97,14 @@ CHITCHAT_PATTERNS = (
 # _finalize_plan에서 LLM이 만든 plan을 이 순서대로 재정렬할 때 기준으로 쓰인다.
 AGENT_ORDER = ("research", "calculator", "analystic", "final_answer")
 
+# 작업 유형을 agent capability로 변환할 때 쓰는 도메인 단위 분류.
+# 사용자 입력 단어가 아니라 TASK_TYPES 의미 기준으로 plan 보정 여부를 판단한다.
+PERSONAL_BENCHMARK_TASK_TYPES = {
+    "character_status_analysis",
+    "recommendation",
+    "boss_strategy",
+}
+
 # LLM이 boolean 대신 문자열로 반환하는 경우(예: "true", "yes")를 boolean으로 변환하기 위한 집합.
 TRUTHY_VALUES = {"true", "yes", "y", "1"}
 
@@ -299,6 +307,206 @@ def requires_character_processing_query(query: str) -> bool:
     return any(keyword.lower() in normalized for keyword in CHARACTER_PROCESSING_KEYWORDS)
 
 
+def coerce_bool(value) -> bool:
+    """LLM/상태에서 들어오는 bool-like 값을 일관되게 bool로 해석한다."""
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in TRUTHY_VALUES
+
+
+def response_bool(response_dict: dict, key: str) -> bool:
+    return coerce_bool(response_dict.get(key, False))
+
+
+def capability_bool(response_dict: dict, key: str) -> bool:
+    capabilities = response_dict.get("required_capabilities") or {}
+    if isinstance(capabilities, dict):
+        return coerce_bool(capabilities.get(key, False))
+    return coerce_bool(response_dict.get(key, False))
+
+
+def has_research_evidence_state(state: AgentState) -> bool:
+    return bool(str(state.get("context") or "").strip() or state.get("retrieved_docs"))
+
+
+def research_route_task_type(query: str, task_type: str) -> str:
+    if is_chitchat_query(query):
+        return ""
+    normalized_task_type = str(task_type or "").strip()
+    if normalized_task_type in {"", "unknown", "chitchat"}:
+        return "general_qa"
+    if normalized_task_type not in TASK_TYPES:
+        return "general_qa"
+    return normalized_task_type
+
+
+def research_route_requires_evidence(
+    query: str,
+    task_type: str,
+    *,
+    requires_character_lookup: bool = False,
+) -> bool:
+    text = str(query or "").strip()
+    if not text or is_chitchat_query(text):
+        return False
+    if requires_character_lookup and is_character_data_lookup_query(text):
+        return False
+
+    route_task_type = research_route_task_type(text, task_type)
+    if not route_task_type:
+        return False
+    if route_task_type == "character_status_analysis" and is_character_data_lookup_query(text):
+        return False
+
+    from src.agents.research_agent import classify_research_route
+
+    route = classify_research_route(text, task_type=route_task_type)
+    return bool(route.get("use_db") or route.get("use_graph") or route.get("use_web"))
+
+
+def agent_result_available(state: AgentState, agent: str) -> bool:
+    if agent == "research":
+        return has_research_evidence_state(state)
+    if agent == "calculator":
+        tool_results = state.get("tool_results") or {}
+        return bool(
+            state.get("stat_summary")
+            or state.get("equipment_summary")
+            or (isinstance(tool_results, dict) and tool_results.get("calculator"))
+        )
+    if agent == "analystic":
+        return bool(state.get("growth_report") or state.get("recommended_actions"))
+    if agent == "final_answer":
+        return bool(str(state.get("final_answer") or "").strip())
+    return False
+
+
+def agent_already_satisfied(
+    state: AgentState,
+    agent: str,
+    completed_agent: str | None,
+) -> bool:
+    return bool(
+        completed_agent == agent
+        or agent in list(state.get("completed_agents") or [])
+        or agent_result_available(state, agent)
+    )
+
+
+def append_required_agent(
+    plan: list[str],
+    agent: str,
+    state: AgentState,
+    completed_agent: str | None,
+) -> list[str]:
+    if agent in plan or agent_already_satisfied(state, agent, completed_agent):
+        return plan
+    agent_order = AGENT_ORDER.index(agent)
+    insert_at = len(plan)
+    for index, planned_agent in enumerate(plan):
+        if planned_agent in AGENT_ORDER and AGENT_ORDER.index(planned_agent) > agent_order:
+            insert_at = index
+            break
+    return [*plan[:insert_at], agent, *plan[insert_at:]]
+
+
+def infer_required_capabilities(
+    state: AgentState,
+    response_dict: dict,
+    plan: list[str],
+    task_type: str,
+    requires_character_lookup: bool,
+) -> dict[str, bool]:
+    """Convert supervisor outputs and current state into workflow capabilities.
+
+    This intentionally avoids matching user wording. The plan is derived from
+    whether the answer needs current character data, external criteria, and a
+    comparison/judgement step.
+    """
+
+    query_for_route = str(
+        response_dict.get("contextualized_query")
+        or state.get("contextualized_query")
+        or state.get("user_query")
+        or ""
+    ).strip()
+    needs_character_api = bool(
+        capability_bool(response_dict, "needs_character_api")
+        or requires_character_lookup
+        or has_character_lookup_state(state)
+    )
+    try:
+        route_needs_external_criteria = research_route_requires_evidence(
+            query_for_route,
+            task_type,
+            requires_character_lookup=needs_character_api,
+        )
+    except Exception:
+        route_needs_external_criteria = False
+
+    needs_external_criteria = bool(
+        capability_bool(response_dict, "needs_external_criteria")
+        or response_bool(response_dict, "requires_search")
+        or "research" in plan
+        or has_research_evidence_state(state)
+        or route_needs_external_criteria
+    )
+    needs_comparison = bool(
+        capability_bool(response_dict, "needs_comparison")
+        or (
+            needs_character_api
+            and needs_external_criteria
+            and task_type in PERSONAL_BENCHMARK_TASK_TYPES
+        )
+    )
+    needs_recommendation = bool(
+        capability_bool(response_dict, "needs_recommendation")
+        or response_bool(response_dict, "requires_analytics")
+        or "analystic" in plan
+    )
+    needs_calculation = bool(
+        response_bool(response_dict, "requires_calculation")
+        or "calculator" in plan
+        or needs_comparison
+    )
+
+    return {
+        "needs_character_api": needs_character_api,
+        "needs_external_criteria": needs_external_criteria,
+        "needs_comparison": needs_comparison,
+        "needs_recommendation": needs_recommendation,
+        "needs_calculation": needs_calculation,
+        "needs_interpretation": needs_comparison or needs_recommendation,
+    }
+
+
+def apply_capability_plan_guard(
+    state: AgentState,
+    response_dict: dict,
+    plan: list[str],
+    task_type: str,
+    requires_character_lookup: bool,
+    completed_agent: str | None,
+) -> list[str]:
+    capabilities = infer_required_capabilities(
+        state,
+        response_dict,
+        plan,
+        task_type,
+        requires_character_lookup,
+    )
+    guarded_plan = list(plan)
+    if capabilities["needs_external_criteria"]:
+        guarded_plan = append_required_agent(guarded_plan, "research", state, completed_agent)
+    if capabilities["needs_calculation"]:
+        guarded_plan = append_required_agent(guarded_plan, "calculator", state, completed_agent)
+    if capabilities["needs_interpretation"]:
+        guarded_plan = append_required_agent(guarded_plan, "analystic", state, completed_agent)
+    if "final_answer" not in guarded_plan:
+        guarded_plan.append("final_answer")
+    return guarded_plan
+
+
 def _fallback_supervisor_response(state: AgentState, error: Exception | None = None) -> dict:
     """LLM supervisor가 실패했을 때 키워드/상태 기반으로 최소 plan을 만든다.
 
@@ -427,6 +635,20 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             plan = ["calculator", *plan]
         task_type = "character_status_analysis"
 
+    fallback_response_dict = {
+        "requires_search": requires_search,
+        "requires_calculation": requires_calculation,
+        "requires_analytics": "analystic" in plan,
+    }
+    plan = apply_capability_plan_guard(
+        state,
+        fallback_response_dict,
+        plan,
+        task_type,
+        requires_character_lookup,
+        completed_agent,
+    )
+
     if error is not None:
         errors.append(f"supervisor llm failed; used fallback route: {error}")
 
@@ -547,20 +769,19 @@ def _guard_research_plan(
         or ""
     ).strip()
     task_type = str(response_dict.get("task_type") or state.get("task_type") or "").strip()
-    route_task_type = "general_qa" if task_type in {"", "unknown"} else task_type
     route_requires_research = False
-    if route_task_type in TASK_TYPES and route_task_type not in {"chitchat", "character_status_analysis"}:
-        try:
-            from src.agents.research_agent import classify_research_route
-
-            route = classify_research_route(contextualized_query, task_type=route_task_type)
-            route_requires_research = bool(
-                route.get("use_db")
-                or route.get("use_graph")
-                or route.get("use_web")
-            )
-        except Exception as exc:
-            errors = [*errors, f"supervisor route research guard failed: {exc}"]
+    try:
+        route_requires_research = research_route_requires_evidence(
+            contextualized_query,
+            task_type,
+            requires_character_lookup=(
+                response_bool(response_dict, "requires_character_lookup")
+                or coerce_bool(state.get("requires_character_lookup", False))
+                or requires_character_lookup_query(contextualized_query)
+            ),
+        )
+    except Exception as exc:
+        errors = [*errors, f"supervisor route research guard failed: {exc}"]
 
     feedback_requires_research = any(
         marker in feedback.lower()
@@ -729,6 +950,11 @@ TASK_TYPES:
 "requires_character_lookup" : 특정 유저 캐릭터의 현재 스펙, 장비, 전투력, 유니온, 보스 가능 여부처럼 Nexon Open API 캐릭터 조회가 필요한 경우 True, 일반 보스 정보/보상/요구 스탯처럼 캐릭터 조회가 필요 없는 경우 False
 "requires_calculation" : 사용자 질문에 {CALCULATION_TRIGGER_KEYWORDS}가 포함되어 있거나 calculator가 필요한 경우 True, 필요하지 않은 경우 False
 "requires_analytics" : 캐릭터 상태, 장비, 스펙, 선택지 비교, 성장 방향 판단처럼 analystic의 해석이 필요한 경우 True, 필요하지 않은 경우 False
+"required_capabilities" : 아래 capability를 구조화합니다. 단어 매칭이 아니라 답변에 필요한 작업 의존성 기준입니다.
+  - needs_character_api: 현재 특정 캐릭터의 Nexon API 데이터가 필요하면 true
+  - needs_external_criteria: 보스 요구치, 장비 기준, 이벤트/공지, 게임 지식처럼 외부 기준/근거 조회가 필요하면 true
+  - needs_comparison: 현재 캐릭터 데이터와 외부 기준/다른 선택지를 비교해 가능 여부, 우선순위, 적합도를 판단해야 하면 true
+  - needs_recommendation: 단순 사실 전달을 넘어 성장 방향/액션/판정 문구가 필요하면 true
 "contextualized_query" : 원문 질문이 이전 대화의 지시어/생략 표현에 의존하면 messages를 참고해 검색과 판단에 쓸 수 있는 완전한 질문으로 다시 씁니다. 독립 질문이면 원문과 동일하게 둡니다.
 
 #plan
@@ -739,6 +965,9 @@ plan에는 아래 목록의 에이전트만 포함할 수 있습니다.
 - requires_search가 True이면 research를 추가합니다.
 - requires_calculation이 True이면 calculator를 추가합니다.
 - requires_analytics가 True이면 analystic을 추가합니다.
+- required_capabilities.needs_external_criteria=True이면 research가 필요합니다.
+- required_capabilities.needs_character_api=True이고 needs_comparison=True이면 calculator가 필요합니다.
+- required_capabilities.needs_comparison=True 또는 needs_recommendation=True이면 analystic이 필요합니다.
 - requires_character_lookup은 plan에 nexon_api를 추가하지 않고 state에만 저장합니다.
 - 캐릭터 스탯조회/API조회/캐릭터 정보 조회처럼 특정 캐릭터의 현재 API 데이터만 필요한 단순 조회 질문은 requires_character_lookup=True, requires_search=False로 두고 final_answer만 실행합니다.
 - 캐릭터 조회가 필요하더라도 분석/추천/비교/보스 가능 여부 판단이 함께 있으면 calculator 또는 analystic을 추가합니다.
@@ -770,6 +999,7 @@ feedback: {feedback}
   {{"key": "requires_character_lookup", "value": false}},
   {{"key": "requires_analytics", "value": false}},
   {{"key": "requires_calculation", "value": false}},
+  {{"key": "required_capabilities", "value": {{"needs_character_api": false, "needs_external_criteria": false, "needs_comparison": false, "needs_recommendation": false}}}},
   {{"key": "plan", "value": ["에이전트명", "에이전트명", ...]}},
   {{"key": "next_agent", "value": "plan의 첫 번째 에이전트. 만약 plan이 비어있다면 final_answer"}}
 ]
@@ -838,6 +1068,15 @@ feedback: {feedback}
             plan = [agent for agent in plan if agent not in ("calculator", "analystic")]
         elif "calculator" not in plan:
             plan = ["calculator", *plan]
+
+    plan = apply_capability_plan_guard(
+        state,
+        response_dict,
+        plan,
+        task_type,
+        requires_character_lookup,
+        completed_agent,
+    )
 
     # agent 순서/중복/최종답변 보장을 마지막으로 정리한다.
     plan = _finalize_plan(
