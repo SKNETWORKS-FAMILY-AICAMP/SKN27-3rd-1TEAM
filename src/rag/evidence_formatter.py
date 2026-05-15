@@ -55,8 +55,12 @@ def format_evidence_for_answer(state: AgentState) -> AgentState:
     없으면 retrieved_docs(전체 검색 결과)를 폴백으로 사용한다.
     포매팅 결과는 tool_results에 메타 정보와 함께 기록되어 디버깅에 활용된다.
     """
-    # 선택된 근거가 우선, 없으면 전체 검색 결과로 폴백 (빈 리스트도 안전하게 처리)
-    documents = list(state.get("selected_evidence") or state.get("retrieved_docs") or [])
+    # selected_evidence가 있으면 빈 리스트라도 그대로 신뢰한다.
+    # 이미 research 단계에서 부적합 근거를 걸렀는데 retrieved_docs로 폴백하면 잡음이 되살아난다.
+    if "selected_evidence" in state:
+        documents = list(state.get("selected_evidence") or [])
+    else:
+        documents = list(state.get("retrieved_docs") or [])
     original_context = str(state.get("context") or "")
     formatted_context = build_answer_context(
         # 재작성된 질의(contextualized_query)가 있으면 그것을, 없으면 원본 사용자 질문 사용

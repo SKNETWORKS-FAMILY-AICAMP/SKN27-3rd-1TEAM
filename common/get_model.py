@@ -2,8 +2,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from langchain_groq import ChatGroq  # noqa: E402
-from langchain_openai import ChatOpenAI
+
+from langchain_openai import ChatOpenAI  # noqa: E402
 from langchain_openai import OpenAIEmbeddings  # noqa: E402
 
 
