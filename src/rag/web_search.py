@@ -31,6 +31,10 @@ DEFAULT_MAX_RESULTS = 5
 DEFAULT_MAX_CONTEXTS = 5
 DEFAULT_CHUNK_SIZE = 1200
 DEFAULT_CHUNK_OVERLAP = 150
+SNIPPET_FALLBACK_SCORE_MULTIPLIER = 0.35
+CONTENT_SOURCE_FETCHED_PAGE = "fetched_page"
+CONTENT_SOURCE_TAVILY_RAW = "tavily_raw_content"
+CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK = "tavily_snippet_fallback"
 FRESHNESS_HIGH_DAYS = 90
 FRESHNESS_MEDIUM_DAYS = 365
 DEFAULT_OFFICIAL_DOMAINS = (
@@ -444,6 +448,9 @@ def merge_search_results(
             existing = merged[index_by_url[url]]
             if result.get("content") and not existing.get("content"):
                 existing["content"] = result["content"]
+                existing["content_source"] = result.get("content_source")
+            if result.get("snippet") and not existing.get("snippet"):
+                existing["snippet"] = result["snippet"]
             if result.get("tavily_score") and not existing.get("tavily_score"):
                 existing["tavily_score"] = result["tavily_score"]
             if result.get("published_at") and not existing.get("published_at"):
@@ -635,6 +642,14 @@ def combined_context_score(
     return round(max(title_score, chunk_score), 6)
 
 
+def content_source_rank(content_source: Any) -> int:
+    if content_source == CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK:
+        return 0
+    if content_source in {CONTENT_SOURCE_FETCHED_PAGE, CONTENT_SOURCE_TAVILY_RAW}:
+        return 2
+    return 1
+
+
 class WebSearchRAG:
     """First-pass Web Search RAG retriever for MapleStory project sources."""
 
@@ -740,7 +755,9 @@ class WebSearchRAG:
                     "title": title,
                     "url": url,
                     "query": query,
-                    "content": raw_content or content,
+                    "content": raw_content,
+                    "content_source": CONTENT_SOURCE_TAVILY_RAW if raw_content else "",
+                    "snippet": content,
                     "tavily_score": row.get("score"),
                     "reliability": source_reliability(url, self.official_domains),
                     "published_at": published_at,
@@ -750,6 +767,24 @@ class WebSearchRAG:
             if len(results) >= max_results:
                 break
         return results
+
+    def build_document_from_snippet(
+        self,
+        result: dict[str, Any],
+        fetch_status: str,
+    ) -> dict[str, Any]:
+        published_at = result.get("published_at")
+        return {
+            "title": result.get("title", ""),
+            "url": result["url"],
+            "text": result.get("snippet", ""),
+            "query": result.get("query", ""),
+            "reliability": result.get("reliability", source_reliability(result["url"], self.official_domains)),
+            "published_at": published_at,
+            "freshness": result.get("freshness", source_freshness(published_at)),
+            "content_source": CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK,
+            "fetch_status": fetch_status,
+        }
 
     def search_duckduckgo(
         self,
@@ -796,20 +831,31 @@ class WebSearchRAG:
 
     def fetch_document(self, result: dict[str, Any]) -> dict[str, Any]:
         if result.get("content"):
+            published_at = result.get("published_at")
             return {
                 "title": result.get("title", ""),
                 "url": result["url"],
                 "text": result["content"],
                 "query": result.get("query", ""),
                 "reliability": result.get("reliability", source_reliability(result["url"], self.official_domains)),
-                "published_at": result.get("published_at"),
-                "freshness": result.get("freshness", source_freshness(result.get("published_at"))),
+                "published_at": published_at,
+                "freshness": result.get("freshness", source_freshness(published_at)),
+                "content_source": result.get("content_source") or CONTENT_SOURCE_TAVILY_RAW,
+                "fetch_status": "not_requested",
             }
 
-        response = self.session.get(result["url"], timeout=self.timeout_seconds)
-        response.raise_for_status()
+        try:
+            response = self.session.get(result["url"], timeout=self.timeout_seconds)
+            response.raise_for_status()
+        except self.request_exception:
+            if result.get("snippet"):
+                return self.build_document_from_snippet(result, "fetch_failed")
+            raise
 
         parsed_document = parse_document(response.text, result.get("title", ""), self.beautiful_soup)
+        if not parsed_document["text"] and result.get("snippet"):
+            return self.build_document_from_snippet(result, "empty_page_text")
+
         published_at = extract_published_at(result.get("published_at"), result["url"], parsed_document["text"])
         return {
             "title": parsed_document["title"] or result.get("title", ""),
@@ -819,6 +865,8 @@ class WebSearchRAG:
             "reliability": result.get("reliability", source_reliability(result["url"], self.official_domains)),
             "published_at": published_at,
             "freshness": result.get("freshness", source_freshness(published_at)),
+            "content_source": CONTENT_SOURCE_FETCHED_PAGE,
+            "fetch_status": "success",
         }
 
     def retrieve(
@@ -839,29 +887,49 @@ class WebSearchRAG:
                 document = self.fetch_document(result)
             except self.request_exception:
                 continue
-            documents.append({key: document.get(key) for key in ("title", "url", "reliability", "freshness", "published_at")})
+            documents.append(
+                {
+                    key: document.get(key)
+                    for key in (
+                        "title",
+                        "url",
+                        "reliability",
+                        "freshness",
+                        "published_at",
+                        "content_source",
+                        "fetch_status",
+                    )
+                }
+            )
             for index, chunk in enumerate(chunk_text(document["text"])):
+                score = combined_context_score(
+                    question,
+                    document["title"],
+                    chunk,
+                    result.get("tavily_score"),
+                )
+                if document.get("content_source") == CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK:
+                    score = round(score * SNIPPET_FALLBACK_SCORE_MULTIPLIER, 6)
+
                 contexts.append(
                     {
                         "title": document["title"],
                         "url": document["url"],
                         "chunk_index": index,
                         "content": chunk,
-                        "score": combined_context_score(
-                            question,
-                            document["title"],
-                            chunk,
-                            result.get("tavily_score"),
-                        ),
+                        "score": score,
                         "reliability": document["reliability"],
                         "freshness": document.get("freshness", "UNKNOWN"),
                         "published_at": document.get("published_at"),
+                        "content_source": document.get("content_source", ""),
+                        "fetch_status": document.get("fetch_status", ""),
                     }
                 )
 
         freshness_rank = {"HIGH": 3, "MEDIUM": 2, "UNKNOWN": 1, "LOW": 0}
         contexts.sort(
             key=lambda row: (
+                content_source_rank(row.get("content_source")),
                 row["score"],
                 row["reliability"] == "HIGH",
                 freshness_rank.get(row.get("freshness", "UNKNOWN"), 1),
@@ -895,6 +963,8 @@ def format_contexts_for_prompt(retrieval_result: dict[str, Any]) -> str:
                     f"Reliability: {context['reliability']}",
                     f"Freshness: {context.get('freshness', 'UNKNOWN')}",
                     f"Published At: {context.get('published_at') or 'UNKNOWN'}",
+                    f"Content Source: {context.get('content_source') or 'unknown'}",
+                    f"Fetch Status: {context.get('fetch_status') or 'unknown'}",
                     f"Content: {context['content']}",
                 ]
             )
@@ -915,6 +985,8 @@ def to_retrieved_documents(retrieval_result: dict[str, Any]) -> list[RetrievedDo
                     "reliability": context.get("reliability", "MEDIUM"),
                     "freshness": context.get("freshness", "UNKNOWN"),
                     "published_at": context.get("published_at"),
+                    "content_source": context.get("content_source", ""),
+                    "fetch_status": context.get("fetch_status", ""),
                 },
                 "score": float(context.get("score") or 0.0),
                 "source": context.get("url", ""),

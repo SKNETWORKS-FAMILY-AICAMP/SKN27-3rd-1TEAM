@@ -1,10 +1,31 @@
-import json
-from typing import Any
+"""
+메이플스토리 챗봇의 멀티 에이전트 supervisor 모듈.
 
+이 supervisor는 다음과 같은 역할을 담당합니다:
+  1. 사용자 질문의 의도(intent)와 작업 유형(task_type)을 분류
+  2. 캐릭터 조회(Nexon Open API)가 필요한지, 외부 검색이 필요한지, 계산/분석이
+     필요한지를 판단
+  3. 하위 에이전트(research / calculator / analystic / final_answer)들의 실행 순서를
+     담은 plan을 생성하고 다음 실행할 next_agent를 결정
+  4. LLM 호출이 실패하거나 응답 파싱이 실패할 경우 keyword 기반 fallback 라우팅으로
+     안전하게 대체
+
+전체 흐름은 LLM이 결정한 plan을 다양한 규칙으로 검증/보정한 뒤 다시 AgentState dict에
+반영하는 구조이며, 단일 supervisor 호출이 끝나면 LangGraph가 plan[0] 에이전트를 실행한 뒤
+다시 supervisor로 돌아오게 됩니다.
+"""
+
+import json
+
+from common.conversation import format_messages_for_prompt, is_conversation_recall_query
 from common.state import AgentState, AgentName
 from common.get_model import get_llm
 from common.prompt import master_prompt
 
+# === 상수: 작업 유형 / 트리거 키워드 ===
+
+# LLM이 분류할 수 있는 task_type 화이트리스트.
+# 이 dict의 key를 벗어난 값을 LLM이 반환하면 "unknown"으로 강제 치환한다.
 TASK_TYPES = {
     "character_status_analysis": "캐릭터 상태/스펙/장비 분석",
     "recommendation": "추천(장비, 콘텐츠, 직업, 사냥터, 육성 방향 등)",
@@ -22,6 +43,10 @@ TASK_TYPES = {
     "unknown": "의도 불명확 또는 추가 질문 필요",
 }
 
+# 수치/효율/비교 등 계산기(calculator) 에이전트가 필요한지 판단할 때 사용하는 키워드.
+# 예: "스타포스 25성 비용 얼마", "방무 차이", "보스 스펙컷" 같은 질문에서 매칭된다.
+# LLM이 requires_calculation 판단에 실패해도 fallback 라우팅에서 이 키워드만으로
+# calculator를 plan에 끼워 넣을 수 있게 한다.
 CALCULATION_TRIGGER_KEYWORDS = [
     "얼마",
     "몇",
@@ -48,6 +73,9 @@ CALCULATION_TRIGGER_KEYWORDS = [
 ]
 
 
+# 일상 대화/인사로 분류해 곧장 final_answer로 보내기 위한 패턴.
+# 짧은 인사("안녕", "ㅎㅇ", "hi")나 감사 표현은 research/calculator를 거치지 않고
+# 비용을 아낀다.
 CHITCHAT_PATTERNS = (
     "안녕",
     "안녕하세요",
@@ -64,8 +92,16 @@ CHITCHAT_PATTERNS = (
     "넌 누구",
 )
 
+# 에이전트 실행의 표준 순서: 외부 정보 수집(research) → 수치 계산(calculator) →
+# 해석/추천(analystic) → 최종 답변 생성(final_answer).
+# _finalize_plan에서 LLM이 만든 plan을 이 순서대로 재정렬할 때 기준으로 쓰인다.
 AGENT_ORDER = ("research", "calculator", "analystic", "final_answer")
+
+# LLM이 boolean 대신 문자열로 반환하는 경우(예: "true", "yes")를 boolean으로 변환하기 위한 집합.
 TRUTHY_VALUES = {"true", "yes", "y", "1"}
+
+# "내 캐릭터", "닉네임", "API 조회" 등 Nexon Open API 호출이 필요해 보이는 키워드.
+# requires_character_lookup 플래그 결정에 사용된다.
 CHARACTER_LOOKUP_KEYWORDS = (
     "내 캐릭터",
     "내캐릭",
@@ -99,6 +135,8 @@ CHARACTER_LOOKUP_KEYWORDS = (
     "유니온 조회",
     "스펙 분석",
 )
+# CHARACTER_LOOKUP_KEYWORDS에는 안 걸렸지만, 본문에 캐릭터명이 포함되어 있을 가능성을
+# 시사하는 보조 키워드. extract_character_name_from_query와 결합해 두 단계로 판정한다.
 CHARACTER_NAME_HINT_KEYWORDS = (
     "닉네임",
     "캐릭터명",
@@ -116,6 +154,8 @@ CHARACTER_NAME_HINT_KEYWORDS = (
     "분석",
     "추천",
 )
+# 분석/추천 없이 "캐릭터 데이터만 그대로 보여줘" 류의 단순 API 조회를 식별하는 키워드.
+# 이쪽으로 분류되면 research를 건너뛰고 calculator/analystic도 생략할 수 있다.
 CHARACTER_DATA_LOOKUP_KEYWORDS = (
     "스탯조회",
     "스탯 조회",
@@ -134,6 +174,8 @@ CHARACTER_DATA_LOOKUP_KEYWORDS = (
     "장비 조회",
     "유니온 조회",
 )
+# 캐릭터 데이터 조회에 더해 "추천/비교/가능 여부/계산" 같은 후처리가 필요함을
+# 가리키는 키워드. simple_character_lookup인지 여부를 판별할 때 사용된다.
 CHARACTER_PROCESSING_KEYWORDS = (
     "분석",
     "추천",
@@ -151,6 +193,9 @@ CHARACTER_PROCESSING_KEYWORDS = (
     "뭐부터",
     "어떻게",
 )
+# 다른 에이전트(특히 research/final_answer)가 supervisor로 돌려보낸 feedback 문자열에
+# 아래 마커가 포함되어 있으면 "검색 근거가 부족하다"는 신호로 해석하고 research를
+# 다시 plan에 넣는다.
 RESEARCH_FEEDBACK_MARKERS = (
     "missing_context",
     "no retrieved context",
@@ -159,7 +204,12 @@ RESEARCH_FEEDBACK_MARKERS = (
     "web fallback",
     "근거",
 )
+# supervisor가 LLM에 재계획(replan)을 한 번 요청했음을 표시하는 마커.
+# 이 마커가 feedback에 이미 들어 있으면 또 다시 LLM 재호출을 시도하지 않고
+# 곧장 keyword 기반 fallback으로 research를 강제 삽입한다 (무한 루프 방지).
 RESEARCH_REPLAN_MARKER = "plan omitted research"
+# 위 replan을 요청할 때 LLM에게 전달할 영어 feedback 메시지.
+# "research가 빠졌으니 다시 짜라, 근거 없으면 web fallback 써라"는 지시.
 RESEARCH_REPLAN_FEEDBACK = (
     "requires_search is true, but the plan omitted research. "
     "Rebuild the remaining plan with research before final_answer. "
@@ -167,24 +217,22 @@ RESEARCH_REPLAN_FEEDBACK = (
 )
 
 
-def format_messages_for_prompt(messages: list[Any]) -> str:
-    lines = []
-    for message in messages:
-        role = str(getattr(message, "type", "") or message.__class__.__name__)
-        if role == "human":
-            role = "user"
-        elif role == "ai":
-            role = "assistant"
-        content = str(getattr(message, "content", message)).strip()
-        lines.append(f"{role}: {content}")
-    return "\n".join(lines)
-
+# === 분류 헬퍼: 질문 텍스트만 보고 즉시 판정할 수 있는 함수들 ===
 
 def is_chitchat_query(query: str) -> bool:
+    """질문이 일상 대화/인사인지 판단한다.
+
+    공백을 제거한 compact 문자열이 CHITCHAT_PATTERNS와 정확히 일치하거나,
+    짧은 문장(<=12자) 안에 패턴이 부분 포함되어 있으면 chitchat으로 본다.
+    또한 "아까 뭐 물어봤지?" 같은 대화 회상 질문도 chitchat으로 묶어
+    final_answer만으로 응답한다.
+    """
     normalized = str(query or "").strip().lower()
     compact = "".join(normalized.split())
     if not compact:
         return False
+    if is_conversation_recall_query(normalized):
+        return True
     if compact in CHITCHAT_PATTERNS:
         return True
     if len(compact) <= 12 and any(pattern in normalized for pattern in CHITCHAT_PATTERNS):
@@ -193,6 +241,11 @@ def is_chitchat_query(query: str) -> bool:
 
 
 def has_character_analysis_state(state: AgentState) -> bool:
+    """analystic 에이전트가 동작할 수 있는 최소 정보가 state에 채워졌는지 확인한다.
+
+    프로필/스탯요약/장비요약 세 가지가 모두 있어야 분석이 의미 있으므로,
+    하나라도 비어 있으면 analystic을 plan에서 제거하는 데 사용된다.
+    """
     return all(
         bool(state.get(key))
         for key in ("character_profile", "stat_summary", "equipment_summary")
@@ -200,10 +253,21 @@ def has_character_analysis_state(state: AgentState) -> bool:
 
 
 def has_character_lookup_state(state: AgentState) -> bool:
+    """이미 Nexon API 조회가 끝나 캐릭터 데이터가 state에 있는지 여부.
+
+    True면 requires_character_lookup을 다시 True로 만들지 않아 중복 API 호출을 막는다.
+    """
     return bool(state.get("character_profile") and state.get("character_stats"))
 
 
 def requires_character_lookup_query(query: str) -> bool:
+    """질문 문자열이 Nexon Open API 캐릭터 조회를 필요로 하는지 추정한다.
+
+    1단계: CHARACTER_LOOKUP_KEYWORDS에 직접 매칭되면 즉시 True.
+    2단계: 직접 키워드는 없지만 CHARACTER_NAME_HINT_KEYWORDS가 있고, 본문에서
+           실제 캐릭터명을 추출할 수 있으면 True. (예: "홍길동 보스 가능?")
+    extract_character_name_from_query import 실패는 안전하게 False로 묻는다.
+    """
     text = str(query or "").strip()
     if not text:
         return False
@@ -217,26 +281,37 @@ def requires_character_lookup_query(query: str) -> bool:
 
         return bool(extract_character_name_from_query(text))
     except Exception:
+        # import 실패나 collector 내부 예외는 라우팅을 중단시키지 않도록 흡수한다.
         return False
 
 
 def is_character_data_lookup_query(query: str) -> bool:
+    """순수 캐릭터 데이터 조회(API 결과 그대로 보여주기) 질문인지 판단한다."""
     text = str(query or "").strip()
     normalized = text.lower()
     return any(keyword.lower() in normalized for keyword in CHARACTER_DATA_LOOKUP_KEYWORDS)
 
 
 def requires_character_processing_query(query: str) -> bool:
+    """조회 결과를 가지고 분석/추천/비교 같은 후처리가 필요한지 판단한다."""
     text = str(query or "").strip()
     normalized = text.lower()
     return any(keyword.lower() in normalized for keyword in CHARACTER_PROCESSING_KEYWORDS)
 
 
 def _fallback_supervisor_response(state: AgentState, error: Exception | None = None) -> dict:
+    """LLM supervisor가 실패했을 때 키워드/상태 기반으로 최소 plan을 만든다.
+
+    이 함수는 답변 품질을 최고로 만드는 용도가 아니라, 그래프가 멈추지 않도록
+    research/calculator/final_answer 중 필요한 최소 노드를 안전하게 고르는 fallback이다.
+    """
+    # 원문 질문과 맥락 보강 질문을 모두 확보한다. contextualized_query가 비어 있으면 user_query 사용.
     user_query = str(state.get("user_query") or "")
     contextualized_query = str(state.get("contextualized_query") or user_query).strip() or user_query
+    # supervisor 재진입 시 기존 plan의 첫 항목은 방금 실행된 agent로 보고 나머지만 이어간다.
     existing_plan = list(state.get("plan") or [])
     feedback = str(state.get("feedback") or "")
+    tool_results = dict(state.get("tool_results") or {})
     feedback_requires_research = any(
         marker in feedback.lower()
         for marker in RESEARCH_FEEDBACK_MARKERS
@@ -244,11 +319,17 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     completed_agents = list(state.get("completed_agents", []) or [])
     completed_agent = existing_plan[0] if existing_plan else None
     remaining_plan = existing_plan[1:] if existing_plan else []
+    # 이미 context/retrieved_docs가 있으면 research를 다시 강제하지 않는다.
     has_research_evidence = bool(
         str(state.get("context") or "").strip()
         or state.get("retrieved_docs")
     )
+    if completed_agent == "research" and has_research_evidence:
+        feedback = ""
+        tool_results.pop("evaluation", None)
+        feedback_requires_research = False
     requires_search = False
+    # 계산 키워드는 LLM 없이도 판정 가능하므로 fallback에서 직접 체크한다.
     requires_calculation = any(keyword in contextualized_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
     lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
     requires_character_lookup = bool(
@@ -272,11 +353,17 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     if completed_agent and completed_agent not in completed_agents:
         completed_agents.append(completed_agent)
 
+    should_continue_plan = bool(
+        existing_plan and (not feedback_requires_research or has_research_evidence)
+    )
+
     if is_chitchat_query(contextualized_query):
+        # 잡담/대화 회상은 외부 검색 없이 final_answer만 실행한다.
         task_type = "chitchat"
         requires_character_lookup = False
         plan = ["final_answer"]
-    elif existing_plan and (not feedback_requires_research or has_research_evidence):
+    elif should_continue_plan:
+        # 정상 재진입이면 remaining_plan을 표준 순서에 맞춰 계속 진행한다.
         plan = [
             agent
             for agent in remaining_plan
@@ -290,23 +377,40 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             plan = [agent for agent in plan if agent != "analystic"]
         if not plan:
             plan = ["final_answer"]
-    else:
-        if character_data_lookup:
-            requires_search = False
-            task_type = "character_status_analysis"
-            if not simple_character_lookup:
-                requires_calculation = True
-        else:
-            try:
-                from src.agents.research_agent import classify_research_route
+    elif character_data_lookup:
+        # 캐릭터 데이터 단순 조회는 RAG 검색보다 Nexon API 결과를 우선한다.
+        requires_search = False
+        task_type = "character_status_analysis"
+        if not simple_character_lookup:
+            requires_calculation = True
+        # 필요 신호를 순서대로 plan에 반영한다. final_answer는 항상 마지막에 붙인다.
+        plan = []
+        if requires_search or (feedback_requires_research and not has_research_evidence):
+            plan.append("research")
+        if requires_calculation:
+            plan.append("calculator")
+        plan.append("final_answer")
+    elif not character_data_lookup:
+        try:
+            # research route classifier는 DB/그래프/웹 검색 필요 여부를 빠르게 추정한다.
+            from src.agents.research_agent import classify_research_route
 
-                route = classify_research_route(contextualized_query)
-                requires_search = bool(route.get("use_graph") or route.get("use_web"))
-                if requires_search:
-                    task_type = "boss_strategy" if route.get("use_graph") else "general_qa"
-            except Exception as exc:
-                errors.append(f"supervisor fallback route classification failed: {exc}")
+            route_task_hint = str(state.get("task_type") or "general_qa").strip()
+            route = classify_research_route(contextualized_query, task_type=route_task_hint)
+            route_task_type = str(route.get("task_type") or "").strip()
+            requires_search = bool(
+                route.get("use_graph")
+                or route.get("use_web")
+                or (route.get("use_db") and route_task_type not in {"", "unknown"})
+            )
+            if requires_search:
+                task_type = route_task_type if route_task_type in TASK_TYPES else "general_qa"
+                if route.get("use_graph"):
+                    task_type = "boss_strategy"
+        except Exception as exc:
+            errors.append(f"supervisor fallback route classification failed: {exc}")
 
+        # 필요 신호를 순서대로 plan에 반영한다. final_answer는 항상 마지막에 붙인다.
         plan = []
         if requires_search or (feedback_requires_research and not has_research_evidence):
             plan.append("research")
@@ -315,6 +419,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
         plan.append("final_answer")
 
     if character_data_lookup:
+        # 캐릭터 API 조회형 질문에서는 research를 제거하고, 분석 필요 여부에 따라 calculator만 남긴다.
         plan = [agent for agent in plan if agent != "research"]
         if simple_character_lookup:
             plan = [agent for agent in plan if agent not in ("calculator", "analystic")]
@@ -325,6 +430,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     if error is not None:
         errors.append(f"supervisor llm failed; used fallback route: {error}")
 
+    # supervisor 노드가 평소 반환하는 AgentState 필드와 같은 형태로 맞춰 downstream 노드를 단순화한다.
     return {
         **state,
         "intent": "fallback supervisor routing",
@@ -333,6 +439,8 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
         "requires_character_lookup": requires_character_lookup,
         "plan": plan,
         "next_agent": plan[0],
+        "feedback": feedback,
+        "tool_results": tool_results,
         "completed_agents": completed_agents,
         "retry_count": state.get("retry_count", 0),
         "errors": errors,
@@ -346,6 +454,7 @@ def _parse_supervisor_response(
     retry_count: int,
     errors: list[str],
 ) -> tuple[dict, str, str, bool, list[str], int, list[str]]:
+    """LLM이 반환한 JSON 리스트를 supervisor 라우팅 필드로 파싱한다."""
     try:
         response_list = json.loads(content)
         if not isinstance(response_list, list):
@@ -356,17 +465,20 @@ def _parse_supervisor_response(
         errors = [*errors, f"supervisor json parse failed: {exc}: {str(content)[:200]}"]
         response_list = []
 
+    # [{"key": "...", "value": ...}] 형태를 dict로 납작하게 바꾼다.
     response_dict = {
         item.get("key"): item.get("value")
         for item in response_list
         if isinstance(item, dict)
     }
 
+    # task_type은 화이트리스트 밖이면 unknown으로 강제해 downstream 분기를 단순화한다.
     intent = response_dict.get("intent", state.get("intent", ""))
     task_type = response_dict.get("task_type", state.get("task_type", "unknown"))
     if task_type not in TASK_TYPES:
         task_type = "unknown"
 
+    # requires_character_lookup은 LLM이 문자열로 줄 수 있어 bool로 정규화한다.
     lookup_value = response_dict.get(
         "requires_character_lookup",
         state.get("requires_character_lookup", False),
@@ -382,12 +494,14 @@ def _parse_supervisor_response(
         or state.get("user_query")
         or ""
     )
+    # LLM이 False로 놓쳐도 키워드/캐릭터명 추출 기준으로 한 번 더 보정한다.
     requires_character_lookup = (
         requires_character_lookup
         or requires_character_lookup_query(lookup_query)
         or requires_character_lookup_query(str(state.get("user_query") or ""))
     )
     lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
+    # 이미 조회 데이터가 있거나 조회 시도가 끝난 상태면 중복 API 호출을 막는다.
     if has_character_lookup_state(state) or lookup_attempted:
         requires_character_lookup = False
 
@@ -413,12 +527,41 @@ def _guard_research_plan(
     retry_count: int,
     errors: list[str],
 ) -> tuple[list[str], int, list[str], AgentState | None]:
+    """검색이 필요한데 plan에서 research가 빠진 경우 재계획 또는 강제 보정한다.
+
+    Returns:
+        (보정된 plan, retry_count, errors, replan_state)
+        replan_state가 있으면 caller가 supervisor(replan_state)를 다시 호출한다.
+    """
+    # requires_search 역시 LLM이 문자열로 반환할 수 있어 bool로 정규화한다.
     requires_search = response_dict.get("requires_search")
     requires_search = (
         requires_search
         if isinstance(requires_search, bool)
         else str(requires_search).strip().lower() in TRUTHY_VALUES
     )
+    contextualized_query = str(
+        response_dict.get("contextualized_query")
+        or state.get("contextualized_query")
+        or state.get("user_query")
+        or ""
+    ).strip()
+    task_type = str(response_dict.get("task_type") or state.get("task_type") or "").strip()
+    route_task_type = "general_qa" if task_type in {"", "unknown"} else task_type
+    route_requires_research = False
+    if route_task_type in TASK_TYPES and route_task_type not in {"chitchat", "character_status_analysis"}:
+        try:
+            from src.agents.research_agent import classify_research_route
+
+            route = classify_research_route(contextualized_query, task_type=route_task_type)
+            route_requires_research = bool(
+                route.get("use_db")
+                or route.get("use_graph")
+                or route.get("use_web")
+            )
+        except Exception as exc:
+            errors = [*errors, f"supervisor route research guard failed: {exc}"]
+
     feedback_requires_research = any(
         marker in feedback.lower()
         for marker in RESEARCH_FEEDBACK_MARKERS
@@ -427,12 +570,14 @@ def _guard_research_plan(
         str(state.get("context") or "").strip()
         or state.get("retrieved_docs")
     )
+    # 이미 research가 끝났고 근거가 있으면 같은 검색을 반복하지 않는다.
     research_already_done = (
         completed_agent == "research"
         or ("research" in state.get("completed_agents", []) and has_research_evidence)
     )
+    # 검색 필요 신호가 있는데 plan에 research가 없고 아직 검색도 안 끝난 경우만 보정 대상.
     needs_research_replan = (
-        (requires_search or feedback_requires_research)
+        (requires_search or route_requires_research or feedback_requires_research)
         and "research" not in plan
         and not research_already_done
     )
@@ -440,7 +585,13 @@ def _guard_research_plan(
     if not needs_research_replan:
         return plan, retry_count, errors, None
 
+    if route_requires_research and not requires_search:
+        errors = [*errors, "supervisor task route required research; inserted research"]
+        plan = ["research", *[agent for agent in plan if agent != "research"]]
+        return plan, retry_count, errors, None
+
     if RESEARCH_REPLAN_MARKER not in feedback:
+        # 첫 누락이면 바로 강제 삽입하지 않고 LLM에게 한 번 더 재계획 기회를 준다.
         retry_count += 1
         next_feedback = f"{feedback}\n{RESEARCH_REPLAN_FEEDBACK}" if feedback else RESEARCH_REPLAN_FEEDBACK
         replan_state = {
@@ -452,6 +603,7 @@ def _guard_research_plan(
         }
         return plan, retry_count, errors, replan_state
 
+    # 이미 한 번 재계획했는데도 빠졌다면 무한 루프 방지를 위해 research를 직접 앞에 삽입한다.
     retry_count += 1
     errors = [*errors, "supervisor replan still omitted research; applied research fallback"]
     plan = ["research", *[agent for agent in plan if agent != "research"]]
@@ -464,6 +616,8 @@ def _finalize_plan(
     completed_agent: str | None,
     feedback: str,
 ) -> list[str]:
+    """LLM/fallback이 만든 plan을 표준 실행 순서와 안전 규칙에 맞게 정리한다."""
+    # 허용된 agent만 AGENT_ORDER 순서대로 남긴다.
     ordered_plan = [
         agent
         for agent in AGENT_ORDER
@@ -479,13 +633,15 @@ def _finalize_plan(
         and "calculator" not in ordered_plan
         and not has_character_analysis_state(state)
     ):
+        # analystic은 calculator 산출물에 의존하므로 준비되지 않았으면 제거한다.
         ordered_plan = [agent for agent in ordered_plan if agent != "analystic"]
 
     if "final_answer" not in ordered_plan:
+        # 어떤 흐름이든 사용자에게 답변을 돌려줘야 하므로 final_answer는 보장한다.
         ordered_plan.append("final_answer")
 
-    if completed_agent and not feedback and ordered_plan and ordered_plan[0] == completed_agent:
-        # feedback 없이 정상 진행 중이면 이미 실행한 agent를 다시 실행하지 않도록 제거
+    if completed_agent and ordered_plan and ordered_plan[0] == completed_agent:
+        # plan 첫 항목이 이미 실행된 agent면 feedback 유무와 관계없이 반복 실행을 막는다.
         ordered_plan = ordered_plan[1:]
 
     return ordered_plan or ["final_answer"]
@@ -493,9 +649,12 @@ def _finalize_plan(
 
 def supervisor(state:AgentState):
     """사용자의 질문을 분석하여 의도를 파악하고, 작업 유형을 결정하고, 처리 계획을 세우고, 다음 에이전트를 결정합니다."""
+    # 원문 질문과 현재까지의 contextualized_query를 준비한다.
+    # contextualized_query는 대명사/생략 표현이 보강된 검색용 질문으로 쓰인다.
     user_query = str(state.get("user_query") or "")
     contextualized_query = str(state.get("contextualized_query") or user_query).strip() or user_query
     if is_chitchat_query(user_query):
+        # 인사/짧은 잡담/대화 회상은 검색·계산 없이 final_answer만 실행한다.
         return {
             **state,
             "intent": "일상 대화 또는 인사",
@@ -509,10 +668,12 @@ def supervisor(state:AgentState):
             "errors": state.get("errors", []),
         }
 
+    # 일반 질문은 LLM supervisor가 의도/필요 도구/plan을 판단한다.
     llm = get_llm()
 
     existing_plan = list(state.get("plan") or [])
     feedback = str(state.get("feedback", "") or "")
+    tool_results = dict(state.get("tool_results") or {})
     retry_count = int(state.get("retry_count", 0) or 0)
     errors = list(state.get("errors", []) or [])
 
@@ -524,9 +685,22 @@ def supervisor(state:AgentState):
         completed_agent = existing_plan[0]
         remaining_plan = existing_plan[1:]
 
+    if (
+        completed_agent == "research"
+        and (
+            str(state.get("context") or "").strip()
+            or state.get("retrieved_docs")
+        )
+    ):
+        feedback = ""
+        tool_results.pop("evaluation", None)
 
+
+    # 최근 대화 메시지를 텍스트로 변환해 supervisor가 생략 표현을 보강할 수 있게 한다.
     messages = state["messages"]
     formatted_messages = format_messages_for_prompt(messages)
+    # prompt는 JSON 리스트만 반환하도록 강하게 제한한다.
+    # 파싱 실패 시 _parse_supervisor_response에서 retry_count를 올리고 fallback plan으로 이어간다.
     prompt = f"""
 # System
 당신은 메이플스토리 게임 전문가이자 agent에게 지시를 내리는 supervisor입니다.
@@ -544,6 +718,9 @@ def supervisor(state:AgentState):
 - task_type은 반드시 아래 TASK_TYPES의 key 중 하나만 선택합니다.
 - intent는 task_type key가 아니라, 사용자의 질문 의도를 한 문장으로 요약한 자연어입니다.
 - task_type을 새로 만들거나 TASK_TYPES에 없는 값을 사용하지 않습니다.
+- 보스/캐릭터 이름이 포함되어도 질문의 중심이 스토리, 세계관, 인물 배경 설명이면 boss_strategy가 아니라 story_explanation을 선택합니다.
+- story_explanation은 DB/RAG 근거가 필요한 게임 지식 설명이므로 requires_search=True로 두고 research를 plan에 포함합니다.
+- general_qa처럼 메이플 지식 자체를 묻는 질문도 DB/RAG 근거가 필요하므로 requires_search=True로 두고 research를 plan에 포함합니다.
 
 TASK_TYPES:
 {TASK_TYPES}
@@ -602,8 +779,10 @@ feedback: {feedback}
         response = llm.invoke(prompt)
         content = getattr(response, "content", response)
     except Exception as exc:
+        # LLM 호출 자체가 실패하면 키워드 기반 fallback 라우팅으로 진행한다.
         return _fallback_supervisor_response(state, exc)
 
+    # LLM 응답을 정규화된 supervisor 필드들로 변환한다.
     (
         response_dict,
         intent,
@@ -619,11 +798,13 @@ feedback: {feedback}
         retry_count,
         errors,
     )
+    # contextualized_query는 LLM 결과를 우선하되, 없으면 기존 state/원문으로 폴백한다.
     contextualized_query = str(
         response_dict.get("contextualized_query")
         or state.get("contextualized_query")
         or user_query
     ).strip() or user_query
+    # 캐릭터 데이터 단순 조회는 research를 끼우지 않는 별도 흐름으로 다룬다.
     character_data_lookup = (
         requires_character_lookup
         and is_character_data_lookup_query(contextualized_query)
@@ -636,6 +817,7 @@ feedback: {feedback}
         response_dict["requires_search"] = False
         task_type = "character_status_analysis"
 
+    # 검색이 필요한데 plan에 누락된 경우 재계획하거나 research를 강제 삽입한다.
     plan, retry_count, errors, replan_state = _guard_research_plan(
         state,
         response_dict,
@@ -646,15 +828,18 @@ feedback: {feedback}
         errors,
     )
     if replan_state:
+        # 첫 누락은 feedback을 더해 supervisor를 한 번 재호출한다.
         return supervisor(replan_state)
 
     if character_data_lookup:
+        # API 조회형 질문은 RAG를 제거하고, 단순 조회면 계산/분석도 제거한다.
         plan = [agent for agent in plan if agent != "research"]
         if simple_character_lookup:
             plan = [agent for agent in plan if agent not in ("calculator", "analystic")]
         elif "calculator" not in plan:
             plan = ["calculator", *plan]
 
+    # agent 순서/중복/최종답변 보장을 마지막으로 정리한다.
     plan = _finalize_plan(
         plan,
         state,
@@ -664,13 +849,16 @@ feedback: {feedback}
 
     next_agent = response_dict.get("next_agent") or plan[0]
     if next_agent != plan[0]:
+        # next_agent와 plan[0]이 어긋나면 plan을 진실의 원천으로 사용한다.
         errors = [*errors, "supervisor next_agent did not match first plan item; using plan[0]"]
         next_agent = plan[0]
 
     completed_agents = state.get("completed_agents", [])
     if completed_agent and completed_agent not in completed_agents:
+        # 이번 supervisor 재진입 직전에 끝난 agent를 완료 목록에 기록한다.
         completed_agents = [*completed_agents, completed_agent]
 
+    # downstream 노드가 읽을 라우팅 필드를 state에 병합해 반환한다.
     return {
         **state,
         "intent": intent,
@@ -679,6 +867,8 @@ feedback: {feedback}
         "requires_character_lookup": requires_character_lookup,
         "plan": plan,
         "next_agent": next_agent,
+        "feedback": feedback,
+        "tool_results": tool_results,
         "completed_agents": completed_agents,
         "retry_count": retry_count,
         "errors": errors,
