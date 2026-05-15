@@ -3,13 +3,13 @@
 from src.collectors.nexon_api import (
     NexonAPIError,
     NexonOpenAPIClient,
+    character_lookup_node,
     fetch_character_state,
-    nexon_api_node,
 )
 
 __all__ = [
     "NexonAPIError",
     "NexonOpenAPIClient",
+    "character_lookup_node",
     "fetch_character_state",
-    "nexon_api_node",
 ]

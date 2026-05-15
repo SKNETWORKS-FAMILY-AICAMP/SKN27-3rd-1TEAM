@@ -43,6 +43,9 @@ class AgentState(TypedDict, total=False):
     # Request analysis
     intent: str  # supervisor가 해석한 사용자 의도
     task_type: str  # 요청 처리를 위한 작업 유형
+    requires_api: bool  # Nexon Open API 작업 필요 여부
+    api_task_type: str  # character_lookup | ranking_overall | event_notice | cash_update
+    api_params: dict[str, JsonValue]  # API 작업별 파라미터
     requires_character_lookup: bool  # Nexon Open API 캐릭터 조회 필요 여부
     plan: list[str]  # supervisor가 세운 처리 계획
 
@@ -110,6 +113,9 @@ AgentStateField = Literal[
     "contextualized_query",
     "intent",
     "task_type",
+    "requires_api",
+    "api_task_type",
+    "api_params",
     "requires_character_lookup",
     "plan",
     "next_agent",
@@ -161,6 +167,9 @@ AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
             "intent",
             "contextualized_query",
             "task_type",
+            "requires_api",
+            "api_task_type",
+            "api_params",
             "requires_character_lookup",
             "plan",
             "next_agent",
@@ -192,8 +201,8 @@ AGENT_FIELD_CONTRACTS: dict[AgentName, AgentFieldContract] = {
         "required_outputs": ("retrieved_docs", "context"),
     },
     "final_answer": {
-        "required_inputs": ("user_query", "recommended_actions", "context"),
-        "optional_inputs": ("contextualized_query",),
+        "required_inputs": ("user_query", "context"),
+        "optional_inputs": ("contextualized_query", "recommended_actions"),
         "required_outputs": (
             "draft_answer",
             "final_answer",

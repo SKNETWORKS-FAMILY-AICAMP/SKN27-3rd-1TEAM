@@ -2,12 +2,26 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+for path in (PROJECT_ROOT, SRC_ROOT):
+    path_text = str(path)
+    if path_text not in sys.path:
+        sys.path.insert(0, path_text)
+
 import streamlit as st
 
 # app 패키지 import 가능하도록 sys.path 보정
 from app.common.maple_paths import ensure_app_import_paths
 
 ensure_app_import_paths()
+
+from app.common.chat_render import render_manual_page_if_requested  # noqa: E402
+
+render_manual_page_if_requested("chat")
 
 # 메인 챗 페이지의 설정(PAGE_CONFIG)과 렌더 함수를 가져온다
 from app.maple_chat import (  # noqa: E402

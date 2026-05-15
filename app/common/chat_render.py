@@ -13,11 +13,14 @@
 
 from __future__ import annotations
 
-from html import escape
 import json
+import runpy
+from html import escape
+from pathlib import Path
 
 import streamlit as st
 import streamlit.components.v1 as components
+from streamlit.errors import StreamlitAPIException
 
 # 채팅 스타일 자원: 아바타/배경 이미지 경로와 data URI 변환 헬퍼.
 from app.common.chat_style import (
@@ -42,6 +45,15 @@ MENU_ITEMS = (
     ("starforce", "Starforce", "pages/9_starforce_simulator.py"),
     ("game", "Game", "pages/8_game.py"),
 )
+MANUAL_PAGE_SESSION_KEY = "_maple_manual_page"
+PAGE_PATH_BY_KEY = {
+    key: page_path
+    for key, _, page_path in MENU_ITEMS
+}
+PAGE_KEY_BY_PATH = {
+    page_path: key
+    for key, _, page_path in MENU_ITEMS
+}
 
 # 홈 화면 프롬프트 칩입니다.
 # 튜플 형식: 위젯 키, 버튼 라벨, 채팅에 넣을 프롬프트 문구.
@@ -54,6 +66,73 @@ PROMPT_CHIPS = (
 VISIBLE_MESSAGE_LIMIT = 20
 
 
+def _page_candidates(page_path: str) -> tuple[str, ...]:
+    """Return navigation candidates for normal and direct page entrypoints."""
+    normalized = str(page_path).replace("\\", "/")
+    page_name = Path(normalized).name
+    candidates = [normalized]
+
+    if not normalized.startswith("pages/"):
+        candidates.append(f"pages/{page_name}")
+
+    candidates.append(page_name)
+    return tuple(dict.fromkeys(candidates))
+
+
+def switch_app_page(page_path: str) -> None:
+    """Switch pages while tolerating Streamlit's entrypoint-relative paths."""
+    last_error: StreamlitAPIException | None = None
+    normalized = str(page_path).replace("\\", "/")
+    for candidate in _page_candidates(page_path):
+        try:
+            st.switch_page(candidate)
+            return
+        except StreamlitAPIException as error:
+            last_error = error
+
+    page_key = PAGE_KEY_BY_PATH.get(normalized)
+    if page_key:
+        st.session_state[MANUAL_PAGE_SESSION_KEY] = page_key
+        st.rerun()
+
+    st.error(
+        "페이지를 찾을 수 없습니다. 앱은 `streamlit run app/maple_chat.py` "
+        "또는 `cd app && streamlit run maple_chat.py`로 실행해주세요."
+    )
+    if last_error:
+        st.caption(str(last_error))
+    st.stop()
+
+
+def render_manual_page_if_requested(current_page_key: str) -> None:
+    """Render another existing page when direct page execution breaks switch_page."""
+    target_page_key = st.session_state.get(MANUAL_PAGE_SESSION_KEY)
+    if not target_page_key:
+        return
+
+    if target_page_key == current_page_key:
+        st.session_state.pop(MANUAL_PAGE_SESSION_KEY, None)
+        return
+
+    page_path = PAGE_PATH_BY_KEY.get(target_page_key)
+    if not page_path:
+        st.session_state.pop(MANUAL_PAGE_SESSION_KEY, None)
+        return
+
+    st.session_state.pop(MANUAL_PAGE_SESSION_KEY, None)
+    if target_page_key == "home":
+        from app.maple_chat import PAGE_CONFIG, render_home_app
+
+        st.set_page_config(**PAGE_CONFIG)
+        render_home_app()
+        st.stop()
+
+    st.session_state[MANUAL_PAGE_SESSION_KEY] = target_page_key
+    target_file = Path(__file__).resolve().parents[1] / page_path
+    runpy.run_path(str(target_file), run_name="__main__")
+    st.stop()
+
+
 # === 프롬프트 큐잉 헬퍼 ===
 
 
@@ -64,7 +143,7 @@ def _queue_prompt(prompt: str) -> None:
         from app.maple_chat import start_new_chat
 
         start_new_chat(prompt)
-        st.switch_page("pages/7_Chat.py")
+        switch_app_page("pages/7_Chat.py")
         return
 
     from app.maple_chat import save_current_chat, start_new_chat
@@ -103,7 +182,7 @@ def render_top_navigation(active_menu_key: str | None = "chat") -> None:
     # 좌상단의 작은 홈 배지 버튼입니다.
     with st.container(key="maple-home-badge"):
         if st.button("Home", key="home_badge_button", type="tertiary", use_container_width=True):
-            st.switch_page("maple_chat.py")
+            switch_app_page("maple_chat.py")
 
     # 큰 홈 로고 이미지입니다. 채팅/서브 페이지에서는 CSS로 숨깁니다.
     with st.container(key="maple-brand-bar"):
@@ -121,7 +200,7 @@ def render_top_navigation(active_menu_key: str | None = "chat") -> None:
                     type=button_type,
                     use_container_width=True,
                 ):
-                    st.switch_page(page_path)
+                    switch_app_page(page_path)
 
 
 def render_prompt_buttons() -> None:

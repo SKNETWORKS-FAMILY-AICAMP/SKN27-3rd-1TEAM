@@ -4,7 +4,7 @@
 [그래프 토폴로지 개요]
     START
       └─> supervisor (라우팅 결정 노드)
-            ├─> nexon_api      : 캐릭터 조회가 필요한 경우 Nexon Open API 호출
+            ├─> nexon_api      : Nexon Open API 결과가 필요한 경우 호출
             │     └─> analystic / calculator / final_answer 로 분기
             ├─> research       : 외부 지식/문서 검색이 필요한 경우
             │     └─> evidence_formatter ─> supervisor (근거 정리 후 재라우팅)
@@ -25,7 +25,17 @@ from typing import Any, Literal
 
 from langgraph.graph import END, START, StateGraph
 
+from common.nexon_state import (
+    NEXON_API_TOOL_KEY,
+    attach_nexon_evidence as attach_nexon_evidence_document,
+    has_nexon_character_data,
+    make_nexon_document,
+    nexon_api_attempted,
+    read_field,
+    requires_nexon_api_task,
+)
 from common.state import AgentState
+from src.collectors.nexon_api_tasks import API_TASK_CHARACTER_LOOKUP
 
 
 # === 라우팅/상수 정의 ===
@@ -91,25 +101,6 @@ def build_retry_limit_state(state: AgentState) -> AgentState:
         "retry_target": "FINISH",
         "tool_results": tool_results,
     }
-
-
-def has_nexon_character_data(state: AgentState) -> bool:
-    """Nexon API 로 이미 캐릭터 프로필/스탯을 받아둔 상태인지 확인한다."""
-    # character_profile 과 character_stats 가 모두 채워져 있어야 True
-    return bool(state.get("character_profile") and state.get("character_stats"))
-
-
-def nexon_lookup_attempted(state: AgentState) -> bool:
-    """이번 그래프 실행 중 Nexon API 호출이 한 번이라도 시도되었는지 확인한다."""
-    # tool_results 에 nexon_api 키가 존재하면 호출 시도가 있었던 것으로 간주
-    return bool((state.get("tool_results") or {}).get("nexon_api"))
-
-
-def read_field(value: Any, key: str, default: Any = "") -> Any:
-    """dict 또는 객체(attribute) 모두에서 안전하게 필드 값을 꺼내는 헬퍼."""
-    if isinstance(value, dict):
-        return value.get(key, default)
-    return getattr(value, key, default)
 
 
 # === Nexon API 근거(Evidence) 빌더 ===
@@ -192,7 +183,7 @@ def build_nexon_evidence_context(state: AgentState, error: str = "") -> str:
     return "\n".join(lines)
 
 
-def attach_nexon_evidence(state: AgentState, error: str = "") -> AgentState:
+def attach_character_lookup_evidence(state: AgentState, error: str = "") -> AgentState:
     """Nexon API 결과 컨텍스트를 state 의 RAG 관련 필드들에 일관되게 주입한다.
 
     읽는 필드:
@@ -205,20 +196,11 @@ def attach_nexon_evidence(state: AgentState, error: str = "") -> AgentState:
       - relevance_reason     : 비어있을 경우에만 기본값 설정
     """
     context = build_nexon_evidence_context(state, error)
-    # 기존 컨텍스트가 있고 중복되지 않을 때만 nexon 컨텍스트를 뒤에 붙인다.
-    existing_context = str(state.get("context") or "").strip()
-    merged_context = (
-        f"{existing_context}\n\n{context}"
-        if existing_context and context not in existing_context
-        else context or existing_context
-    )
-
-    # retrieved_docs 등에서 사용할 표준 문서 구조 생성 (RAG 파이프라인 포맷)
     profile = state.get("character_profile") or {}
-    document = {
-        "page_content": context,
-        "metadata": {
-            "source": "nexon_api",
+    document = make_nexon_document(
+        content=context,
+        score=0.2 if error else 1.0,
+        metadata={
             "retrieval_method": "nexon_open_api",
             "reliability": "LOW" if error else "HIGH",
             "character_name": str(read_field(profile, "character_name", state.get("character_name", "")) or ""),
@@ -226,42 +208,14 @@ def attach_nexon_evidence(state: AgentState, error: str = "") -> AgentState:
             "ocid": str(state.get("ocid") or ""),
             "error": error,
         },
-        "source": "nexon_api",
-        "score": 0.2 if error else 1.0,
-    }
-    # 이전 nexon_api 문서는 모두 제거하고, 새로 만든 document 로 교체한다 (중복 방지).
-    retrieved_docs = [
-        doc
-        for doc in list(state.get("retrieved_docs") or [])
-        if not (
-            isinstance(doc, dict)
-            and (
-                doc.get("source") == "nexon_api"
-                or (doc.get("metadata") or {}).get("source") == "nexon_api"
-            )
-        )
-    ]
-    retrieved_docs.append(document)
-
-    return {
-        **state,
-        "context": merged_context,
-        "retrieved_docs": retrieved_docs,
-        "selected_evidence": [
-            *list(state.get("selected_evidence") or []),
-            document,
-        ],
-        "evidence_summary": {
-            **dict(state.get("evidence_summary") or {}),
-            "nexon_api": {
-                "source": "nexon_api",
-                "reliability": "LOW" if error else "HIGH",
-                "summary": context,
-            },
-        },
-        "relevance_reason": state.get("relevance_reason")
-        or ("nexon_api_error_context" if error else "nexon_api_character_lookup"),
-    }
+    )
+    return attach_nexon_evidence_document(
+        state,
+        content=context,
+        document=document,
+        reliability="LOW" if error else "HIGH",
+        relevance_reason="nexon_api_error_context" if error else "nexon_api_character_lookup",
+    )
 
 
 def _format_damage_range(stats: Any) -> str:
@@ -282,54 +236,85 @@ def _format_percent(value: Any) -> str:
 
 
 def nexon_api_node(state: AgentState) -> AgentState:
-    """캐릭터 조회가 필요한 흐름에서 Nexon Open API를 호출하고 근거 문서로 붙인다.
+    """Nexon Open API 작업을 실행하고 결과를 근거 문서로 붙인다.
 
     이미 캐릭터 데이터가 state에 있으면 API를 다시 호출하지 않고,
     실패해도 그래프를 중단하지 않도록 오류 컨텍스트를 evidence로 남긴다.
     """
     tool_results = dict(state.get("tool_results") or {})
+    api_task_type = str(state.get("api_task_type") or "").strip()
+
+    if requires_nexon_api_task(state) and api_task_type != API_TASK_CHARACTER_LOOKUP:
+        try:
+            from src.collectors.nexon_api_tasks import run_nexon_api_task
+
+            return {
+                **run_nexon_api_task(state),
+                "requires_api": False,
+            }
+        except Exception as exc:
+            error = str(exc)
+            tool_results[NEXON_API_TOOL_KEY] = {
+                "api_attempted": True,
+                "lookup_attempted": False,
+                "api_task_type": api_task_type,
+                "data_reliability": "unavailable",
+                "error": error,
+            }
+            return {
+                **state,
+                "requires_api": False,
+                "tool_results": tool_results,
+                "errors": [
+                    *list(state.get("errors", []) or []),
+                    f"nexon_api task failed: {error}",
+                ],
+            }
 
     # 이전 노드나 세션 메모리에서 이미 캐릭터 데이터가 넘어온 경우 중복 조회를 피한다.
     if has_nexon_character_data(state):
-        tool_results["nexon_api"] = {
-            **dict(tool_results.get("nexon_api") or {}),
+        tool_results[NEXON_API_TOOL_KEY] = {
+            **dict(tool_results.get(NEXON_API_TOOL_KEY) or {}),
             "lookup_attempted": True,
             "skipped": True,
             "reason": "character_data_already_available",
         }
-        return attach_nexon_evidence({
+        return attach_character_lookup_evidence({
             **state,
+            "requires_api": False,
             "requires_character_lookup": False,
             "tool_results": tool_results,
         })
 
     try:
         # 실제 수집 로직은 collector 모듈에 두고, graph 노드는 상태 결합만 담당한다.
-        from src.collectors.nexon_api import nexon_api_node as run_nexon_api_node
+        from src.collectors.nexon_api import character_lookup_node
 
-        next_state = run_nexon_api_node(state)
+        next_state = character_lookup_node(state)
         next_tool_results = dict(next_state.get("tool_results") or {})
-        nexon_result = dict(next_tool_results.get("nexon_api") or {})
+        nexon_result = dict(next_tool_results.get(NEXON_API_TOOL_KEY) or {})
         # LangSmith/디버깅에서 API 호출 여부를 일관되게 볼 수 있도록 플래그를 보강한다.
-        next_tool_results["nexon_api"] = {
+        next_tool_results[NEXON_API_TOOL_KEY] = {
             **nexon_result,
             "lookup_attempted": True,
         }
-        return attach_nexon_evidence({
+        return attach_character_lookup_evidence({
             **next_state,
+            "requires_api": False,
             "requires_character_lookup": False,
             "tool_results": next_tool_results,
         })
     except Exception as exc:
         # API 키 누락/네트워크/캐릭터명 오류가 나도 최종 답변에서 설명할 수 있게 상태에 남긴다.
         error = str(exc)
-        tool_results["nexon_api"] = {
+        tool_results[NEXON_API_TOOL_KEY] = {
             "lookup_attempted": True,
             "data_reliability": "unavailable",
             "error": error,
         }
-        return attach_nexon_evidence({
+        return attach_character_lookup_evidence({
             **state,
+            "requires_api": False,
             "requires_character_lookup": False,
             "tool_results": tool_results,
             "errors": [
@@ -483,12 +468,18 @@ def route_from_supervisor(state: AgentState) -> GraphRoute:
 
     next_agent = state.get("next_agent", "final_answer")
 
-    # 분석/계산/최종답변 전에 캐릭터 데이터가 필요하면 nexon_api를 끼워 넣는다.
+    # 분석/계산/최종답변 전에 Nexon API 결과가 필요하면 nexon_api를 끼워 넣는다.
     if (
-        next_agent in ("analystic", "calculator", "final_answer")
-        and state.get("requires_character_lookup")
-        and not has_nexon_character_data(state)
-        and not nexon_lookup_attempted(state)
+        next_agent in ("research", "analystic", "calculator", "final_answer")
+        and (
+            requires_nexon_api_task(state)
+            or state.get("requires_character_lookup")
+        )
+        and not nexon_api_attempted(state)
+        and (
+            state.get("api_task_type") != API_TASK_CHARACTER_LOOKUP
+            or not has_nexon_character_data(state)
+        )
     ):
         return "nexon_api"
 
@@ -502,7 +493,7 @@ def route_from_supervisor(state: AgentState) -> GraphRoute:
 def route_from_nexon_api(state: AgentState) -> GraphRoute:
     """Nexon API 조회 뒤 원래 supervisor가 의도한 후속 노드로 복귀한다."""
     next_agent = state.get("next_agent", "final_answer")
-    if next_agent in ("analystic", "calculator", "final_answer"):
+    if next_agent in ("research", "analystic", "calculator", "final_answer"):
         return next_agent
     return "final_answer"
 
@@ -547,6 +538,7 @@ def maple_chat_graph():
         "nexon_api",
         route_from_nexon_api,
         {
+            "research": "research",
             "analystic": "analystic",
             "calculator": "calculator",
             "final_answer": "final_answer",

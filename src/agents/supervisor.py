@@ -16,11 +16,22 @@
 """
 
 import json
+from typing import Any
 
 from common.conversation import format_messages_for_prompt, is_conversation_recall_query
-from common.state import AgentState, AgentName
 from common.get_model import get_llm
+from common.keyword_config import load_keyword_tuple
 from common.prompt import master_prompt
+from common.nexon_state import (
+    has_external_research_evidence,
+    has_nexon_character_data,
+    nexon_api_attempted,
+)
+from common.state import AgentState, AgentName
+from src.collectors.nexon_api_tasks import (
+    API_TASK_CHARACTER_LOOKUP,
+    parse_nexon_api_task,
+)
 
 # === 상수: 작업 유형 / 트리거 키워드 ===
 
@@ -151,6 +162,8 @@ CHARACTER_NAME_HINT_KEYWORDS = (
     "캐릭터 이름",
     "캐릭 이름",
     "이름",
+    "정보조회",
+    "정보 조회",
     "스펙",
     "스탯",
     "전투력",
@@ -177,6 +190,10 @@ CHARACTER_DATA_LOOKUP_KEYWORDS = (
     "오픈 api",
     "캐릭터 조회",
     "캐릭터 정보",
+    "정보조회",
+    "정보 조회",
+    "조회해줘",
+    "조회",
     "캐릭터 스탯",
     "전투력 조회",
     "장비 조회",
@@ -201,9 +218,56 @@ CHARACTER_PROCESSING_KEYWORDS = (
     "뭐부터",
     "어떻게",
 )
+PERSONAL_CHARACTER_JUDGEMENT_KEYWORDS = (
+    "성장",
+    "추천",
+    "콘텐츠",
+    "컨텐츠",
+    "우선",
+    "뭐부터",
+    "무엇부터",
+    "시작",
+    "해야",
+    "하면",
+    "할까",
+    "갈까",
+    "가능",
+    "잡을",
+    "보스",
+    "사냥",
+    "장비",
+    "개선",
+    "바꿔",
+)
 # 다른 에이전트(특히 research/final_answer)가 supervisor로 돌려보낸 feedback 문자열에
 # 아래 마커가 포함되어 있으면 "검색 근거가 부족하다"는 신호로 해석하고 research를
 # 다시 plan에 넣는다.
+CALCULATION_TRIGGER_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CALCULATION_TRIGGER_KEYWORDS",
+    CALCULATION_TRIGGER_KEYWORDS,
+)
+CHITCHAT_PATTERNS = load_keyword_tuple("MAPLE_CHITCHAT_PATTERNS", CHITCHAT_PATTERNS)
+CHARACTER_LOOKUP_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CHARACTER_LOOKUP_KEYWORDS",
+    CHARACTER_LOOKUP_KEYWORDS,
+)
+CHARACTER_NAME_HINT_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CHARACTER_NAME_HINT_KEYWORDS",
+    CHARACTER_NAME_HINT_KEYWORDS,
+)
+CHARACTER_DATA_LOOKUP_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CHARACTER_DATA_LOOKUP_KEYWORDS",
+    CHARACTER_DATA_LOOKUP_KEYWORDS,
+)
+CHARACTER_PROCESSING_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CHARACTER_PROCESSING_KEYWORDS",
+    CHARACTER_PROCESSING_KEYWORDS,
+)
+PERSONAL_CHARACTER_JUDGEMENT_KEYWORDS = load_keyword_tuple(
+    "MAPLE_PERSONAL_CHARACTER_JUDGEMENT_KEYWORDS",
+    PERSONAL_CHARACTER_JUDGEMENT_KEYWORDS,
+)
+
 RESEARCH_FEEDBACK_MARKERS = (
     "missing_context",
     "no retrieved context",
@@ -235,6 +299,18 @@ EVALUATION_RESEARCH_FAILURE_TYPES = (
     "ungrounded",
     "missing_source",
     "invalid_source_reliability",
+)
+RESEARCH_FEEDBACK_MARKERS = load_keyword_tuple(
+    "MAPLE_RESEARCH_FEEDBACK_MARKERS",
+    RESEARCH_FEEDBACK_MARKERS,
+)
+EVALUATION_RESEARCH_FEEDBACK_MARKERS = load_keyword_tuple(
+    "MAPLE_EVALUATION_RESEARCH_FEEDBACK_MARKERS",
+    EVALUATION_RESEARCH_FEEDBACK_MARKERS,
+)
+EVALUATION_RESEARCH_FAILURE_TYPES = load_keyword_tuple(
+    "MAPLE_EVALUATION_RESEARCH_FAILURE_TYPES",
+    EVALUATION_RESEARCH_FAILURE_TYPES,
 )
 SUPERVISOR_RESEARCH_RETRY_RESULT_KEY = "supervisor_research_retry"
 MAX_SUPERVISOR_RESEARCH_RETRY_COUNT = 1
@@ -282,12 +358,22 @@ def has_character_analysis_state(state: AgentState) -> bool:
     )
 
 
-def has_character_lookup_state(state: AgentState) -> bool:
-    """이미 Nexon API 조회가 끝나 캐릭터 데이터가 state에 있는지 여부.
+def character_lookup_guard(query: str) -> tuple[str, bool]:
+    """Return extracted character name and whether entity guards block lookup."""
 
-    True면 requires_character_lookup을 다시 True로 만들지 않아 중복 API 호출을 막는다.
-    """
-    return bool(state.get("character_profile") and state.get("character_stats"))
+    text = str(query or "").strip()
+    if not text:
+        return "", False
+    try:
+        from src.collectors.nexon_api import (
+            extract_character_name_from_query,
+            should_skip_character_lookup_for_query,
+        )
+
+        character_name = extract_character_name_from_query(text)
+        return character_name, should_skip_character_lookup_for_query(text, character_name)
+    except Exception:
+        return "", False
 
 
 def requires_character_lookup_query(query: str) -> bool:
@@ -302,17 +388,14 @@ def requires_character_lookup_query(query: str) -> bool:
     if not text:
         return False
     normalized = text.lower()
-    if any(keyword.lower() in normalized for keyword in CHARACTER_LOOKUP_KEYWORDS):
+    has_lookup_keyword = any(keyword.lower() in normalized for keyword in CHARACTER_LOOKUP_KEYWORDS)
+    has_name_hint = any(keyword.lower() in normalized for keyword in CHARACTER_NAME_HINT_KEYWORDS)
+    character_name, lookup_blocked = character_lookup_guard(text)
+    if lookup_blocked:
+        return False
+    if character_name:
         return True
-    if not any(keyword.lower() in normalized for keyword in CHARACTER_NAME_HINT_KEYWORDS):
-        return False
-    try:
-        from src.collectors.nexon_api import extract_character_name_from_query
-
-        return bool(extract_character_name_from_query(text))
-    except Exception:
-        # import 실패나 collector 내부 예외는 라우팅을 중단시키지 않도록 흡수한다.
-        return False
+    return bool(has_lookup_keyword)
 
 
 def is_character_data_lookup_query(query: str) -> bool:
@@ -327,6 +410,62 @@ def requires_character_processing_query(query: str) -> bool:
     text = str(query or "").strip()
     normalized = text.lower()
     return any(keyword.lower() in normalized for keyword in CHARACTER_PROCESSING_KEYWORDS)
+
+
+def compact_keyword_text(value: Any) -> str:
+    return "".join(str(value or "").lower().split())
+
+
+def requires_personal_character_judgement_query(query: str) -> bool:
+    normalized = compact_keyword_text(query)
+    if not normalized:
+        return False
+    return any(
+        compact_keyword_text(keyword) in normalized
+        for keyword in PERSONAL_CHARACTER_JUDGEMENT_KEYWORDS
+    )
+
+
+def build_nexon_api_supervisor_state(
+    state: AgentState,
+    *,
+    api_task_type: str,
+    api_params: dict,
+    contextualized_query: str,
+    task_type: str = "general_qa",
+    completed_agents: list[str] | None = None,
+    errors: list[str] | None = None,
+) -> AgentState:
+    lookup = {}
+    if api_task_type == API_TASK_CHARACTER_LOOKUP:
+        try:
+            from src.collectors.nexon_api import extract_character_lookup_from_query
+
+            lookup = extract_character_lookup_from_query(contextualized_query)
+        except Exception:
+            lookup = {}
+
+    return {
+        **state,
+        "intent": f"Nexon Open API task: {api_task_type}",
+        "contextualized_query": contextualized_query,
+        "task_type": task_type,
+        "requires_api": True,
+        "api_task_type": api_task_type,
+        "api_params": api_params,
+        "requires_character_lookup": api_task_type == API_TASK_CHARACTER_LOOKUP,
+        "character_name": state.get("character_name") or lookup.get("character_name", ""),
+        "world_name": state.get("world_name") or lookup.get("world_name", ""),
+        "plan": ["final_answer"],
+        "next_agent": "final_answer",
+        "completed_agents": (
+            completed_agents
+            if completed_agents is not None
+            else list(state.get("completed_agents", []) or [])
+        ),
+        "retry_count": state.get("retry_count", 0),
+        "errors": errors if errors is not None else list(state.get("errors", []) or []),
+    }
 
 
 def coerce_bool(value) -> bool:
@@ -348,7 +487,7 @@ def capability_bool(response_dict: dict, key: str) -> bool:
 
 
 def has_research_evidence_state(state: AgentState) -> bool:
-    return bool(str(state.get("context") or "").strip() or state.get("retrieved_docs"))
+    return has_external_research_evidence(state)
 
 
 def evaluation_feedback_requires_research(state: AgentState, feedback: str) -> bool:
@@ -539,7 +678,11 @@ def infer_required_capabilities(
     needs_character_api = bool(
         capability_bool(response_dict, "needs_character_api")
         or requires_character_lookup
-        or has_character_lookup_state(state)
+        or has_nexon_character_data(state)
+    )
+    needs_personal_judgement = bool(
+        has_nexon_character_data(state)
+        and requires_personal_character_judgement_query(query_for_route)
     )
     try:
         route_needs_external_criteria = research_route_requires_evidence(
@@ -556,9 +699,11 @@ def infer_required_capabilities(
         or "research" in plan
         or has_research_evidence_state(state)
         or route_needs_external_criteria
+        or needs_personal_judgement
     )
     needs_comparison = bool(
         capability_bool(response_dict, "needs_comparison")
+        or needs_personal_judgement
         or (
             needs_character_api
             and needs_external_criteria
@@ -569,6 +714,7 @@ def infer_required_capabilities(
         capability_bool(response_dict, "needs_recommendation")
         or response_bool(response_dict, "requires_analytics")
         or "analystic" in plan
+        or needs_personal_judgement
     )
     needs_calculation = bool(
         response_bool(response_dict, "requires_calculation")
@@ -631,11 +777,8 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     completed_agents = list(state.get("completed_agents", []) or [])
     completed_agent = existing_plan[0] if existing_plan else None
     remaining_plan = existing_plan[1:] if existing_plan else []
-    # 이미 context/retrieved_docs가 있으면 research를 다시 강제하지 않는다.
-    has_research_evidence = bool(
-        str(state.get("context") or "").strip()
-        or state.get("retrieved_docs")
-    )
+    # Nexon API 캐릭터 context만으로는 보스 기준/외부 근거 조회를 완료한 것으로 보지 않는다.
+    has_research_evidence = has_research_evidence_state(state)
     if completed_agent == "research" and has_research_evidence:
         feedback = ""
         tool_results.pop("evaluation", None)
@@ -644,17 +787,21 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     requires_search = False
     # 계산 키워드는 LLM 없이도 판정 가능하므로 fallback에서 직접 체크한다.
     requires_calculation = any(keyword in contextualized_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
-    lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
+    lookup_attempted = nexon_api_attempted(state)
     requires_character_lookup = bool(
         state.get("requires_character_lookup")
         or requires_character_lookup_query(contextualized_query)
     )
+    lookup_guard_query = f"{user_query} {contextualized_query}".strip()
+    _, lookup_blocked = character_lookup_guard(lookup_guard_query)
+    if lookup_blocked:
+        requires_character_lookup = False
     character_data_lookup = requires_character_lookup and is_character_data_lookup_query(contextualized_query)
     simple_character_lookup = (
         character_data_lookup
         and not requires_character_processing_query(contextualized_query)
     )
-    if has_character_lookup_state(state) or lookup_attempted:
+    if has_nexon_character_data(state) or lookup_attempted:
         requires_character_lookup = False
         character_data_lookup = False
         simple_character_lookup = False
@@ -665,6 +812,23 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
 
     if completed_agent and completed_agent not in completed_agents:
         completed_agents.append(completed_agent)
+
+    api_task_type = str(state.get("api_task_type") or "").strip()
+    api_params = dict(state.get("api_params") or {})
+    if not api_task_type:
+        api_task = parse_nexon_api_task(contextualized_query)
+        if api_task is not None:
+            api_task_type = api_task.api_task_type
+            api_params = dict(api_task.api_params)
+    if api_task_type and not lookup_attempted:
+        return build_nexon_api_supervisor_state(
+            state,
+            api_task_type=api_task_type,
+            api_params=api_params,
+            contextualized_query=contextualized_query,
+            completed_agents=completed_agents,
+            errors=errors,
+        )
 
     should_continue_plan = bool(
         existing_plan
@@ -770,12 +934,18 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     if plan and plan[0] == "research" and retry_research_after_evaluation:
         tool_results = mark_supervisor_research_retry(state, tool_results, feedback)
 
+    api_task_type = API_TASK_CHARACTER_LOOKUP if requires_character_lookup else str(state.get("api_task_type") or "")
+    api_params = dict(state.get("api_params") or {})
+
     # supervisor 노드가 평소 반환하는 AgentState 필드와 같은 형태로 맞춰 downstream 노드를 단순화한다.
     return {
         **state,
         "intent": "fallback supervisor routing",
         "contextualized_query": contextualized_query,
         "task_type": task_type,
+        "requires_api": bool(api_task_type),
+        "api_task_type": api_task_type,
+        "api_params": api_params,
         "requires_character_lookup": requires_character_lookup,
         "plan": plan,
         "next_agent": plan[0],
@@ -840,9 +1010,13 @@ def _parse_supervisor_response(
         or requires_character_lookup_query(lookup_query)
         or requires_character_lookup_query(str(state.get("user_query") or ""))
     )
-    lookup_attempted = bool((state.get("tool_results") or {}).get("nexon_api"))
+    lookup_guard_query = f"{state.get('user_query') or ''} {lookup_query}".strip()
+    _, lookup_blocked = character_lookup_guard(lookup_guard_query)
+    if lookup_blocked:
+        requires_character_lookup = False
+    lookup_attempted = nexon_api_attempted(state)
     # 이미 조회 데이터가 있거나 조회 시도가 끝난 상태면 중복 API 호출을 막는다.
-    if has_character_lookup_state(state) or lookup_attempted:
+    if has_nexon_character_data(state) or lookup_attempted:
         requires_character_lookup = False
 
     plan = response_dict.get("plan")
@@ -903,10 +1077,7 @@ def _guard_research_plan(
 
     feedback_requires_research = feedback_requires_research_signal(state, feedback)
     retry_research_after_evaluation = should_retry_research_after_evaluation(state, feedback)
-    has_research_evidence = bool(
-        str(state.get("context") or "").strip()
-        or state.get("retrieved_docs")
-    )
+    has_research_evidence = has_research_evidence_state(state)
     # 이미 research가 끝났고 근거가 있으면 같은 검색을 반복하지 않는다.
     research_already_done = (
         completed_agent == "research"
@@ -1004,6 +1175,9 @@ def supervisor(state:AgentState):
             "intent": "일상 대화 또는 인사",
             "contextualized_query": contextualized_query,
             "task_type": "chitchat",
+            "requires_api": False,
+            "api_task_type": "",
+            "api_params": {},
             "requires_character_lookup": False,
             "plan": ["final_answer"],
             "next_agent": "final_answer",
@@ -1011,6 +1185,31 @@ def supervisor(state:AgentState):
             "retry_count": state.get("retry_count", 0),
             "errors": state.get("errors", []),
         }
+
+    api_task = parse_nexon_api_task(contextualized_query)
+    api_task_type = api_task.api_task_type if api_task is not None else ""
+    api_params = dict(api_task.api_params) if api_task is not None else {}
+    if api_task_type and not nexon_api_attempted(state):
+        return build_nexon_api_supervisor_state(
+            state,
+            api_task_type=api_task_type,
+            api_params=api_params,
+            contextualized_query=contextualized_query,
+        )
+
+    if (
+        requires_character_lookup_query(contextualized_query)
+        and is_character_data_lookup_query(contextualized_query)
+        and not requires_character_processing_query(contextualized_query)
+        and not nexon_api_attempted(state)
+    ):
+        return build_nexon_api_supervisor_state(
+            state,
+            api_task_type=API_TASK_CHARACTER_LOOKUP,
+            api_params={},
+            contextualized_query=contextualized_query,
+            task_type="character_status_analysis",
+        )
 
     # 일반 질문은 LLM supervisor가 의도/필요 도구/plan을 판단한다.
     llm = get_llm()
@@ -1031,10 +1230,7 @@ def supervisor(state:AgentState):
 
     if (
         completed_agent == "research"
-        and (
-            str(state.get("context") or "").strip()
-            or state.get("retrieved_docs")
-        )
+        and has_research_evidence_state(state)
     ):
         feedback = ""
         tool_results.pop("evaluation", None)
@@ -1223,12 +1419,18 @@ feedback: {feedback}
     if next_agent == "research" and should_retry_research_after_evaluation(state, feedback):
         tool_results = mark_supervisor_research_retry(state, tool_results, feedback)
 
+    api_task_type = API_TASK_CHARACTER_LOOKUP if requires_character_lookup else str(state.get("api_task_type") or "")
+    api_params = dict(state.get("api_params") or {})
+
     # downstream 노드가 읽을 라우팅 필드를 state에 병합해 반환한다.
     return {
         **state,
         "intent": intent,
         "contextualized_query": contextualized_query,
         "task_type": task_type,
+        "requires_api": bool(api_task_type),
+        "api_task_type": api_task_type,
+        "api_params": api_params,
         "requires_character_lookup": requires_character_lookup,
         "plan": plan,
         "next_agent": next_agent,

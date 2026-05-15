@@ -11,7 +11,6 @@ load_dotenv()  # .env 파일에서 API 키 등 환경변수를 미리 로드
 
 import sys
 import time
-import re
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -39,8 +38,22 @@ from app.common.chat_memory import (  # noqa: E402
 from app.common.chat_render import (  # noqa: E402
     render_chat_page,
     render_messages,
+    render_manual_page_if_requested,
     render_style,
     render_top_navigation,
+    switch_app_page,
+)
+from common.keyword_config import load_keyword_tuple  # noqa: E402
+from common.nexon_state import (  # noqa: E402
+    NEXON_API_TOOL_KEY,
+    filter_nexon_api_documents,
+    has_nexon_character_data,
+)
+from src.collectors.nexon_api_tasks import (  # noqa: E402
+    API_TASK_CASH_UPDATE,
+    API_TASK_CHARACTER_LOOKUP,
+    API_TASK_EVENT_NOTICE,
+    API_TASK_RANKING_OVERALL,
 )
 
 
@@ -63,23 +76,113 @@ WELCOME_MESSAGE = {
 
 # LangGraph 결과 dict에서 답변 본문을 찾을 때 순서대로 확인할 키 목록
 ANSWER_KEYS = ("final_answer", "answer", "analysis", "draft_answer")
+CONTEXTUAL_CHARACTER_REFERENCE_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CONTEXTUAL_CHARACTER_REFERENCE_KEYWORDS",
+    (
+        "이 캐릭터",
+        "이 캐릭",
+        "이 스펙",
+        "이걸로",
+        "얘로",
+        "내 캐릭터",
+        "내 캐릭",
+        "내 스펙",
+        "나의 캐릭터",
+        "나의 캐릭",
+        "나의 스펙",
+        "제 캐릭터",
+        "제 캐릭",
+        "제 스펙",
+        "방금 캐릭터",
+        "방금 캐릭",
+        "방금 조회한 캐릭터",
+        "해당 캐릭터",
+        "그 캐릭터",
+        "현재 캐릭터",
+    ),
+)
+CONTEXTUAL_FIRST_PERSON_REFERENCE_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CONTEXTUAL_FIRST_PERSON_REFERENCE_KEYWORDS",
+    (
+        "내가",
+        "제가",
+        "나는",
+        "저는",
+    ),
+)
+CONTEXTUAL_CHARACTER_TASK_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CONTEXTUAL_CHARACTER_TASK_KEYWORDS",
+    (
+        "성장",
+        "콘텐츠",
+        "컨텐츠",
+        "시작",
+        "추천",
+        "우선",
+        "뭐부터",
+        "무엇부터",
+        "해야",
+        "하면",
+        "할까",
+        "갈까",
+        "가능",
+        "잡을",
+        "보스",
+        "사냥",
+        "장비",
+        "스펙",
+    ),
+)
+CONTEXTUAL_FOLLOWUP_REFERENCE_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CONTEXTUAL_FOLLOWUP_REFERENCE_KEYWORDS",
+    (
+        "지금",
+        "현재",
+        "이제",
+        "그럼",
+        "그러면",
+        "그렇다면",
+        "방금",
+        "이어서",
+    ),
+)
+CONTEXTUAL_BOSS_FEASIBILITY_KEYWORDS = load_keyword_tuple(
+    "MAPLE_CONTEXTUAL_BOSS_FEASIBILITY_KEYWORDS",
+    (
+        "가능",
+        "공략 가능",
+        "잡을",
+        "잡을 수",
+        "잡을수",
+        "클리어",
+        "격파",
+        "도전",
+        "갈 수",
+        "갈수",
+        "될까",
+        "되나",
+        "되나요",
+        "컷",
+    ),
+)
+REUSABLE_CHARACTER_STATE_KEYS = (
+    "character_name",
+    "world_name",
+    "ocid",
+    "character_profile",
+    "character_stats",
+    "equipment_items",
+    "union_status",
+    "raw_api_results",
+)
 
 # === 응답 출처 태그 (어떤 경로로 답변이 생성되었는지 식별) ===
 RESPONSE_TAG_AGENT_GRAPH = "agent.graph"          # LangGraph 에이전트 흐름
 RESPONSE_TAG_API_CHARACTER = "api.character"      # 캐릭터 조회 API 결과
-RESPONSE_TAG_API_RANKING_TOP100 = "api.ranking_top100"  # 랭킹 TOP100 직접 호출
-RESPONSE_TAG_API_WEEKLY_EVENT = "api.weekly_event"      # 주간 이벤트 직접 호출
-RESPONSE_TAG_API_CASH_UPDATE = "api.cash_update"        # 캐시샵 업데이트 직접 호출
+RESPONSE_TAG_API_RANKING_TOP100 = "api.ranking_top100"  # 랭킹 API 결과
+RESPONSE_TAG_API_WEEKLY_EVENT = "api.weekly_event"      # 이벤트 API 결과
+RESPONSE_TAG_API_CASH_UPDATE = "api.cash_update"        # 캐시샵 업데이트 API 결과
 RESPONSE_TAG_SYSTEM_FALLBACK = "system.fallback"        # 예외 발생 시 폴백 응답
-
-# 위 응답 태그를 트리거하는 정확한 입력 프롬프트(단축어처럼 동작)
-RANKING_TOP100_PROMPT = "전체 랭킹 100위까지 보여줘."
-WEEKLY_EVENT_PROMPT = "이번주 이벤트 내용 알려줘."
-CASH_UPDATE_PROMPT = "캐시샵 업데이트 내용 알려줘."
-
-DEFAULT_RANKING_LIMIT = 100
-DEFAULT_EVENT_LIMIT = 5
-DEFAULT_CASH_NOTICE_LIMIT = 3
 
 # 채팅 한 세션을 구성하는 session_state 키 목록 (저장/복원 시 함께 다룸)
 CHAT_STATE_KEYS = (
@@ -88,6 +191,7 @@ CHAT_STATE_KEYS = (
     "agent_memory_summary",     # 토큰 절약용 과거 대화 요약본
     "agent_errors",             # 에이전트 실행 중 발생한 오류 누적
     "pending_user_input",       # 아직 응답 처리되지 않은 사용자 입력
+    "last_graph_state",         # 후속 질문에서 재사용할 최근 캐릭터 API 상태
     "last_response_tag",        # 마지막 응답의 출처 태그
     "last_response_metadata",   # 마지막 응답의 부가 메타데이터
 )
@@ -116,6 +220,7 @@ def new_chat_state(user_input: str | None = None) -> dict[str, Any]:
         "agent_memory_summary": "",
         "agent_errors": [],
         "pending_user_input": user_input,
+        "last_graph_state": {},
         "last_response_tag": "",
         "last_response_metadata": {},
     }
@@ -149,29 +254,6 @@ class AssistantResponse:
                 if value not in ("", None)
             },
         )
-
-
-@dataclass(frozen=True)
-class RankingAPIQuery:
-    """Parsed parameters for Nexon ranking/overall."""
-
-    world_name: str = ""
-    target_rank: int | None = None
-    limit: int = DEFAULT_RANKING_LIMIT
-
-
-@dataclass(frozen=True)
-class EventNoticeAPIQuery:
-    """Parsed parameters for active event notices."""
-
-    max_events: int = DEFAULT_EVENT_LIMIT
-
-
-@dataclass(frozen=True)
-class CashUpdateAPIQuery:
-    """Parsed parameters for cash update notice sections."""
-
-    max_notices: int = DEFAULT_CASH_NOTICE_LIMIT
 
 
 def apply_chat_state(chat_state: dict[str, Any]) -> None:
@@ -309,265 +391,109 @@ def fallback_answer(user_input: str, error: Exception) -> str:
     )
 
 
-def normalize_direct_api_query(user_input: str) -> str:
-    """직접 API 라우팅에서 공통으로 쓰는 가벼운 질의 정규화."""
-
-    return " ".join(str(user_input or "").split()).strip()
+def compact_keyword(value: Any) -> str:
+    return "".join(str(value or "").lower().split())
 
 
-def parse_int_text(value: Any, default: int = 0) -> int:
-    match = re.search(r"\d+", str(value or "").replace(",", ""))
-    if not match:
-        return default
-    return int(match.group(0))
+def query_mentions_known_boss_alias(user_input: str) -> bool:
+    query = compact_keyword(user_input)
+    if not query:
+        return False
+    try:
+        from src.collectors.nexon_api import load_boss_alias_names
+
+        return any(alias and alias in query for alias in load_boss_alias_names())
+    except Exception:
+        return "보스" in query
 
 
-def clamp_positive(value: int, default: int, maximum: int) -> int:
-    if value <= 0:
-        return default
-    return min(value, maximum)
+def has_any_compact_keyword(query: str, keywords: tuple[str, ...]) -> bool:
+    return any(compact_keyword(keyword) in query for keyword in keywords)
 
 
-def parse_ranking_api_query(user_input: str) -> RankingAPIQuery | None:
-    """Return ranking API parameters only when the query maps to ranking/overall."""
+def should_reuse_last_character_state(user_input: str) -> bool:
+    query = compact_keyword(user_input)
+    if not query:
+        return False
+    if has_any_compact_keyword(query, CONTEXTUAL_CHARACTER_REFERENCE_KEYWORDS):
+        return True
 
-    normalized = normalize_direct_api_query(user_input)
-    if not normalized:
-        return None
-
-    lower_query = normalized.lower()
-    if "랭킹" not in normalized and "순위" not in normalized and not re.search(r"\btop\s*\d+", lower_query):
-        return None
-
-    limit = extract_ranking_limit(normalized)
-    target_rank = None if limit else extract_ranking_target_rank(normalized)
-    if limit is None and target_rank is None:
-        return None
-
-    from src.collectors.nexon_api import extract_world_name_from_query
-
-    world_name = extract_world_name_from_query(normalized)
-    fetch_limit = clamp_positive(
-        limit or target_rank or DEFAULT_RANKING_LIMIT,
-        DEFAULT_RANKING_LIMIT,
-        DEFAULT_RANKING_LIMIT,
+    has_feasibility_intent = has_any_compact_keyword(
+        query,
+        CONTEXTUAL_BOSS_FEASIBILITY_KEYWORDS,
     )
-    return RankingAPIQuery(
-        world_name=world_name,
-        target_rank=target_rank,
-        limit=fetch_limit,
+    if has_feasibility_intent and query_mentions_known_boss_alias(user_input):
+        return True
+
+    has_followup_reference = has_any_compact_keyword(
+        query,
+        CONTEXTUAL_FOLLOWUP_REFERENCE_KEYWORDS,
     )
+    if has_followup_reference and has_feasibility_intent and "보스" in query:
+        return True
 
-
-def extract_ranking_limit(query: str) -> int | None:
-    patterns = (
-        r"\btop\s*(?P<limit>\d+)",
-        r"(?P<limit>\d+)\s*(?:위|등)\s*까지",
+    has_first_person_reference = has_any_compact_keyword(
+        query,
+        CONTEXTUAL_FIRST_PERSON_REFERENCE_KEYWORDS,
     )
-    for pattern in patterns:
-        match = re.search(pattern, query, flags=re.IGNORECASE)
-        if match:
-            return parse_int_text(match.group("limit"))
-    return None
+    if not has_first_person_reference:
+        return False
+    return has_any_compact_keyword(query, CONTEXTUAL_CHARACTER_TASK_KEYWORDS)
 
 
-def extract_ranking_target_rank(query: str) -> int | None:
-    match = re.search(r"(?P<rank>\d+)\s*(?:위|등)(?!\s*까지)", query)
-    if not match:
-        return None
-    return parse_int_text(match.group("rank"))
+def extract_reusable_character_state(result: Any) -> dict[str, Any]:
+    if not isinstance(result, dict) or not has_nexon_character_data(result):
+        return {}
+
+    reusable = {
+        key: deepcopy(result[key])
+        for key in REUSABLE_CHARACTER_STATE_KEYS
+        if result.get(key) not in ("", None, [], {})
+    }
+    nexon_docs = filter_nexon_api_documents(result.get("retrieved_docs") or [])
+    selected_nexon_docs = filter_nexon_api_documents(result.get("selected_evidence") or [])
+    if nexon_docs:
+        reusable["retrieved_docs"] = deepcopy(nexon_docs)
+        reusable["selected_evidence"] = deepcopy(selected_nexon_docs or nexon_docs)
+        context_parts = [
+            str(document.get("page_content") or "").strip()
+            for document in nexon_docs
+            if str(document.get("page_content") or "").strip()
+        ]
+        if context_parts:
+            reusable["context"] = "\n\n".join(dict.fromkeys(context_parts))
+
+    evidence_summary = result.get("evidence_summary") or {}
+    if isinstance(evidence_summary, dict) and NEXON_API_TOOL_KEY in evidence_summary:
+        reusable["evidence_summary"] = {
+            NEXON_API_TOOL_KEY: deepcopy(evidence_summary[NEXON_API_TOOL_KEY])
+        }
+
+    tool_results = result.get("tool_results") or {}
+    if isinstance(tool_results, dict) and NEXON_API_TOOL_KEY in tool_results:
+        reusable["tool_results"] = {
+            NEXON_API_TOOL_KEY: deepcopy(tool_results[NEXON_API_TOOL_KEY])
+        }
+
+    return reusable
 
 
-def parse_current_event_api_query(user_input: str) -> EventNoticeAPIQuery | None:
-    """Return active-event API parameters when the query asks for current events."""
-
-    normalized = normalize_direct_api_query(user_input)
-    if not normalized:
-        return None
-    if normalized == WEEKLY_EVENT_PROMPT:
-        return EventNoticeAPIQuery()
-    if "이벤트" not in normalized:
-        return None
-    if not re.search(r"이번\s*주|현재|진행\s*중|오늘|지금", normalized):
-        return None
-    return EventNoticeAPIQuery(
-        max_events=clamp_positive(
-            parse_int_text(normalized, DEFAULT_EVENT_LIMIT),
-            DEFAULT_EVENT_LIMIT,
-            DEFAULT_EVENT_LIMIT,
-        )
-    )
+def apply_reusable_character_state(state: dict[str, Any], user_input: str) -> dict[str, Any]:
+    if not should_reuse_last_character_state(user_input):
+        return state
+    previous_state = st.session_state.get("last_graph_state") or {}
+    if not isinstance(previous_state, dict) or not has_nexon_character_data(previous_state):
+        return state
+    return {
+        **deepcopy(previous_state),
+        **state,
+    }
 
 
-def parse_cash_update_api_query(user_input: str, *, latest_only_once: bool = False) -> CashUpdateAPIQuery | None:
-    """Return cash-update API parameters when the query maps to update notices."""
-
-    normalized = normalize_direct_api_query(user_input)
-    if not normalized:
-        return None
-    if normalized == CASH_UPDATE_PROMPT:
-        return CashUpdateAPIQuery(max_notices=1 if latest_only_once else DEFAULT_CASH_NOTICE_LIMIT)
-    if "캐시" not in normalized:
-        return None
-    if not re.search(r"업데이트|공지|신규|최근|최신", normalized):
-        return None
-
-    requested_count = parse_int_text(normalized, 0)
-    max_notices = requested_count or (1 if latest_only_once else DEFAULT_CASH_NOTICE_LIMIT)
-    if re.search(r"최신|가장\s*최근|마지막", normalized):
-        max_notices = 1
-    return CashUpdateAPIQuery(
-        max_notices=clamp_positive(max_notices, DEFAULT_CASH_NOTICE_LIMIT, DEFAULT_CASH_NOTICE_LIMIT)
-    )
-
-
-def format_ranking_row(row: dict[str, Any], index: int) -> str:
-    rank = row.get("ranking") or index
-    character_name = row.get("character_name") or "-"
-    world_name = row.get("world_name") or "-"
-    class_name = row.get("class_name") or row.get("class") or "-"
-    level = row.get("character_level") or "-"
-    return f"{rank}. {character_name} / {world_name} / {class_name} / Lv.{level}"
-
-
-def ranking_row_rank(row: dict[str, Any], index: int) -> int:
-    return parse_int_text(row.get("ranking"), index)
-
-
-def build_ranking_answer(rankings: list[dict[str, Any]], query: RankingAPIQuery) -> str:
-    scope = f"{query.world_name} 월드" if query.world_name else "전체"
-    if not rankings:
-        return f"{scope} 랭킹 정보를 가져오지 못했습니다. API 기준 날짜 또는 API 키를 확인해 주세요."
-
-    if query.target_rank:
-        target = next(
-            (
-                row
-                for index, row in enumerate(rankings, start=1)
-                if ranking_row_rank(row, index) == query.target_rank
-            ),
-            None,
-        )
-        if target is None and 0 < query.target_rank <= len(rankings):
-            target = rankings[query.target_rank - 1]
-        if target is None:
-            return f"{scope} 랭킹 {query.target_rank}위 정보를 가져오지 못했습니다."
-
-        character_name = target.get("character_name") or "-"
-        world_name = target.get("world_name") or query.world_name or "-"
-        class_name = target.get("class_name") or target.get("class") or "-"
-        level = target.get("character_level") or "-"
-        rank = target.get("ranking") or query.target_rank
-        return "\n".join(
-            [
-                f"{scope} 랭킹 {rank}위는 {character_name}입니다.",
-                "",
-                f"- 월드: {world_name}",
-                f"- 직업: {class_name}",
-                f"- 레벨: {level}",
-                "- 출처: Nexon Open API ranking/overall",
-            ]
-        )
-
-    lines = [f"{scope} 랭킹 TOP {query.limit}입니다.", ""]
-    lines.extend(format_ranking_row(row, index) for index, row in enumerate(rankings[:query.limit], start=1))
-    return "\n".join(lines)
-
-
-def build_direct_api_response(user_input: str) -> AssistantResponse | None:
-    """직접 API 파라미터로 해석되는 질문을 처리하고, 해당 없으면 None을 반환한다."""
-
-    ranking_query = parse_ranking_api_query(user_input)
-    if ranking_query is not None:
-        from src.collectors.nexon_api import fetch_overall_ranking
-
-        rankings = fetch_overall_ranking(
-            world_name=ranking_query.world_name or None,
-            limit=ranking_query.limit,
-        )
-        answer = build_ranking_answer(rankings, ranking_query)
-        return AssistantResponse.create(
-            answer,
-            RESPONSE_TAG_API_RANKING_TOP100,
-            source="nexon_open_api",
-            result_kind="ranking_list",
-            world_name=ranking_query.world_name,
-            target_rank=ranking_query.target_rank,
-            limit=ranking_query.limit,
-        )
-
-    event_query = parse_current_event_api_query(user_input)
-    if event_query is not None:
-        from src.collectors.nexon_api import fetch_current_event_notices
-
-        events = fetch_current_event_notices(max_events=event_query.max_events)
-        if not events:
-            answer = "이번주 이벤트 정보를 가져오지 못했습니다. Nexon API 키와 이벤트 공지 데이터를 확인해 주세요."
-        elif events:
-            lines = ["이번주 진행 중인 메이플스토리 이벤트입니다.", ""]
-            for event in events:
-                title = str(event.get("title") or "제목 없음").strip()
-                url = str(event.get("url") or "").strip()
-                start_date = str(event.get("date_event_start") or "").strip()[:10] or "unknown"
-                end_date = str(event.get("date_event_end") or "").strip()[:10] or "unknown"
-                link = f"[바로가기]({url})" if url else "URL 없음"
-                lines.extend(
-                    [
-                        f"## {title}",
-                        "### 이벤트 기간",
-                        f"{start_date} ~ {end_date}",
-                        "### URL",
-                        link,
-                        "",
-                    ]
-                )
-            answer = "\n".join(lines)
-        return AssistantResponse.create(
-            answer,
-            RESPONSE_TAG_API_WEEKLY_EVENT,
-            source="nexon_open_api",
-            result_kind="notice_list",
-            max_events=event_query.max_events,
-        )
-
-    latest_only = bool(st.session_state.get("cash_update_latest_only_once", False))
-    cash_query = parse_cash_update_api_query(user_input, latest_only_once=latest_only)
-    if cash_query is not None:
-        st.session_state.pop("cash_update_latest_only_once", False)
-        from src.collectors.nexon_api import fetch_recent_update_cash_sections
-
-        notices = fetch_recent_update_cash_sections(max_notices=cash_query.max_notices)
-        if not notices:
-            answer = "최근 업데이트 공지에서 캐시 관련 내용을 찾지 못했습니다. Nexon API 키와 업데이트 공지 데이터를 확인해 주세요."
-        elif notices:
-            lines = ["최근 업데이트 공지의 캐시 관련 내용입니다.", ""]
-            for notice in notices:
-                title = str(notice.get("title") or "제목 없음").strip()
-                url = str(notice.get("url") or "").strip()
-                notice_date = str(notice.get("date") or "").strip()[:10] or "unknown"
-                link = f"[바로가기]({url})" if url else "URL 없음"
-                lines.extend(
-                    [
-                        f"## {title}",
-                        "### 공지일",
-                        notice_date,
-                        "### URL",
-                        link,
-                        "### 캐시 관련 내용",
-                    ]
-                )
-                for section in notice.get("cash_sections", []):
-                    lines.extend([section, ""])
-            answer = "\n".join(lines)
-        return AssistantResponse.create(
-            answer,
-            RESPONSE_TAG_API_CASH_UPDATE,
-            source="nexon_open_api",
-            result_kind="notice_list",
-            max_notices=cash_query.max_notices,
-        )
-
-    return None
+def remember_reusable_character_state(result: Any) -> None:
+    reusable_state = extract_reusable_character_state(result)
+    if reusable_state:
+        st.session_state.last_graph_state = reusable_state
 
 
 def build_graph_response(result: Any) -> AssistantResponse:
@@ -583,10 +509,23 @@ def build_graph_response(result: Any) -> AssistantResponse:
     profile = result.get("character_profile") or {}
     tool_results = result.get("tool_results") or {}
     nexon_result = tool_results.get("nexon_api") if isinstance(tool_results, dict) else {}
+    api_task_type = (
+        nexon_result.get("api_task_type")
+        if isinstance(nexon_result, dict)
+        else result.get("api_task_type")
+    )
+    response_tag = {
+        API_TASK_RANKING_OVERALL: RESPONSE_TAG_API_RANKING_TOP100,
+        API_TASK_EVENT_NOTICE: RESPONSE_TAG_API_WEEKLY_EVENT,
+        API_TASK_CASH_UPDATE: RESPONSE_TAG_API_CASH_UPDATE,
+    }.get(str(api_task_type or ""), RESPONSE_TAG_AGENT_GRAPH)
     is_character_response = bool(
-        result.get("ocid")
-        or result.get("character_profile")
-        or (isinstance(nexon_result, dict) and nexon_result)
+        response_tag == RESPONSE_TAG_AGENT_GRAPH
+        and (
+            result.get("ocid")
+            or result.get("character_profile")
+            or str(api_task_type or "") == API_TASK_CHARACTER_LOOKUP
+        )
     )
 
     metadata: dict[str, Any] = {
@@ -598,12 +537,14 @@ def build_graph_response(result: Any) -> AssistantResponse:
         "level": value_from(profile, "level"),
     }
     if isinstance(nexon_result, dict):
+        metadata["api_task_type"] = nexon_result.get("api_task_type")
         metadata["nexon_lookup_attempted"] = nexon_result.get("lookup_attempted")
         metadata["nexon_data_reliability"] = nexon_result.get("data_reliability")
+        metadata["result_kind"] = nexon_result.get("result_kind")
 
     return AssistantResponse.create(
         extract_answer(result),
-        RESPONSE_TAG_API_CHARACTER if is_character_response else RESPONSE_TAG_AGENT_GRAPH,
+        RESPONSE_TAG_API_CHARACTER if is_character_response else response_tag,
         **metadata,
     )
 
@@ -611,16 +552,11 @@ def build_graph_response(result: Any) -> AssistantResponse:
 def get_assistant_response(user_input: str) -> AssistantResponse:
     """사용자 입력 한 줄에 대한 어시스턴트 응답을 생성하는 핵심 디스패처.
 
-    1) 단축 명령(랭킹/이벤트/캐시)이면 넥슨 API를 직접 호출
-    2) 그 외엔 LangGraph 에이전트로 위임
+    1) LangGraph 에이전트로 위임
+    2) 그래프 내부 supervisor/route가 필요한 Nexon API를 결정
     3) 어디서든 예외가 나면 폴백 응답으로 감싼다.
     """
     try:
-        # 단축 명령 분기: API를 바로 두드려 빠르게 응답
-        direct_response = build_direct_api_response(user_input)
-        if direct_response is not None:
-            return direct_response
-
         # 일반 흐름: LangGraph 호출
         graph = load_graph()
         # 히스토리가 길어지면 요약본으로 압축 (토큰 한도 보호)
@@ -648,7 +584,9 @@ def get_assistant_response(user_input: str) -> AssistantResponse:
             "errors": [],
             "is_complete": False,
         }
+        state = apply_reusable_character_state(state, user_input)
         result = graph.invoke(state)
+        remember_reusable_character_state(result)
         return build_graph_response(result)
     except Exception as exc:
         # 예외 종류와 무관하게 사용자에게는 친절한 폴백 메시지로 응답
@@ -695,7 +633,7 @@ def handle_user_input() -> None:
     # 홈에서 입력한 경우 채팅 페이지를 새로 열고 거기서 응답 처리
     if st.session_state.get("active_page") != "chat":
         start_new_chat(user_input)
-        st.switch_page("pages/7_Chat.py")
+        switch_app_page("pages/7_Chat.py")
         return
 
     if not st.session_state.get("current_chat_id"):
@@ -770,6 +708,7 @@ def render_chat_app() -> None:
 
 def main() -> None:
     """단독 실행 시 진입점 (Streamlit run으로 직접 호출되는 경우)."""
+    render_manual_page_if_requested("home")
     st.set_page_config(**PAGE_CONFIG)
     render_home_app()
 

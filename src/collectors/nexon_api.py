@@ -1,10 +1,13 @@
 ﻿from __future__ import annotations
 
+import csv
 import json
 import os
 import re
 import sys
+from functools import lru_cache
 from html import unescape
+from pathlib import Path
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, "../../"))
@@ -29,6 +32,7 @@ from common.domain import (
     StatPackage,
     UnionStatus,
 )
+from common.keyword_config import load_keyword_tuple
 
 from common.state import AgentState
 
@@ -43,6 +47,53 @@ API_KEY_ENV_NAMES = (
     "NEXON_API_KEY",
     "NXOPEN_API_KEY",
 )
+DEFAULT_BOSS_DATA_DIR = Path(project_root) / "database" / "data" / "neo4j_import"
+BOSS_DATA_DIR = Path(os.getenv("MAPLE_BOSS_DATA_DIR", str(DEFAULT_BOSS_DATA_DIR)))
+BOSS_ALIAS_CSV_PATH = Path(
+    os.getenv("MAPLE_BOSS_ALIAS_CSV_PATH", str(BOSS_DATA_DIR / "boss_aliases.csv"))
+)
+BOSS_ENTITY_CSV_PATH = Path(
+    os.getenv("MAPLE_BOSS_ENTITY_CSV_PATH", str(BOSS_DATA_DIR / "bosses.csv"))
+)
+BOSS_CONTEXT_KEYWORDS = load_keyword_tuple("MAPLE_BOSS_CONTEXT_KEYWORDS", (
+    "보스",
+    "공략",
+    "패턴",
+    "보상",
+    "드롭",
+    "결정석",
+    "입장",
+    "요구",
+    "스펙",
+    "격파",
+    "클리어",
+    "잡을",
+    "잡는",
+    "잡아",
+    "정보",
+    "알려줘",
+))
+BOSS_DIFFICULTY_TOKENS = load_keyword_tuple("MAPLE_BOSS_DIFFICULTY_TOKENS", (
+    "이지",
+    "노멀",
+    "노말",
+    "하드",
+    "카오스",
+    "익스트림",
+    "easy",
+    "normal",
+    "hard",
+    "chaos",
+    "extreme",
+))
+CHARACTER_CONTEXT_WORDS = load_keyword_tuple("MAPLE_CHARACTER_CONTEXT_WORDS", (
+    "캐릭터",
+    "캐릭",
+    "닉네임",
+    "캐릭터명",
+    "캐릭명",
+    "이름",
+))
 
 
 class NexonAPIError(RuntimeError):
@@ -261,7 +312,7 @@ def fetch_character_state(
     )
 
 
-def nexon_api_node(
+def character_lookup_node(
     state: AgentState,
     *,
     api_date: str | date | None = None,
@@ -269,7 +320,7 @@ def nexon_api_node(
     client: NexonOpenAPIClient | None = None,
     include_optional: bool = True,
 ) -> AgentState:
-    """LangGraph-friendly node that enriches AgentState with Nexon data."""
+    """Enrich AgentState with Nexon character lookup data."""
 
     user_query = str(state.get("user_query") or "")
     lookup_query = state.get("contextualized_query") or user_query
@@ -284,6 +335,26 @@ def nexon_api_node(
         or extract_character_name_from_query(user_query)
     )
     world_name = state.get("world_name") or lookup.get("world_name", "")
+    lookup_guard_query = f"{user_query} {lookup_query}".strip()
+    lookup_guard = classify_character_lookup_entity(lookup_guard_query, str(character_name or ""))
+    if lookup_guard["should_skip"]:
+        tool_results = dict(state.get("tool_results") or {})
+        tool_results["nexon_api"] = {
+            "api_task_type": "character_lookup",
+            "lookup_attempted": False,
+            "skipped": True,
+            "skip_reason": lookup_guard["reason"],
+            "candidate_character_name": str(character_name or ""),
+            "matched_boss_alias": lookup_guard["boss_alias"],
+        }
+        return {
+            **state,
+            "character_name": "",
+            "world_name": world_name,
+            "requires_api": False,
+            "requires_character_lookup": False,
+            "tool_results": tool_results,
+        }
     fetched = fetch_character_state(
         character_name=character_name,
         ocid=state.get("ocid"),
@@ -297,6 +368,7 @@ def nexon_api_node(
     return {
         **state,
         **fetched,
+        "requires_api": False,
         "raw_api_results": {
             **(state.get("raw_api_results") or {}),
             **(fetched.get("raw_api_results") or {}),
@@ -304,6 +376,7 @@ def nexon_api_node(
         "tool_results": {
             **(state.get("tool_results") or {}),
             "nexon_api": {
+                "api_task_type": "character_lookup",
                 "character_name": fetched.get("character_name", ""),
                 "world_name": fetched.get("world_name", ""),
                 "ocid": fetched.get("ocid", ""),
@@ -580,6 +653,112 @@ def optional_int(value: Any) -> int | None:
     return int(parse_number(value, 0))
 
 
+def normalize_entity_name(value: Any) -> str:
+    return re.sub(r"[^0-9a-zA-Z가-힣_]+", "", str(value or "").strip().lower())
+
+
+NORMALIZED_BOSS_DIFFICULTY_TOKENS = frozenset(
+    normalize_entity_name(token) for token in BOSS_DIFFICULTY_TOKENS
+)
+NORMALIZED_BOSS_CONTEXT_KEYWORDS = frozenset(
+    normalize_entity_name(keyword) for keyword in BOSS_CONTEXT_KEYWORDS
+)
+NORMALIZED_CHARACTER_CONTEXT_KEYWORDS = frozenset(
+    normalize_entity_name(keyword) for keyword in CHARACTER_CONTEXT_WORDS
+)
+NORMALIZED_CHARACTER_CONTEXT_KEYWORDS_WITHOUT_NAME = frozenset(
+    normalize_entity_name(keyword) for keyword in ("내캐릭", "제캐릭")
+)
+
+
+@lru_cache(maxsize=1)
+def load_boss_alias_names() -> tuple[str, ...]:
+    aliases: set[str] = set()
+    for path in (BOSS_ALIAS_CSV_PATH, BOSS_ENTITY_CSV_PATH):
+        if not path.exists():
+            continue
+        with path.open("r", encoding="utf-8-sig", newline="") as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                for key in ("name", "normalized_name"):
+                    value = normalize_entity_name(row.get(key))
+                    if value:
+                        aliases.add(value)
+    return tuple(sorted(aliases, key=len, reverse=True))
+
+
+def classify_character_lookup_entity(query: str, character_name: str = "") -> dict[str, Any]:
+    text = str(query or "")
+    candidate = clean_character_name(character_name)
+    normalized_query = normalize_entity_name(query)
+    normalized_candidate = normalize_entity_name(candidate)
+    result = {
+        "should_skip": False,
+        "reason": "",
+        "boss_alias": "",
+        "candidate_character_name": candidate,
+    }
+    if not normalized_query:
+        return result
+
+    explicit_character_context = any(
+        keyword in normalized_query
+        for keyword in NORMALIZED_CHARACTER_CONTEXT_KEYWORDS_WITHOUT_NAME
+    )
+    if normalized_candidate:
+        explicit_character_context = explicit_character_context or any(
+            f"{keyword}{normalized_candidate}" in normalized_query
+            or f"{normalized_candidate}{keyword}" in normalized_query
+            for keyword in NORMALIZED_CHARACTER_CONTEXT_KEYWORDS
+        )
+    if explicit_character_context:
+        result["reason"] = "explicit_character_context"
+        return result
+
+    for alias in load_boss_alias_names():
+        if len(alias) <= 1 and normalized_query == alias:
+            result["boss_alias"] = alias
+            break
+        if len(alias) > 1 and alias in normalized_query:
+            result["boss_alias"] = alias
+            break
+
+    if normalized_candidate and normalized_candidate in load_boss_alias_names():
+        result["should_skip"] = True
+        result["reason"] = "candidate_name_matches_boss_alias"
+        result["boss_alias"] = normalized_candidate
+        return result
+
+    difficulty_pattern = "|".join(re.escape(token) for token in BOSS_DIFFICULTY_TOKENS)
+    entity_pattern = r"[\uac00-\ud7a3A-Za-z0-9_]"
+    has_difficulty_phrase = bool(
+        difficulty_pattern
+        and re.search(
+            rf"(?:{difficulty_pattern})\s*{entity_pattern}{{2,20}}",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+
+    if normalized_candidate in NORMALIZED_BOSS_DIFFICULTY_TOKENS:
+        has_boss_keyword = any(
+            keyword in normalized_query
+            for keyword in NORMALIZED_BOSS_CONTEXT_KEYWORDS
+        )
+        result["should_skip"] = bool(result["boss_alias"] or has_difficulty_phrase or has_boss_keyword)
+        result["reason"] = "candidate_name_matches_boss_difficulty" if result["should_skip"] else ""
+        return result
+
+    result["should_skip"] = bool(result["boss_alias"] or has_difficulty_phrase)
+    if result["should_skip"]:
+        result["reason"] = "query_mentions_boss_entity"
+    return result
+
+
+def should_skip_character_lookup_for_query(query: str, character_name: str = "") -> bool:
+    return bool(classify_character_lookup_entity(query, character_name)["should_skip"])
+
+
 LOOKUP_ACTION_PATTERN = (
     r"정보\s*조회|스탯\s*조회|스펙\s*조회|전투력\s*조회|"
     r"정보조회|스탯조회|스펙조회|전투력조회|정보|스탯|스펙|전투력"
@@ -593,6 +772,10 @@ def extract_character_lookup_from_query(query: str) -> dict[str, str]:
     if not text:
         return {}
 
+    possessive_lookup = extract_possessive_character_lookup(text)
+    if possessive_lookup:
+        return possessive_lookup
+
     world_name = extract_world_name_from_query(text)
     character_name = ""
     if world_name:
@@ -603,6 +786,9 @@ def extract_character_lookup_from_query(query: str) -> dict[str, str]:
     else:
         character_name = extract_character_name_by_lookup_words(text)
 
+    if character_name and should_skip_character_lookup_for_query(text, character_name):
+        character_name = ""
+
     if not character_name:
         return {"world_name": world_name} if world_name else {}
 
@@ -610,6 +796,30 @@ def extract_character_lookup_from_query(query: str) -> dict[str, str]:
     if world_name:
         result["world_name"] = world_name
     return result
+
+
+def extract_possessive_character_lookup(query: str) -> dict[str, str]:
+    action_pattern = rf"(?:{LOOKUP_ACTION_PATTERN}|조회해줘|알려줘|보여줘|해주세요|해줘|조회)"
+    patterns = (
+        rf"(?P<world>[가-힣A-Za-z0-9_]+)\s*(?:서버|월드)의\s*(?:캐릭터|캐릭|닉네임)?\s*(?P<character>[가-힣A-Za-z0-9_]+)\s*{action_pattern}",
+        rf"(?P<world>[가-힣A-Za-z0-9_]+)\s*의\s*(?:캐릭터|캐릭|닉네임)?\s*(?P<character>[가-힣A-Za-z0-9_]+)\s*{action_pattern}",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, query)
+        if not match:
+            continue
+        world_name = clean_lookup_token(match.group("world"))
+        character_name = clean_character_name(match.group("character"))
+        if (
+            world_name
+            and is_valid_character_name_candidate(character_name)
+            and not should_skip_character_lookup_for_query(query, character_name)
+        ):
+            return {
+                "character_name": character_name,
+                "world_name": world_name,
+            }
+    return {}
 
 
 def normalise_lookup_query(query: str) -> str:
@@ -643,7 +853,10 @@ def extract_character_name_near_world(query: str, world_name: str) -> str:
         match = re.search(pattern, query)
         if match:
             candidate = clean_character_name(match.group(1))
-            if is_valid_character_name_candidate(candidate):
+            if (
+                is_valid_character_name_candidate(candidate)
+                and not should_skip_character_lookup_for_query(query, candidate)
+            ):
                 return candidate
 
     before_world_patterns = (
@@ -654,7 +867,10 @@ def extract_character_name_near_world(query: str, world_name: str) -> str:
         match = re.search(pattern, query)
         if match:
             candidate = clean_character_name(match.group(1))
-            if is_valid_character_name_candidate(candidate):
+            if (
+                is_valid_character_name_candidate(candidate)
+                and not should_skip_character_lookup_for_query(query, candidate)
+            ):
                 return candidate
 
     return ""
@@ -680,7 +896,10 @@ def extract_character_name_by_lookup_words(query: str) -> str:
         match = re.search(pattern, query)
         if match:
             candidate = clean_character_name(match.group(1))
-            if is_valid_character_name_candidate(candidate):
+            if (
+                is_valid_character_name_candidate(candidate)
+                and not should_skip_character_lookup_for_query(query, candidate)
+            ):
                 return candidate
 
     lookup_match = re.search(LOOKUP_ACTION_PATTERN, query)
@@ -691,9 +910,12 @@ def extract_character_name_by_lookup_words(query: str) -> str:
     prefix = re.sub(r"(?:내|제)\s*(?:캐릭터|캐릭)?", " ", prefix).strip()
     prefix = re.sub(r"(?:캐릭터|캐릭|닉네임|이름)(?:은|는|이|가|:)?", " ", prefix).strip()
     tokens = re.findall(r"[가-힣A-Za-z0-9_]+", prefix)
-    for token in tokens:
+    for token in reversed(tokens):
         candidate = clean_character_name(token)
-        if is_valid_character_name_candidate(candidate):
+        if (
+            is_valid_character_name_candidate(candidate)
+            and not should_skip_character_lookup_for_query(query, candidate)
+        ):
             return candidate
     return ""
 
@@ -714,7 +936,9 @@ def extract_character_name_from_query(query: str) -> str:
     for pattern in patterns:
         match = re.search(pattern, text)
         if match:
-            return clean_character_name(match.group(1))
+            candidate = clean_character_name(match.group(1))
+            if not should_skip_character_lookup_for_query(text, candidate):
+                return candidate
     return ""
 
 
@@ -730,7 +954,7 @@ def clean_character_name(value: Any) -> str:
             break
         text = cleaned
     text = re.sub(r"(캐릭터|캐릭|닉네임)$", "", text).strip()
-    text = re.sub(r"(인데요|인데|입니다|이고|이라는|라는|은|는|이|가|의)$", "", text).strip()
+    text = re.sub(r"(인데요|인데|입니다|이고|이라는|라는|으로|로|은|는|이|가|의)$", "", text).strip()
     return text
 
 
@@ -1083,10 +1307,13 @@ __all__ = [
     "fetch_current_event_notices",
     "fetch_recent_update_cash_sections",
     "fetch_character_state",
-    "nexon_api_node",
+    "character_lookup_node",
     "extract_character_lookup_from_query",
     "extract_character_name_from_query",
     "extract_world_name_from_query",
+    "classify_character_lookup_entity",
+    "load_boss_alias_names",
+    "should_skip_character_lookup_for_query",
     "normalise_raw_character_bundle",
     "normalise_character_stats",
     "normalise_equipment_items",

@@ -1,5 +1,13 @@
 ﻿import base64
+import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+for path in (PROJECT_ROOT, SRC_ROOT):
+    path_text = str(path)
+    if path_text not in sys.path:
+        sys.path.insert(0, path_text)
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -9,7 +17,13 @@ from app.common.maple_paths import ensure_app_import_paths
 ensure_app_import_paths()
 
 from app.common.bgm import render_bgm_control_button, render_page_bgm  # noqa: E402
-from app.common.chat_render import render_style, render_top_navigation  # noqa: E402
+from app.common.chat_render import (  # noqa: E402
+    render_manual_page_if_requested,
+    render_style,
+    render_top_navigation,
+)
+
+render_manual_page_if_requested("game")
 
 st.set_page_config(
     page_title="Game",
