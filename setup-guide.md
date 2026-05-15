@@ -15,11 +15,11 @@ streamlit run maple_chat.py
 ```
 docker compose -f database\docker-compose.yml up -d postgres
 
-docker cp .\database\postgres\mapledb_pgvector.dump maplestory-postgres:/tmp/mapledb_pgvector.dump
+docker cp .\database\data\postgre\mapledb_pgvector.dump maplestory-postgres:/tmp/mapledb_pgvector.dump
 
 docker exec maplestory-postgres pg_restore -U admin -d mapledb --clean --if-exists /tmp/mapledb_pgvector.dump
 
-docker exec maplestory-postgres psql -U admin -d mapledb -c "select 'documents' as table_name, count() from documents union all select 'document_chunks', count() from document_chunks union all select 'document_embeddings', count(*) from document_embeddings;"
+docker exec maplestory-postgres psql -U admin -d mapledb -c "select 'documents' as table_name, count(*) from documents union all select 'document_chunks', count(*) from document_chunks union all select 'document_embeddings', count(*) from document_embeddings;"
 ```
 
 # 폴더 구조
