@@ -466,11 +466,13 @@ class Neo4jGraphRetriever:
         query: str,
         top_k: int = 5,
         reliability_filter: GraphReliabilityFilter = "ALL",
+        intent_tags: Sequence[str] | None = None,
     ) -> list[GraphSearchResult]:
         terms = _graph_terms(query)
         if not terms:
             terms = [query.strip().lower()]
         normalized_query = _normalize_graph_text(query)
+        graph_plan = _graph_query_plan(query, intent_tags)
 
         try:
             from neo4j import GraphDatabase
@@ -485,24 +487,28 @@ class Neo4jGraphRetriever:
         try:
             with driver.session(database=self.database) as session:
                 requirement_rows = []
-                if _is_requirement_query(query):
+                if graph_plan["requirements"]:
                     requirement_rows = session.run(
                         _GRAPH_BOSS_REQUIREMENT_QUERY,
                         terms=terms,
                         normalized_query=normalized_query,
                         limit=max(top_k * 2, top_k),
                     ).data()
-                relation_rows = session.run(
-                    _GRAPH_RELATION_FACT_QUERY,
-                    terms=terms,
-                    limit=max(top_k * 2, top_k),
-                ).data()
-                reward_rows = session.run(
-                    _GRAPH_BOSS_REWARD_QUERY,
-                    terms=terms,
-                    normalized_query=normalized_query,
-                    limit=max(top_k * 2, top_k),
-                ).data()
+                relation_rows = []
+                if graph_plan["relations"]:
+                    relation_rows = session.run(
+                        _GRAPH_RELATION_FACT_QUERY,
+                        terms=terms,
+                        limit=max(top_k * 2, top_k),
+                    ).data()
+                reward_rows = []
+                if graph_plan["rewards"]:
+                    reward_rows = session.run(
+                        _GRAPH_BOSS_REWARD_QUERY,
+                        terms=terms,
+                        normalized_query=normalized_query,
+                        limit=max(top_k * 2, top_k),
+                    ).data()
         finally:
             driver.close()
 
@@ -584,11 +590,13 @@ def search_graph(
     top_k: int = 5,
     reliability_filter: GraphReliabilityFilter = "ALL",
     retriever: Neo4jGraphRetriever | None = None,
+    intent_tags: Sequence[str] | None = None,
 ) -> list[GraphSearchResult]:
     return (retriever or Neo4jGraphRetriever()).search(
         query=query,
         top_k=top_k,
         reliability_filter=reliability_filter,
+        intent_tags=intent_tags,
     )
 
 
@@ -735,6 +743,25 @@ def _entity_token_score_sql(token_patterns: Sequence[str]) -> tuple[str, list[ob
         )
         params.extend([_pattern, _pattern, _pattern, _pattern])
     return "".join(sql_parts), params
+
+
+def _graph_query_plan(query: str, intent_tags: Sequence[str] | None) -> dict[str, bool]:
+    tags = {str(tag).strip().lower() for tag in (intent_tags or []) if str(tag).strip()}
+    if not tags or tags == {"general"}:
+        return {
+            "requirements": _is_requirement_query(query),
+            "relations": True,
+            "rewards": True,
+        }
+
+    wants_requirement = bool(tags.intersection({"boss_strategy", "boss_requirement"}))
+    wants_reward = "boss_reward" in tags
+    wants_relation = not wants_reward or "boss_strategy" in tags
+    return {
+        "requirements": wants_requirement or _is_requirement_query(query),
+        "relations": wants_relation,
+        "rewards": wants_reward,
+    }
 
 
 _GRAPH_BOSS_REQUIREMENT_QUERY = """

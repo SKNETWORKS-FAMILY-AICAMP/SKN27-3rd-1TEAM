@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
+from common.conversation import (
+    format_messages_for_prompt,
+    is_conversation_recall_query,
+    is_first_message_recall_query,
+    user_message_contents,
+)
 from common.get_model import get_llm
 from common.prompt import master_prompt
 from common.state import AgentState, JsonValue, RetrievedDocument
@@ -20,6 +26,7 @@ FRESHNESS_ORDER = {"HIGH": 0, "MEDIUM": 1, "UNKNOWN": 2, "LOW": 3}
 MAX_SOURCE_COUNT = 5
 MAX_RETRY_COUNT = 2
 MAX_FINAL_ANSWER_MESSAGE_CONTEXT = 10
+MAX_RECALL_MESSAGE_CHARS = 700
 
 EVALUATION_TOOL_KEY = "evaluation"
 FINAL_ANSWER_TOOL_KEY = "final_answer"
@@ -158,6 +165,11 @@ def build_draft_answer(
     state: AgentState,
     sources: list[dict[str, JsonValue]],
 ) -> str:
+    if state.get("task_type") == "chitchat":
+        if is_conversation_recall_query(str(state.get("user_query") or "")):
+            return build_conversation_recall_answer(state)
+        return build_chitchat_answer(state)
+
     question = str(state.get("contextualized_query") or state["user_query"]).strip()
     context = state["context"].strip()
     recommendations = format_recommendations(state)
@@ -191,6 +203,9 @@ def finalize_answer(draft_answer: str) -> str:
 
 
 def generate_final_answer(state: AgentState, draft_answer: str) -> str:
+    if is_conversation_recall_query(str(state.get("user_query") or "")):
+        return finalize_answer(draft_answer)
+
     if not should_use_llm():
         return finalize_answer(draft_answer)
 
@@ -233,25 +248,44 @@ def build_final_answer_system_prompt() -> str:
             "",
             "당신은 메이플스토리 RAG 멀티 에이전트 챗봇의 Final Answer Agent입니다.",
             "제공된 AgentState와 근거 context만 사용하여 한국어로 답변하세요.",
-            "최근 대화는 사용자 질문의 생략된 대상과 답변 범위를 파악하는 데만 사용하세요.",
+            "단, task_type이 chitchat이면 최근 대화를 주된 근거로 사용해도 됩니다.",
+            "그 외에는 최근 대화를 사용자 질문의 생략된 대상과 답변 범위를 파악하는 데만 사용하세요.",
             "state에 없는 정보는 추측하지 말고, 근거가 부족하면 한계를 명시하세요.",
         ]
     ).strip()
 
 
+def truncate_recall_message(content: str) -> str:
+    if len(content) <= MAX_RECALL_MESSAGE_CHARS:
+        return content
+    return content[:MAX_RECALL_MESSAGE_CHARS].rstrip() + "..."
+
+
+def build_conversation_recall_answer(state: AgentState) -> str:
+    query = str(state.get("user_query") or "")
+    user_messages = user_message_contents(state.get("messages") or [])
+    prior_messages = user_messages[:-1] if user_messages else []
+    if not prior_messages:
+        return "아직 이 대화에서 이전에 하신 말은 확인되지 않습니다."
+
+    if is_first_message_recall_query(query):
+        target = prior_messages[0]
+        return f"맨 처음에는 이렇게 말씀하셨어요:\n\n{truncate_recall_message(target)}"
+
+    target = prior_messages[-1]
+    return f"방금 전에는 이렇게 말씀하셨어요:\n\n{truncate_recall_message(target)}"
+
+
+def build_chitchat_answer(state: AgentState) -> str:
+    query = str(state.get("user_query") or "").strip()
+    if not query:
+        return "편하게 말씀해 주세요."
+    return "네, 대화 흐름을 보고 답변드릴게요."
+
+
 def format_messages_for_final_answer(state: AgentState) -> str:
     messages = list(state.get("messages") or [])[-MAX_FINAL_ANSWER_MESSAGE_CONTEXT:]
-    lines = []
-    for message in messages:
-        role = str(getattr(message, "type", "") or message.__class__.__name__)
-        if role == "human":
-            role = "user"
-        elif role == "ai":
-            role = "assistant"
-        content = str(getattr(message, "content", message)).strip()
-        if content:
-            lines.append(f"{role}: {content}")
-    return "\n".join(lines)
+    return format_messages_for_prompt(messages)
 
 
 def build_final_answer_user_prompt(state: AgentState, draft_answer: str = "") -> str:
