@@ -164,6 +164,47 @@ TITLE_INTENT_HINTS: tuple[tuple[str, tuple[ResearchIntent, ...]], ...] = (
     ("공지", ("time_sensitive",)),
     ("캐시샵", ("time_sensitive",)),
 )
+QUERY_STOPWORDS = {
+    "메이플",
+    "메이플스토리",
+    "알려줘",
+    "설명",
+    "정보",
+    "대해",
+    "대한",
+    "대해서",
+    "대해서는",
+    "뭐야",
+    "무엇",
+    "해주세요",
+    "해줘",
+    "주세요",
+    "몬스터",
+    "아이템",
+    "스킬",
+    "지역",
+}
+KOREAN_PARTICLE_SUFFIXES = (
+    "으로",
+    "에서",
+    "에게",
+    "한테",
+    "까지",
+    "부터",
+    "처럼",
+    "보다",
+    "에",
+    "을",
+    "를",
+    "이",
+    "가",
+    "은",
+    "는",
+    "의",
+    "와",
+    "과",
+    "로",
+)
 
 
 @lru_cache(maxsize=1)
@@ -274,7 +315,7 @@ def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
         "graph_top_k": 3,
         "web_max_results": 5,
         "web_max_contexts": 5,
-        "official_only": True,
+        "official_only": needs_web,
         "reason": reason,
         "search_query": normalize_search_query(query, query, task_type=normalized_task_type),
         "parser_source": "keyword",
@@ -330,6 +371,8 @@ def build_research_route(
     route = apply_route_intent_guards(query, route)
     if route["use_web"]:
         route["official_only"] = True
+    elif route["intent_tags"] == ["general"]:
+        route["official_only"] = False
     route["parser_source"] = "llm"
     return route, {"used_llm": True, "fallback_used": False}
 
@@ -503,6 +546,18 @@ def apply_route_intent_guards(
             ),
         }
 
+    if intent_tags == ["general"]:
+        guarded_route["use_graph"] = False
+        guarded_route["official_only"] = False
+        guarded_route["web_max_results"] = max(guarded_route.get("web_max_results", 5), 5)
+        guarded_route["web_max_contexts"] = max(guarded_route.get("web_max_contexts", 5), 5)
+        guarded_route["search_query"] = normalize_search_query(
+            query,
+            query,
+            task_type=str(route.get("task_type") or ""),
+        )
+        return guarded_route
+
     if route_tags_have_graph_intent(intent_tags):
         guarded_route["use_graph"] = True
 
@@ -510,6 +565,9 @@ def apply_route_intent_guards(
         guarded_route["use_graph"] = True
         guarded_route["use_web"] = False
         guarded_route["reason"] = "boss_reward_graph_fact"
+
+    if "time_sensitive" not in intent_tags and not guarded_route.get("use_web"):
+        guarded_route["official_only"] = False
 
     return guarded_route
 
@@ -622,10 +680,12 @@ def web_fallback_reason(
     if documents:
         if route["use_graph"] and not any(_is_graph_document(document) for document in documents):
             return "no_graph_evidence"
-        if search_query and not any(
-            _keyword_overlap_score(document, search_query) > 0
+        if normalize_intent_tags(route.get("intent_tags")) == ["general"] and not any(
+            _route_relevance_rank(document, query=search_query, route=route) > 0
             for document in documents
         ):
+            return "low_local_relevance"
+        if search_query and not any(_has_sufficient_keyword_overlap(document, search_query) for document in documents):
             return "low_local_relevance"
         return ""
 
@@ -859,8 +919,25 @@ def build_selected_evidence(
     route: ResearchRouting | None,
     max_evidence: int = 5,
 ) -> list[RetrievedDocument]:
+    relevant_documents = [
+        document
+        for document in documents
+        if _route_relevance_rank(document, query=query, route=route) > 0
+    ]
+    if route and normalize_intent_tags(route.get("intent_tags")) == ["general"]:
+        candidate_documents = relevant_documents
+    else:
+        candidate_documents = relevant_documents or documents
+
+    if _has_encyclopedia_document(candidate_documents):
+        candidate_documents = [
+            document
+            for document in candidate_documents
+            if not _is_inven_document(document)
+        ]
+
     selected: list[RetrievedDocument] = []
-    for index, document in enumerate(documents[:max_evidence], start=1):
+    for index, document in enumerate(candidate_documents[:max_evidence], start=1):
         metadata = dict(document.get("metadata", {}) or {})
         metadata["evidence_rank"] = index
         metadata["relevance_reason"] = build_relevance_reason(
@@ -1057,23 +1134,46 @@ def _is_snippet_fallback_document(document: RetrievedDocument) -> bool:
 
 
 def _keyword_overlap_score(document: RetrievedDocument, query: str) -> int:
-    terms = [
-        term.strip().lower()
-        for term in re.split(r"[\s,?!.]+", str(query or ""))
-        if len(term.strip()) >= 2
-    ]
+    terms = _meaningful_query_terms(query)
     if not terms:
         return 0
 
     metadata = document.get("metadata", {}) or {}
-    haystack = " ".join(
+    haystack = "".join(
         [
             str(metadata.get("title") or ""),
             str(metadata.get("entity_type") or ""),
             str(document.get("page_content") or ""),
         ]
-    ).lower()
-    return sum(1 for term in terms if term in haystack)
+    ).lower().replace(" ", "")
+    return sum(1 for term in terms if term.replace(" ", "") in haystack)
+
+
+def _has_sufficient_keyword_overlap(document: RetrievedDocument, query: str) -> bool:
+    terms = _meaningful_query_terms(query)
+    if not terms:
+        return False
+    required_count = 2 if len(terms) >= 2 else 1
+    return _keyword_overlap_score(document, query) >= required_count
+
+
+def _meaningful_query_terms(query: str) -> list[str]:
+    terms = []
+    for token in re.findall(r"[A-Za-z0-9가-힣]+", str(query or "").lower()):
+        normalized = _normalize_query_token(token)
+        if len(normalized) < 2 or normalized in QUERY_STOPWORDS:
+            continue
+        if normalized not in terms:
+            terms.append(normalized)
+    return terms
+
+
+def _normalize_query_token(token: str) -> str:
+    normalized = token.strip().lower()
+    for suffix in KOREAN_PARTICLE_SUFFIXES:
+        if normalized.endswith(suffix) and len(normalized) > len(suffix) + 1:
+            return normalized[: -len(suffix)]
+    return normalized
 
 
 def _query_mentions_requirement(query: str) -> bool:
@@ -1101,6 +1201,33 @@ def _is_web_document(document: RetrievedDocument) -> bool:
     source = str(document.get("source") or "")
     url = str(metadata.get("url") or metadata.get("source_url") or "")
     return "web" in retrieval_method or source.startswith("http") or url.startswith("http")
+
+
+def _has_encyclopedia_document(documents: list[RetrievedDocument]) -> bool:
+    return any(_is_encyclopedia_document(document) for document in documents)
+
+
+def _is_encyclopedia_document(document: RetrievedDocument) -> bool:
+    source_text = _document_source_text(document).lower()
+    return "namu.wiki" in source_text or "maplestory.fandom.com" in source_text
+
+
+def _is_inven_document(document: RetrievedDocument) -> bool:
+    source_text = _document_source_text(document).lower()
+    return "inven.co.kr" in source_text
+
+
+def _document_source_text(document: RetrievedDocument) -> str:
+    metadata = document.get("metadata", {}) or {}
+    return " ".join(
+        str(value or "")
+        for value in (
+            metadata.get("url"),
+            metadata.get("source_url"),
+            metadata.get("title"),
+            document.get("source"),
+        )
+    )
 
 
 def _reliability_rank(value: str) -> int:
