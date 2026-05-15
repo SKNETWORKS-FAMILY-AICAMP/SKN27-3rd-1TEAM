@@ -14,8 +14,8 @@ def get_embedding_model() -> OpenAIEmbeddings:
     return emb
 
 
-def get_llm() -> ChatOpenAI:
-    llm = ChatOpenAI(
-        model="gpt-5.4-nano"
+def get_llm() -> ChatGroq:
+    llm = ChatGroq(
+        model="openai/gpt-oss-120b"
     )
     return llm
