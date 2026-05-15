@@ -86,7 +86,7 @@
 - 단순 문서 검색을 넘어선 신뢰도 높은 답변 제공
 
 <div align="center">
-  <img src="https://i.namu.wiki/i/ehlNbGhUGgaZIZbFCpU6VrqrsTh4zeAOux4Se-XnDhN-xQcTMS7DZT6x2uc6gh8eexbpPSKTBsYCD0miM2UzG5UbZeeZ_94ntGLtI7qErkga4I3sotqhdKSo1DExKKf5_yJkqIF5El5fZLs4iSGo4w.webp" width="720" />
+  <img src="https://postfiles.pstatic.net/MjAyNjA1MTNfMjQg/MDAxNzc4NjU5OTY0MDAw.bdplVpwXxkzsZiBYpdsIlnWfPg74-8xprjbuW-3w2WYg.dqxPfq3zPFaV-hGYwESE3C0TDcLncl6kIOKigNc3nRkg.PNG/apdlx.png?type=w966" width="720" />
 </div>
 
 <br>
@@ -440,7 +440,6 @@ flowchart LR
 
 | 구성 범위 | 행 수 | 활용 목적 |
 |---|---:|---|
-| NEXON API 정적 샘플 | 1,824 | 캐릭터/장비/스탯/유니온 API 구조 분석 |
 | 추가 수집 wiki 문서 | 1,338 | 보스, 장비, 스킬, 맵, 퀘스트 등 게임 지식 검색 |
 | 공식 문서 | 67 | 공지, 이벤트, 업데이트, 테스트월드 정보 검색 |
 | 보스/장비 추천 룰 | 197 | 보스 추천 및 장비 성장 추천 기준 |
@@ -455,8 +454,8 @@ flowchart LR
 | 항목 | 값 |
 |---|---:|
 | documents | 3,567 |
-| document_chunks | 10,069 |
-| document_embeddings | 10,069 |
+| document_chunks | 11,599 |
+| document_embeddings | 11,599 |
 | wiki_entities | 1,328 |
 | 미임베딩 chunk | 0 |
 | embedding model | `google/embeddinggemma-300m` |
@@ -504,7 +503,7 @@ Tavily 기반 공식 공지, 이벤트, 업데이트 문서 검색 및 최신 �
 ### 챗봇 시연 결과
 
 <div align="center">
-  <img src="https://postfiles.pstatic.net/MjAyNjA1MTJfMjM5/MDAxNzc4NTU4MTgyNzUw.FJHePqZZnToniVdJ-WPBgBVtwlCUW3VwOgOgQ-UNlHsg._TKGFTvlE9RsqUwGuLXkrHaoH7EIxE_4j2LmK7q7gyMg.PNG/%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84%EC%84%9C.png?type=w966" width="760" />
+  <img src="https://postfiles.pstatic.net/MjAyNjA1MTRfMjAg/MDAxNzc4NzI1MDAzNDA3.TL1AN4RjpmKWp8Aw6ubU1XZzAoXkAMShL-Nn23FShX0g.BT9E0sYRNa29A1L40X1y9iB2n6gkyJh2VxHmfjS1VEAg.PNG/%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7_2026-05-14_111127.png?type=w966" width="760" />
 </div>
 
 ### 미니게임 시연 결과
