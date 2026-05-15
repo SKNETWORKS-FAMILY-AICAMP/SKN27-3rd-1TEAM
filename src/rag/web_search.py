@@ -7,7 +7,7 @@ from html import unescape
 from html.parser import HTMLParser
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, quote, unquote, urlencode, urlparse
 from urllib.request import Request, urlopen
 
 from common.state import RetrievedDocument
@@ -43,9 +43,94 @@ DEFAULT_OFFICIAL_DOMAINS = (
     "notice.nexon.com",
 )
 DEFAULT_COMMUNITY_DOMAINS = (
+    "namu.wiki",
+    "maplestory.fandom.com",
     "maple.inven.co.kr",
     "www.inven.co.kr",
 )
+ENCYCLOPEDIA_DOMAINS = (
+    "namu.wiki",
+    "maplestory.fandom.com",
+)
+EXPLANATION_QUERY_KEYWORDS = (
+    "알려줘",
+    "설명",
+    "정보",
+    "대해",
+    "대한",
+    "대해서",
+    "대해서는",
+    "뭐야",
+    "무엇",
+    "누구",
+    "어디",
+    "몬스터",
+    "아이템",
+    "스킬",
+    "지역",
+)
+TIME_SENSITIVE_QUERY_KEYWORDS = (
+    "최신",
+    "현재",
+    "오늘",
+    "이번",
+    "진행",
+    "공지",
+    "패치",
+    "업데이트",
+    "이벤트",
+    "버닝",
+    "캐시샵",
+    "테섭",
+    "테스트월드",
+)
+QUERY_STOPWORDS = {
+    "메이플",
+    "메이플스토리",
+    "알려줘",
+    "설명",
+    "정보",
+    "대해",
+    "대한",
+    "대해서",
+    "대해서는",
+    "뭐야",
+    "무엇",
+    "해주세요",
+    "해줘",
+    "주세요",
+    "몬스터",
+    "아이템",
+    "스킬",
+    "지역",
+}
+QUERY_TERM_VARIANTS = {
+    "파란": ("파란", "파랑"),
+}
+KOREAN_PARTICLE_SUFFIXES = (
+    "으로",
+    "에서",
+    "에게",
+    "한테",
+    "까지",
+    "부터",
+    "처럼",
+    "보다",
+    "에",
+    "을",
+    "를",
+    "이",
+    "가",
+    "은",
+    "는",
+    "의",
+    "와",
+    "과",
+    "로",
+)
+NOISE_RESULT_TITLES = {
+    "페이지를 출력할 수 없습니다.",
+}
 NEXON_OFFICIAL_PATH_PREFIXES = (
     "/news",
     "/promotion/event",
@@ -251,14 +336,37 @@ def get_official_domains() -> tuple[str, ...]:
     raw = os.environ.get("WEB_RAG_OFFICIAL_DOMAINS")
     if not raw:
         return DEFAULT_OFFICIAL_DOMAINS
-    return tuple(domain.strip().lower() for domain in raw.split(",") if domain.strip())
+    return unique_domains(normalize_domain_value(domain) for domain in raw.split(","))
 
 
 def get_community_domains() -> tuple[str, ...]:
     raw = os.environ.get("WEB_RAG_COMMUNITY_DOMAINS")
     if not raw:
         return DEFAULT_COMMUNITY_DOMAINS
-    return tuple(domain.strip().lower() for domain in raw.split(",") if domain.strip())
+    return unique_domains(
+        (
+            *DEFAULT_COMMUNITY_DOMAINS,
+            *(normalize_domain_value(domain) for domain in raw.split(",")),
+        )
+    )
+
+
+def normalize_domain_value(value: str) -> str:
+    domain = str(value or "").strip().lower().strip("/")
+    if not domain:
+        return ""
+    if "://" in domain:
+        domain = urlparse(domain).hostname or domain
+    return domain.strip().lower().strip("/")
+
+
+def unique_domains(domains: Any) -> tuple[str, ...]:
+    unique = []
+    for domain in domains:
+        normalized = normalize_domain_value(str(domain))
+        if normalized and normalized not in unique:
+            unique.append(normalized)
+    return tuple(unique)
 
 
 def as_domain_context(character_context: Any | None) -> dict[str, Any]:
@@ -284,7 +392,17 @@ def build_search_query(
     include_site_filter: bool = True,
 ) -> str:
     domain_context = as_domain_context(character_context)
-    query_parts = [question.strip(), "메이플스토리"]
+    official_domains = official_domains or get_official_domains()
+    community_domains = community_domains or get_community_domains()
+    prefer_encyclopedia = should_prefer_encyclopedia(question, official_only, community_domains)
+    if prefer_encyclopedia:
+        query_parts = [
+            *compact_query_targets(question)[:3],
+            *spaced_query_targets(question)[:3],
+            "메이플스토리",
+        ]
+    else:
+        query_parts = [question.strip(), "메이플스토리"]
 
     job_name = str(domain_context.get("job_name") or "").strip()
     level = str(domain_context.get("level") or "").strip()
@@ -294,14 +412,118 @@ def build_search_query(
         query_parts.append(f"{level}레벨")
 
     if include_site_filter:
-        domains = official_domains or get_official_domains()
+        domains = official_domains
         if not official_only:
-            domains = domains + (community_domains or get_community_domains())
+            domains = domains + community_domains
 
         site_filter = " OR ".join(f"site:{domain}" for domain in domains)
         query_parts.append(f"({site_filter})")
 
     return " ".join(part for part in query_parts if part)
+
+
+def should_prefer_encyclopedia(
+    question: str,
+    official_only: bool,
+    community_domains: tuple[str, ...],
+) -> bool:
+    if official_only or not any(domain in community_domains for domain in ENCYCLOPEDIA_DOMAINS):
+        return False
+
+    normalized = str(question or "").lower()
+    if any(keyword in normalized for keyword in TIME_SENSITIVE_QUERY_KEYWORDS):
+        return False
+    return any(keyword in normalized for keyword in EXPLANATION_QUERY_KEYWORDS)
+
+
+def query_term_variants(term: str) -> tuple[str, ...]:
+    return QUERY_TERM_VARIANTS.get(term, (term,))
+
+
+def compact_query_targets(question: str) -> list[str]:
+    terms = meaningful_query_terms(question)[:3]
+    if not terms:
+        return []
+
+    targets = [""]
+    for term in terms:
+        targets = [
+            f"{prefix}{variant}"
+            for prefix in targets
+            for variant in query_term_variants(term)
+        ]
+    return unique_texts(targets)
+
+
+def spaced_query_targets(question: str) -> list[str]:
+    terms = meaningful_query_terms(question)[:3]
+    if not terms:
+        return []
+
+    targets = [()]
+    for term in terms:
+        targets = [
+            (*prefix, variant)
+            for prefix in targets
+            for variant in query_term_variants(term)
+        ]
+    return unique_texts(" ".join(target) for target in targets)
+
+
+def unique_texts(values: Any) -> list[str]:
+    unique = []
+    for value in values:
+        text = str(value or "").strip()
+        if text and text not in unique:
+            unique.append(text)
+    return unique
+
+
+def build_encyclopedia_candidate_results(
+    question: str,
+    official_only: bool,
+    community_domains: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    if not should_prefer_encyclopedia(question, official_only, community_domains):
+        return []
+
+    targets = unique_texts((*compact_query_targets(question), *spaced_query_targets(question)))
+    if not targets:
+        return []
+
+    candidates = []
+    for target in targets:
+        candidates.extend([target, f"{target}(메이플스토리)"])
+
+    results = []
+    for candidate in candidates:
+        results.extend(
+            [
+                {
+                    "title": candidate,
+                    "url": f"https://namu.wiki/w/{quote(candidate)}",
+                },
+                {
+                    "title": candidate,
+                    "url": f"https://maplestory.fandom.com/ko/wiki/{quote(candidate.replace(' ', '_'))}",
+                },
+            ]
+        )
+
+    return [
+        {
+            **result,
+            "question": question,
+            "query": question,
+            "tavily_score": 0.2,
+            "reliability": source_reliability(result["url"], DEFAULT_OFFICIAL_DOMAINS),
+            "published_at": None,
+            "freshness": "UNKNOWN",
+            "official_only": official_only,
+            "community_domains": community_domains,
+        }
+        for result in results
+    ]
 
 
 def normalize_provider(provider: str | None) -> str:
@@ -368,8 +590,70 @@ def is_allowed_result_url(url: str, allowed_domains: tuple[str, ...], official_o
     return True
 
 
+def is_encyclopedia_url(url: str) -> bool:
+    return domain_matches(url, ENCYCLOPEDIA_DOMAINS)
+
+
+def is_inven_board_index_url(url: str) -> bool:
+    parsed = urlparse(url)
+    hostname = (parsed.hostname or "").lower()
+    if hostname not in {"www.inven.co.kr", "maple.inven.co.kr"}:
+        return False
+    path = parsed.path.lower()
+    return bool(
+        re.fullmatch(r"/board/maple/\d+", path)
+        or path == "/board/powerbbs.php"
+    )
+
+
+def is_noise_search_result(url: str, title: str) -> bool:
+    if title.strip() in NOISE_RESULT_TITLES:
+        return True
+    return is_inven_board_index_url(url)
+
+
+def title_or_url_matches_query_target(question: str, title: str, url: str) -> bool:
+    terms = meaningful_query_terms(question)
+    if not terms:
+        return True
+
+    parsed = urlparse(url)
+    haystack = "".join(
+        [
+            str(title or ""),
+            " ",
+            unquote(parsed.path or ""),
+        ]
+    ).lower().replace(" ", "")
+    compact_targets = compact_query_targets(question)
+    if any(target in haystack for target in compact_targets):
+        return True
+
+    required_terms = terms[:2] if len(terms) > 1 else terms
+    return all(
+        any(variant.replace(" ", "") in haystack for variant in query_term_variants(term))
+        for term in required_terms
+    )
+
+
+def document_title_matches_query_target(question: str, title: str) -> bool:
+    terms = meaningful_query_terms(question)
+    if not terms:
+        return True
+
+    main_title = re.split(r"\s+[-|]\s+", str(title or "").strip(), maxsplit=1)[0]
+    compact_title = main_title.lower().replace(" ", "")
+    compact_targets = compact_query_targets(question)
+    if any(compact_title == target for target in compact_targets):
+        return True
+
+    return any(compact_title.startswith(f"{target}(") for target in compact_targets)
+
+
 def source_reliability(url: str, official_domains: tuple[str, ...]) -> str:
     if domain_matches(url, official_domains) and is_nexon_official_content_url(url):
+        return "HIGH"
+    if domain_matches(url, ("namu.wiki",)):
         return "HIGH"
     return "MEDIUM"
 
@@ -429,8 +713,47 @@ def source_freshness(published_at: str | None, today: date | None = None) -> str
     return "LOW"
 
 
+def tokenize_ordered(text: str) -> list[str]:
+    return [token.lower() for token in re.findall(r"[A-Za-z0-9가-힣]+", text) if len(token) > 1]
+
+
 def tokenize(text: str) -> set[str]:
-    return {token.lower() for token in re.findall(r"[A-Za-z0-9가-힣]+", text) if len(token) > 1}
+    return set(tokenize_ordered(text))
+
+
+def normalize_query_token(token: str) -> str:
+    normalized = token.lower().strip()
+    for suffix in KOREAN_PARTICLE_SUFFIXES:
+        if normalized.endswith(suffix) and len(normalized) > len(suffix) + 1:
+            return normalized[: -len(suffix)]
+    return normalized
+
+
+def meaningful_query_terms(question: str) -> list[str]:
+    terms = []
+    for token in tokenize_ordered(question):
+        normalized = normalize_query_token(token)
+        if len(normalized) < 2 or normalized in QUERY_STOPWORDS:
+            continue
+        if normalized not in terms:
+            terms.append(normalized)
+    return terms
+
+
+def text_contains_query_term(text: str, terms: list[str]) -> bool:
+    haystack = str(text or "").lower().replace(" ", "")
+    return any(
+        variant.replace(" ", "") in haystack
+        for term in terms
+        for variant in query_term_variants(term)
+    )
+
+
+def context_matches_question(question: str, title: str, chunk: str) -> bool:
+    terms = meaningful_query_terms(question)
+    if not terms:
+        return True
+    return text_contains_query_term(f"{title} {chunk}", terms)
 
 
 def merge_search_results(
@@ -466,13 +789,31 @@ def merge_search_results(
     return merged
 
 
-def search_result_rank(result: dict[str, Any]) -> tuple[bool, bool, float]:
+def search_result_rank(result: dict[str, Any]) -> tuple[bool, int, bool, bool, bool, float]:
     url = normalize_url(str(result.get("url", "")))
+    question = str(result.get("question") or "")
+    community_domains = tuple(result.get("community_domains") or DEFAULT_COMMUNITY_DOMAINS)
+    prefer_encyclopedia = should_prefer_encyclopedia(
+        question,
+        bool(result.get("official_only", True)),
+        community_domains,
+    )
     return (
+        prefer_encyclopedia and is_encyclopedia_url(url),
+        query_target_match_rank(question, str(result.get("title") or ""), url),
+        bool(result.get("content") or result.get("snippet")),
         source_reliability(url, DEFAULT_OFFICIAL_DOMAINS) == "HIGH",
         is_official_detail_url(url),
         float(result.get("tavily_score") or 0),
     )
+
+
+def query_target_match_rank(question: str, title: str, url: str) -> int:
+    if document_title_matches_query_target(question, title):
+        return 2
+    if title_or_url_matches_query_target(question, title, url):
+        return 1
+    return 0
 
 
 def is_official_detail_url(url: str) -> bool:
@@ -611,11 +952,16 @@ def chunk_text(
 
 
 def score_text(query: str, text: str) -> float:
-    query_tokens = tokenize(query)
+    query_tokens = set(meaningful_query_terms(query))
     if not query_tokens:
         return 0.0
     text_tokens = tokenize(text)
-    overlap = query_tokens.intersection(text_tokens)
+    normalized_text = str(text or "").lower().replace(" ", "")
+    overlap = {
+        token
+        for token in query_tokens
+        if any(variant in text_tokens or variant in normalized_text for variant in query_term_variants(token))
+    }
     return len(overlap) / len(query_tokens)
 
 
@@ -673,8 +1019,6 @@ class WebSearchRAG:
         resolved_user_agent = user_agent or os.environ.get("WEB_RAG_USER_AGENT", DEFAULT_USER_AGENT)
         self.beautiful_soup = load_optional_beautiful_soup()
         self.session, self.request_exception = create_http_session(resolved_user_agent)
-        if self.search_provider == "tavily" and self.tavily_api_key and hasattr(self.session, "headers"):
-            self.session.headers.update({"Authorization": f"Bearer {self.tavily_api_key}"})
 
     def get_allowed_domains(self, official_only: bool) -> tuple[str, ...]:
         if official_only:
@@ -693,6 +1037,13 @@ class WebSearchRAG:
             search_results = self.search_tavily(question, character_context, official_only, max_results)
         else:
             search_results = self.search_duckduckgo(question, character_context, official_only, max_results)
+        search_results.extend(
+            build_encyclopedia_candidate_results(
+                question,
+                official_only,
+                self.community_domains,
+            )
+        )
         return merge_search_results(search_results, max_results)
 
     def search_tavily(
@@ -714,10 +1065,14 @@ class WebSearchRAG:
             include_site_filter=False,
         )
         allowed_domains = self.get_allowed_domains(official_only)
+        search_limit = max_results
+        if should_prefer_encyclopedia(question, official_only, self.community_domains):
+            search_limit = max(max_results, 10)
         payload = {
+            "api_key": self.tavily_api_key,
             "query": query,
             "search_depth": self.tavily_search_depth,
-            "max_results": max_results,
+            "max_results": search_limit,
             "include_answer": False,
             "include_raw_content": self.tavily_include_raw_content,
             "include_domains": list(allowed_domains),
@@ -749,11 +1104,20 @@ class WebSearchRAG:
                 continue
             if not is_allowed_result_url(url, allowed_domains, official_only):
                 continue
+            if is_noise_search_result(url, title):
+                continue
+            if (
+                should_prefer_encyclopedia(question, official_only, self.community_domains)
+                and is_encyclopedia_url(url)
+                and not title_or_url_matches_query_target(question, title, url)
+            ):
+                continue
             seen_urls.add(url)
             results.append(
                 {
                     "title": title,
                     "url": url,
+                    "question": question,
                     "query": query,
                     "content": raw_content,
                     "content_source": CONTENT_SOURCE_TAVILY_RAW if raw_content else "",
@@ -762,9 +1126,11 @@ class WebSearchRAG:
                     "reliability": source_reliability(url, self.official_domains),
                     "published_at": published_at,
                     "freshness": source_freshness(published_at),
+                    "official_only": official_only,
+                    "community_domains": self.community_domains,
                 }
             )
-            if len(results) >= max_results:
+            if len(results) >= search_limit:
                 break
         return results
 
@@ -813,16 +1179,27 @@ class WebSearchRAG:
                 continue
             if not is_allowed_result_url(url, allowed_domains, official_only):
                 continue
+            if is_noise_search_result(url, title):
+                continue
+            if (
+                should_prefer_encyclopedia(question, official_only, self.community_domains)
+                and is_encyclopedia_url(url)
+                and not title_or_url_matches_query_target(question, title, url)
+            ):
+                continue
             published_at = extract_published_at(url, title)
             seen_urls.add(url)
             results.append(
                 {
                     "title": title,
                     "url": url,
+                    "question": question,
                     "query": query,
                     "reliability": source_reliability(url, self.official_domains),
                     "published_at": published_at,
                     "freshness": source_freshness(published_at),
+                    "official_only": official_only,
+                    "community_domains": self.community_domains,
                 }
             )
             if len(results) >= max_results:
@@ -887,9 +1264,60 @@ class WebSearchRAG:
                 document = self.fetch_document(result)
             except self.request_exception:
                 continue
+            candidate_documents = [document]
+            if result.get("snippet") and document.get("content_source") != CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK:
+                candidate_documents.append(self.build_document_from_snippet(result, "no_matching_page_context"))
+
+            document_contexts = []
+            selected_document = document
+            for candidate_document in candidate_documents:
+                if (
+                    should_prefer_encyclopedia(question, official_only, self.community_domains)
+                    and is_encyclopedia_url(candidate_document["url"])
+                    and not document_title_matches_query_target(question, candidate_document["title"])
+                ):
+                    continue
+
+                candidate_contexts = []
+                for index, chunk in enumerate(chunk_text(candidate_document["text"])):
+                    if not context_matches_question(question, candidate_document["title"], chunk):
+                        continue
+
+                    score = combined_context_score(
+                        question,
+                        candidate_document["title"],
+                        chunk,
+                        result.get("tavily_score"),
+                    )
+                    if candidate_document.get("content_source") == CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK:
+                        score = round(score * SNIPPET_FALLBACK_SCORE_MULTIPLIER, 6)
+
+                    candidate_contexts.append(
+                        {
+                            "title": candidate_document["title"],
+                            "url": candidate_document["url"],
+                            "chunk_index": index,
+                            "content": chunk,
+                            "score": score,
+                            "reliability": candidate_document["reliability"],
+                            "freshness": candidate_document.get("freshness", "UNKNOWN"),
+                            "published_at": candidate_document.get("published_at"),
+                            "content_source": candidate_document.get("content_source", ""),
+                            "fetch_status": candidate_document.get("fetch_status", ""),
+                        }
+                    )
+
+                if candidate_contexts:
+                    selected_document = candidate_document
+                    document_contexts = candidate_contexts
+                    break
+
+            if not document_contexts:
+                continue
+
             documents.append(
                 {
-                    key: document.get(key)
+                    key: selected_document.get(key)
                     for key in (
                         "title",
                         "url",
@@ -901,30 +1329,7 @@ class WebSearchRAG:
                     )
                 }
             )
-            for index, chunk in enumerate(chunk_text(document["text"])):
-                score = combined_context_score(
-                    question,
-                    document["title"],
-                    chunk,
-                    result.get("tavily_score"),
-                )
-                if document.get("content_source") == CONTENT_SOURCE_TAVILY_SNIPPET_FALLBACK:
-                    score = round(score * SNIPPET_FALLBACK_SCORE_MULTIPLIER, 6)
-
-                contexts.append(
-                    {
-                        "title": document["title"],
-                        "url": document["url"],
-                        "chunk_index": index,
-                        "content": chunk,
-                        "score": score,
-                        "reliability": document["reliability"],
-                        "freshness": document.get("freshness", "UNKNOWN"),
-                        "published_at": document.get("published_at"),
-                        "content_source": document.get("content_source", ""),
-                        "fetch_status": document.get("fetch_status", ""),
-                    }
-                )
+            contexts.extend(document_contexts)
 
         freshness_rank = {"HIGH": 3, "MEDIUM": 2, "UNKNOWN": 1, "LOW": 0}
         contexts.sort(

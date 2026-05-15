@@ -87,6 +87,12 @@ default_star_projectile = game_asset_path("표창.png")
 default_npc = game_asset_path("npc.png")
 default_ellinia_emblem = game_asset_path("엘리니아엠블렘.png")
 default_elixir = game_asset_path("엘릭서.png")
+default_orange_mushroom_move_left = game_asset_path("주황버섯 이동(좌).webp")
+default_orange_mushroom_move_right = game_asset_path("주황버섯 이동(우).webp")
+default_orange_mushroom_jump_left = game_asset_path("주황버섯 점프(좌).webp")
+default_orange_mushroom_jump_right = game_asset_path("주황버섯 점프(우).webp")
+default_orange_mushroom_stand_left = game_asset_path("주황버섯 직립(좌).webp")
+default_orange_mushroom_stand_right = game_asset_path("주황버섯 직립(우).webp")
 background_data_url = ""
 character_data_url = ""
 portal_data_url = ""
@@ -94,6 +100,12 @@ star_data_url = ""
 npc_data_url = ""
 ellinia_emblem_data_url = ""
 elixir_data_url = ""
+orange_mushroom_move_left_data_url = ""
+orange_mushroom_move_right_data_url = ""
+orange_mushroom_jump_left_data_url = ""
+orange_mushroom_jump_right_data_url = ""
+orange_mushroom_stand_left_data_url = ""
+orange_mushroom_stand_right_data_url = ""
 
 if default_background.exists():
     background_data_url = image_to_data_url(default_background)
@@ -143,6 +155,24 @@ if default_ellinia_emblem.exists():
 
 if default_elixir.exists():
     elixir_data_url = image_to_data_url(default_elixir)
+
+if default_orange_mushroom_move_left.exists():
+    orange_mushroom_move_left_data_url = image_to_data_url(default_orange_mushroom_move_left)
+
+if default_orange_mushroom_move_right.exists():
+    orange_mushroom_move_right_data_url = image_to_data_url(default_orange_mushroom_move_right)
+
+if default_orange_mushroom_jump_left.exists():
+    orange_mushroom_jump_left_data_url = image_to_data_url(default_orange_mushroom_jump_left)
+
+if default_orange_mushroom_jump_right.exists():
+    orange_mushroom_jump_right_data_url = image_to_data_url(default_orange_mushroom_jump_right)
+
+if default_orange_mushroom_stand_left.exists():
+    orange_mushroom_stand_left_data_url = image_to_data_url(default_orange_mushroom_stand_left)
+
+if default_orange_mushroom_stand_right.exists():
+    orange_mushroom_stand_right_data_url = image_to_data_url(default_orange_mushroom_stand_right)
 
 if default_spritesheet.exists():
     character_data_url = image_to_data_url(default_spritesheet)
@@ -225,6 +255,12 @@ game_html = """
     const suppliedNpc = "__NPC_DATA_URL__";
     const suppliedElliniaEmblem = "__ELLINIA_EMBLEM_DATA_URL__";
     const suppliedElixir = "__ELIXIR_DATA_URL__";
+    const suppliedOrangeMushroomMoveLeft = "__ORANGE_MUSHROOM_MOVE_LEFT_DATA_URL__";
+    const suppliedOrangeMushroomMoveRight = "__ORANGE_MUSHROOM_MOVE_RIGHT_DATA_URL__";
+    const suppliedOrangeMushroomJumpLeft = "__ORANGE_MUSHROOM_JUMP_LEFT_DATA_URL__";
+    const suppliedOrangeMushroomJumpRight = "__ORANGE_MUSHROOM_JUMP_RIGHT_DATA_URL__";
+    const suppliedOrangeMushroomStandLeft = "__ORANGE_MUSHROOM_STAND_LEFT_DATA_URL__";
+    const suppliedOrangeMushroomStandRight = "__ORANGE_MUSHROOM_STAND_RIGHT_DATA_URL__";
     const backgroundImage = new Image();
     const characterImage = new Image();
     const portalImage = new Image();
@@ -232,6 +268,11 @@ game_html = """
     const npcImage = new Image();
     const elliniaEmblemImage = new Image();
     const elixirImage = new Image();
+    const orangeMushroomSprites = {
+      move: { left: { image: new Image(), loaded: false }, right: { image: new Image(), loaded: false } },
+      jump: { left: { image: new Image(), loaded: false }, right: { image: new Image(), loaded: false } },
+      stand: { left: { image: new Image(), loaded: false }, right: { image: new Image(), loaded: false } },
+    };
     const characterCanvas = document.createElement("canvas");
     const characterCtx = characterCanvas.getContext("2d");
     const spriteFrameCanvas = document.createElement("canvas");
@@ -470,6 +511,22 @@ game_html = """
         hasElixirImage = true;
       };
     }
+
+    function loadOrangeMushroomSprite(slot, source) {
+      if (!source) return;
+
+      slot.image.onload = () => {
+        slot.loaded = true;
+      };
+      slot.image.src = source;
+    }
+
+    loadOrangeMushroomSprite(orangeMushroomSprites.move.left, suppliedOrangeMushroomMoveLeft);
+    loadOrangeMushroomSprite(orangeMushroomSprites.move.right, suppliedOrangeMushroomMoveRight);
+    loadOrangeMushroomSprite(orangeMushroomSprites.jump.left, suppliedOrangeMushroomJumpLeft);
+    loadOrangeMushroomSprite(orangeMushroomSprites.jump.right, suppliedOrangeMushroomJumpRight);
+    loadOrangeMushroomSprite(orangeMushroomSprites.stand.left, suppliedOrangeMushroomStandLeft);
+    loadOrangeMushroomSprite(orangeMushroomSprites.stand.right, suppliedOrangeMushroomStandRight);
 
     ctx.imageSmoothingEnabled = false;
 
@@ -822,7 +879,86 @@ game_html = """
         ],
       },
       {
-        name: "히든 <6단계>: 극한의 도전",
+        name: "주황버섯 들판: 극한 횡스크롤",
+        width: 3820,
+        height: 860,
+        tint: "#e7f8b6",
+        keepPlatformWidths: true,
+        noBottomFloor: true,
+        disableAutoHazards: true,
+        hideStartNpc: true,
+        mushroomSpeedMultiplier: 1.78,
+        mushroomHopChance: 0.052,
+        mushroomPauseChance: 0.34,
+        mushroomPauseMinFrames: 18,
+        mushroomPauseMaxFrames: 36,
+        mushroomJumpCooldownScale: 0.52,
+        start: { x: 72, y: 610 },
+        goal: { x: 3650, y: 502, w: 132, h: 98 },
+        checkpoints: [
+          { x: 964, y: 486, w: 22, h: 45, platform: 7 },
+          { x: 2056, y: 498, w: 22, h: 45, platform: 17 },
+          { x: 3052, y: 478, w: 22, h: 45, platform: 20 },
+        ],
+        ropes: [],
+        spikes: [],
+        platforms: [
+          { x: 38, y: 650, w: 136, h: 16 },
+          { x: 238, y: 618, w: 76, h: 14 },
+          { x: 392, y: 574, w: 70, h: 14 },
+          { x: 560, y: 626, w: 86, h: 14 },
+          { x: 704, y: 532, w: 64, h: 14 },
+          { x: 836, y: 586, w: 74, h: 14 },
+          { x: 988, y: 520, w: 70, h: 14 },
+          { x: 1126, y: 568, w: 92, h: 14 },
+          { x: 1294, y: 496, w: 64, h: 14 },
+          { x: 1434, y: 604, w: 76, h: 14 },
+          { x: 1584, y: 548, w: 62, h: 14 },
+          { x: 1716, y: 486, w: 70, h: 14 },
+          { x: 1872, y: 596, w: 78, h: 14 },
+          { x: 2014, y: 532, w: 64, h: 14 },
+          { x: 2152, y: 470, w: 68, h: 14 },
+          { x: 2304, y: 558, w: 76, h: 14 },
+          { x: 2468, y: 502, w: 58, h: 14 },
+          { x: 2598, y: 590, w: 82, h: 14 },
+          { x: 2752, y: 520, w: 62, h: 14 },
+          { x: 2888, y: 458, w: 68, h: 14 },
+          { x: 3030, y: 542, w: 78, h: 14 },
+          { x: 3190, y: 488, w: 58, h: 14 },
+          { x: 3320, y: 594, w: 72, h: 14 },
+          { x: 3462, y: 536, w: 66, h: 14 },
+          { x: 3618, y: 606, w: 168, h: 16 },
+        ],
+        hazards: [],
+        orangeMushrooms: [
+          { x: 258, platform: 1, speed: 2.1 },
+          { x: 412, platform: 2, speed: 2.2 },
+          { x: 580, platform: 3, speed: 2.28 },
+          { x: 718, platform: 4, speed: 2.18 },
+          { x: 858, platform: 5, speed: 2.35 },
+          { x: 1018, platform: 6, speed: 2.32 },
+          { x: 1148, platform: 7, speed: 2.12 },
+          { x: 1318, platform: 8, speed: 2.4 },
+          { x: 1460, platform: 9, speed: 2.25 },
+          { x: 1606, platform: 10, speed: 2.42 },
+          { x: 1744, platform: 11, speed: 2.38 },
+          { x: 1898, platform: 12, speed: 2.22 },
+          { x: 2036, platform: 13, speed: 2.46 },
+          { x: 2174, platform: 14, speed: 2.3 },
+          { x: 2330, platform: 15, speed: 2.2 },
+          { x: 2486, platform: 16, speed: 2.5 },
+          { x: 2628, platform: 17, speed: 2.26 },
+          { x: 2772, platform: 18, speed: 2.44 },
+          { x: 2912, platform: 19, speed: 2.36 },
+          { x: 3058, platform: 20, speed: 2.28 },
+          { x: 3210, platform: 21, speed: 2.52 },
+          { x: 3340, platform: 22, speed: 2.34 },
+          { x: 3482, platform: 23, speed: 2.42 },
+          { x: 3688, platform: 24, speed: 2.2 },
+        ],
+      },
+      {
+        name: "히든 <7단계>: 극한의 도전",
         height: 2220,
         tint: "#f3d1ff",
         ascentShrink: true,
@@ -905,9 +1041,15 @@ game_html = """
       { step: 2, max: 4, targetTotal: 15, r: 9, speed: 2.0, range: 132, yOffset: 52 },
     ];
 
-    const visibleStageCount = 5;
-    const hiddenStageIndex = 5;
+    const visibleStageCount = 6;
+    const hiddenStageIndex = 6;
     const hiddenClearLimitMs = 180000;
+    const orangeMushroomStageIndex = 4;
+    const orangeMushroomGravity = 0.38;
+    const orangeMushroomWalkSpeed = 1.34;
+    const orangeMushroomSpriteScale = 1.1;
+    const orangeMushroomWidth = 40;
+    const orangeMushroomHeight = 34;
 
     const platformGrassBottomOffset = -3;
 
@@ -918,6 +1060,14 @@ game_html = """
     function preparePlatforms(stageConfig, stageIndex) {
       const rule = platformWidthRules[Math.min(stageIndex, platformWidthRules.length - 1)];
       const scaledPlatforms = stageConfig.platforms.map((platform) => {
+        if (stageConfig.keepPlatformWidths) {
+          return {
+            ...platform,
+            x: Math.round(platform.x),
+            w: Math.round(platform.w),
+          };
+        }
+
         const centerX = platform.x + platform.w / 2;
         const ascentProgress = Math.max(0, Math.min(1, 1 - platform.y / stageConfig.height));
         const ascentScale = stageConfig.ascentShrink ? 1 - ascentProgress * 0.38 : 1;
@@ -928,6 +1078,8 @@ game_html = """
           w: width,
         };
       });
+      if (stageConfig.noBottomFloor) return scaledPlatforms;
+
       return [
         ...scaledPlatforms,
         { x: 0, y: stageConfig.height - 32, w: world.width, h: 28, floor: true },
@@ -990,6 +1142,8 @@ game_html = """
 
     function prepareHazards(stageConfig, stageIndex, stagePlatforms, checkpointList) {
       const baseHazards = stageConfig.hazards.map((hazard) => ({ ...hazard }));
+      if (stageConfig.disableAutoHazards) return baseHazards;
+
       const rule = platformGuardRules[Math.min(stageIndex, platformGuardRules.length - 1)];
       const targetTotal = rule.targetTotal;
       const pinnedHazards = baseHazards.filter((hazard) => hazard.pinned);
@@ -1059,6 +1213,7 @@ game_html = """
     let spikes = prepareSpikes(stage, currentStage, platforms, checkpoints);
     let clearTimer = 0;
     let frame = 0;
+    let cameraX = 0;
     let cameraY = 0;
     let stageStartedAt = performance.now();
     let stageFinishElapsedMs = null;
@@ -1108,6 +1263,27 @@ game_html = """
       won: false
     };
 
+    const orangeMushroom = {
+      active: false,
+      x: 0,
+      y: 0,
+      w: orangeMushroomWidth,
+      h: orangeMushroomHeight,
+      vx: 0,
+      vy: 0,
+      facing: -1,
+      grounded: false,
+      currentPlatformIndex: null,
+      spawnPlatformIndex: null,
+      targetPlatformIndex: null,
+      targetX: 0,
+      moveIntent: 0,
+      decisionCooldown: 0,
+      jumpCooldown: 0,
+      landLock: 0,
+    };
+    let orangeMushroomField = [];
+
     function getStageStartSpot() {
       const startPlatform = platforms[0];
       if (currentStage === hiddenStageIndex && startPlatform) {
@@ -1133,6 +1309,7 @@ game_html = """
       const selectableCount = forceHidden ? stages.length : visibleStageCount;
       currentStage = (index + selectableCount) % selectableCount;
       stage = stages[currentStage];
+      world.width = stage.width || 960;
       world.height = stage.height;
       platforms = preparePlatforms(stage, currentStage);
       checkpoints = prepareCheckpoints(stage, platforms);
@@ -1154,6 +1331,7 @@ game_html = """
       npcBubbleNextFrame = frame;
       const startSpot = getStageStartSpot();
       const playHeight = canvas.height - classicHudHeight;
+      cameraX = Math.max(0, Math.min(world.width - canvas.width, startSpot.x - canvas.width * 0.35));
       cameraY = Math.max(0, Math.min(world.height - playHeight, startSpot.y - playHeight * 0.65));
       player.checkpoint = { ...startSpot };
       player.checkpointKey = "start";
@@ -1166,6 +1344,8 @@ game_html = """
         hiddenUnlocked = false;
       }
       reset(false);
+      resetOrangeMushroom();
+      resetOrangeMushroomField();
       statusText.textContent = `${stage.name} 시작`;
     }
 
@@ -1317,6 +1497,505 @@ game_html = """
         x: Math.round(centerX - player.w / 2),
         y: Math.round(surfaceY - player.h),
       };
+    }
+
+    function clampValue(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function findOrangeMushroomGoalPlatformIndex() {
+      const goalCenterX = stage.goal.x + stage.goal.w / 2;
+      const goalFootY = stage.goal.y + stage.goal.h;
+      let bestIndex = 0;
+      let bestScore = Infinity;
+
+      for (let index = 0; index < platforms.length; index++) {
+        const platform = platforms[index];
+        if (platform.floor) continue;
+
+        const platformCenterX = platform.x + platform.w / 2;
+        const dx = Math.max(0, Math.abs(goalCenterX - platformCenterX) - platform.w / 2);
+        const dy = Math.abs(platformSurfaceY(platform) - goalFootY);
+        const score = dx * 1.2 + dy * 3;
+        if (score < bestScore) {
+          bestIndex = index;
+          bestScore = score;
+        }
+      }
+
+      return bestIndex;
+    }
+
+    function getLowestStagePlatformIndex() {
+      let lowestIndex = 0;
+      let lowestSurface = -Infinity;
+
+      for (let index = 0; index < platforms.length; index++) {
+        const platform = platforms[index];
+        if (platform.floor) continue;
+
+        const surface = platformSurfaceY(platform);
+        if (surface > lowestSurface) {
+          lowestSurface = surface;
+          lowestIndex = index;
+        }
+      }
+
+      return lowestIndex;
+    }
+
+    function resetOrangeMushroom() {
+      orangeMushroom.active = currentStage === orangeMushroomStageIndex;
+      if (!orangeMushroom.active) return;
+
+      const spawnPlatformIndex = findOrangeMushroomGoalPlatformIndex();
+      const spawnPlatform = platforms[spawnPlatformIndex];
+      const spawnX = stage.goal.x + stage.goal.w / 2;
+      const footX = clampValue(spawnX, spawnPlatform.x + 18, spawnPlatform.x + spawnPlatform.w - 18);
+
+      orangeMushroom.x = Math.round(footX - orangeMushroom.w / 2);
+      orangeMushroom.y = Math.round(platformSurfaceY(spawnPlatform) - orangeMushroom.h);
+      orangeMushroom.vx = 0;
+      orangeMushroom.vy = 0;
+      orangeMushroom.facing = -1;
+      orangeMushroom.grounded = true;
+      orangeMushroom.currentPlatformIndex = spawnPlatformIndex;
+      orangeMushroom.spawnPlatformIndex = spawnPlatformIndex;
+      orangeMushroom.targetPlatformIndex = null;
+      orangeMushroom.targetX = footX;
+      orangeMushroom.moveIntent = -1;
+      orangeMushroom.decisionCooldown = 36;
+      orangeMushroom.jumpCooldown = 28;
+      orangeMushroom.landLock = 12;
+    }
+
+    function isOrangeMushroomBottomPlatform(platformIndex, platform) {
+      return platform?.floor || platformIndex === getLowestStagePlatformIndex();
+    }
+
+    function getOrangeMushroomJumpCandidates(platformIndex, preferDirection = 0) {
+      const originPlatform = platforms[platformIndex];
+      if (!originPlatform) return [];
+
+      const originX = orangeMushroom.x + orangeMushroom.w / 2;
+      const originY = platformSurfaceY(originPlatform);
+
+      return platforms
+        .map((platform, index) => ({ platform, index }))
+        .filter(({ platform, index }) => {
+          if (platform.floor || index === platformIndex) return false;
+          const targetX = platform.x + platform.w / 2;
+          const dx = targetX - originX;
+          const dy = platformSurfaceY(platform) - originY;
+          if (Math.abs(dx) < 22 && Math.abs(dy) < 16) return false;
+          if (Math.abs(dx) > 292 || dy < -142 || dy > 188) return false;
+          if (preferDirection && Math.sign(dx) !== preferDirection && Math.random() < 0.72) return false;
+          return true;
+        })
+        .map(({ platform, index }) => {
+          const targetX = platform.x + platform.w / 2;
+          const dx = targetX - originX;
+          const dy = platformSurfaceY(platform) - originY;
+          const directionBonus = preferDirection && Math.sign(dx) === preferDirection ? -48 : 0;
+          const descentBonus = dy > 12 ? -22 : 0;
+          return {
+            platform,
+            index,
+            score: Math.abs(dx) * 0.64 + Math.abs(dy) * 1.08 + directionBonus + descentBonus + Math.random() * 92,
+          };
+        })
+        .sort((a, b) => a.score - b.score);
+    }
+
+    function commandOrangeMushroomJump(targetPlatformIndex) {
+      const targetPlatform = platforms[targetPlatformIndex];
+      if (!targetPlatform) return false;
+
+      const currentFootX = orangeMushroom.x + orangeMushroom.w / 2;
+      const currentFootY = orangeMushroom.y + orangeMushroom.h;
+      const margin = Math.min(22, Math.max(8, targetPlatform.w * 0.28));
+      const targetX = clampValue(
+        targetPlatform.x + margin + Math.random() * Math.max(1, targetPlatform.w - margin * 2),
+        targetPlatform.x + margin,
+        targetPlatform.x + targetPlatform.w - margin
+      );
+      const targetY = platformSurfaceY(targetPlatform);
+      const dx = targetX - currentFootX;
+      const dy = targetY - currentFootY;
+      const flightFrames = clampValue(42 + Math.abs(dx) * 0.075 + Math.abs(dy) * 0.035 + Math.random() * 9, 38, 66);
+      const requiredVx = dx / flightFrames;
+      if (Math.abs(requiredVx) > 4.15) return false;
+
+      orangeMushroom.vx = clampValue(requiredVx, -4.15, 4.15);
+      orangeMushroom.vy = clampValue(
+        (dy - 0.5 * orangeMushroomGravity * flightFrames * flightFrames) / flightFrames,
+        -12.8,
+        -6.4
+      );
+      orangeMushroom.grounded = false;
+      orangeMushroom.currentPlatformIndex = null;
+      orangeMushroom.targetPlatformIndex = targetPlatformIndex;
+      orangeMushroom.targetX = targetX;
+      orangeMushroom.facing = orangeMushroom.vx < 0 ? -1 : 1;
+      orangeMushroom.moveIntent = orangeMushroom.facing;
+      orangeMushroom.jumpCooldown = 34;
+      orangeMushroom.decisionCooldown = 56 + Math.floor(Math.random() * 34);
+      return true;
+    }
+
+    function chooseOrangeMushroomGroundAction() {
+      const preferDirection = Math.random() < 0.74 ? orangeMushroom.facing : 0;
+      const jumpCandidates = getOrangeMushroomJumpCandidates(orangeMushroom.currentPlatformIndex, preferDirection);
+      const jumpChance = orangeMushroom.currentPlatformIndex === orangeMushroom.spawnPlatformIndex ? 0.82 : 0.54;
+
+      if (orangeMushroom.jumpCooldown <= 0 && jumpCandidates.length && Math.random() < jumpChance) {
+        const pool = jumpCandidates.slice(0, Math.min(4, jumpCandidates.length));
+        const choice = pool[Math.floor(Math.random() * pool.length)];
+        if (commandOrangeMushroomJump(choice.index)) return;
+      }
+
+      const roll = Math.random();
+      orangeMushroom.moveIntent = roll < 0.18 ? 0 : Math.random() < 0.5 ? -1 : 1;
+      if (orangeMushroom.moveIntent !== 0) orangeMushroom.facing = orangeMushroom.moveIntent;
+      orangeMushroom.decisionCooldown = 34 + Math.floor(Math.random() * 74);
+    }
+
+    function steerOrangeMushroomAtEdge(platform) {
+      const footX = orangeMushroom.x + orangeMushroom.w / 2;
+      const edgePad = Math.min(18, platform.w * 0.28);
+      let escapeDirection = 0;
+
+      if (footX < platform.x + edgePad) escapeDirection = 1;
+      if (footX > platform.x + platform.w - edgePad) escapeDirection = -1;
+      if (!escapeDirection) return;
+
+      if (orangeMushroom.jumpCooldown <= 0) {
+        const jumpCandidates = getOrangeMushroomJumpCandidates(orangeMushroom.currentPlatformIndex, -escapeDirection);
+        if (jumpCandidates.length) {
+          const choice = jumpCandidates[Math.floor(Math.random() * Math.min(3, jumpCandidates.length))];
+          if (commandOrangeMushroomJump(choice.index)) return;
+        }
+      }
+
+      orangeMushroom.moveIntent = escapeDirection;
+      orangeMushroom.facing = escapeDirection;
+      orangeMushroom.decisionCooldown = Math.max(orangeMushroom.decisionCooldown, 18);
+    }
+
+    function landOrangeMushroom(platformIndex, platform) {
+      if (isOrangeMushroomBottomPlatform(platformIndex, platform)) {
+        resetOrangeMushroom();
+        return;
+      }
+
+      orangeMushroom.y = platformSurfaceY(platform) - orangeMushroom.h;
+      orangeMushroom.vy = 0;
+      orangeMushroom.grounded = true;
+      orangeMushroom.currentPlatformIndex = platformIndex;
+      orangeMushroom.targetPlatformIndex = null;
+      orangeMushroom.landLock = 10;
+      orangeMushroom.jumpCooldown = 18 + Math.floor(Math.random() * 18);
+      orangeMushroom.decisionCooldown = 18 + Math.floor(Math.random() * 44);
+    }
+
+    function updateOrangeMushroom() {
+      if (!orangeMushroom.active) return false;
+      if (currentStage !== orangeMushroomStageIndex) {
+        orangeMushroom.active = false;
+        return false;
+      }
+
+      orangeMushroom.jumpCooldown = Math.max(0, orangeMushroom.jumpCooldown - 1);
+      orangeMushroom.landLock = Math.max(0, orangeMushroom.landLock - 1);
+
+      if (orangeMushroom.grounded) {
+        const platform = platforms[orangeMushroom.currentPlatformIndex];
+        if (!platform) {
+          orangeMushroom.grounded = false;
+          orangeMushroom.vy = 0.8;
+        } else {
+          orangeMushroom.y = platformSurfaceY(platform) - orangeMushroom.h;
+          steerOrangeMushroomAtEdge(platform);
+          orangeMushroom.decisionCooldown -= 1;
+          if (orangeMushroom.decisionCooldown <= 0 && orangeMushroom.landLock <= 0) {
+            chooseOrangeMushroomGroundAction();
+          }
+        }
+      }
+
+      if (orangeMushroom.grounded) {
+        const targetSpeed = orangeMushroom.moveIntent * orangeMushroomWalkSpeed;
+        orangeMushroom.vx += (targetSpeed - orangeMushroom.vx) * 0.12;
+        if (orangeMushroom.moveIntent === 0) orangeMushroom.vx *= 0.82;
+        if (Math.abs(orangeMushroom.vx) > 0.12) orangeMushroom.facing = orangeMushroom.vx < 0 ? -1 : 1;
+
+        orangeMushroom.x += orangeMushroom.vx;
+        if (orangeMushroom.x < 0 || orangeMushroom.x + orangeMushroom.w > world.width) {
+          orangeMushroom.x = clampValue(orangeMushroom.x, 0, world.width - orangeMushroom.w);
+          orangeMushroom.vx *= -0.45;
+          orangeMushroom.moveIntent *= -1;
+          orangeMushroom.facing = orangeMushroom.moveIntent || orangeMushroom.facing;
+        }
+
+        const platform = platforms[orangeMushroom.currentPlatformIndex];
+        const footX = orangeMushroom.x + orangeMushroom.w / 2;
+        if (!platform || footX < platform.x - 3 || footX > platform.x + platform.w + 3) {
+          orangeMushroom.grounded = false;
+          orangeMushroom.currentPlatformIndex = null;
+          orangeMushroom.vy = 0.9;
+        }
+      } else {
+        if (orangeMushroom.targetPlatformIndex !== null) {
+          const targetDelta = orangeMushroom.targetX - (orangeMushroom.x + orangeMushroom.w / 2);
+          orangeMushroom.vx += clampValue(targetDelta * 0.0018, -0.045, 0.045);
+        }
+        orangeMushroom.vx = clampValue(orangeMushroom.vx, -4.4, 4.4);
+        if (Math.abs(orangeMushroom.vx) > 0.14) orangeMushroom.facing = orangeMushroom.vx < 0 ? -1 : 1;
+
+        orangeMushroom.x += orangeMushroom.vx;
+        if (orangeMushroom.x < 0 || orangeMushroom.x + orangeMushroom.w > world.width) {
+          orangeMushroom.x = clampValue(orangeMushroom.x, 0, world.width - orangeMushroom.w);
+          orangeMushroom.vx *= -0.55;
+        }
+
+        const beforeY = orangeMushroom.y;
+        orangeMushroom.vy = Math.min(10.8, orangeMushroom.vy + orangeMushroomGravity);
+        orangeMushroom.y += orangeMushroom.vy;
+
+        for (let index = 0; index < platforms.length; index++) {
+          const platform = platforms[index];
+          const surfaceY = platformSurfaceY(platform);
+          const horizontalOverlap = orangeMushroom.x < platform.x + platform.w && orangeMushroom.x + orangeMushroom.w > platform.x;
+          const crossedSurface = beforeY + orangeMushroom.h <= surfaceY + 6 && orangeMushroom.y + orangeMushroom.h >= surfaceY - 3;
+          if (horizontalOverlap && crossedSurface && orangeMushroom.vy >= 0) {
+            landOrangeMushroom(index, platform);
+            break;
+          }
+        }
+
+        if (orangeMushroom.y > world.height + 90) {
+          resetOrangeMushroom();
+        }
+      }
+
+      const mushroomHitBox = {
+        x: orangeMushroom.x + 4,
+        y: orangeMushroom.y + 4,
+        w: orangeMushroom.w - 8,
+        h: orangeMushroom.h - 5,
+      };
+      if (rectsOverlap(player, mushroomHitBox)) {
+        return applyDamage({ label: "주황버섯 접촉" });
+      }
+
+      return false;
+    }
+
+    function findOrangeMushroomFieldPlatformIndex(spawnX) {
+      let bestIndex = 0;
+      let bestScore = Infinity;
+
+      for (let index = 0; index < platforms.length; index++) {
+        const platform = platforms[index];
+        if (platform.floor) continue;
+
+        const dx = spawnX < platform.x
+          ? platform.x - spawnX
+          : spawnX > platform.x + platform.w
+            ? spawnX - (platform.x + platform.w)
+            : 0;
+        const score = dx + platformSurfaceY(platform) * 0.002;
+        if (score < bestScore) {
+          bestIndex = index;
+          bestScore = score;
+        }
+      }
+
+      return bestIndex;
+    }
+
+    function resetFieldOrangeMushroom(mushroom) {
+      const spawnPlatform = platforms[mushroom.spawnPlatformIndex] || platforms[findOrangeMushroomFieldPlatformIndex(mushroom.spawnX)];
+      if (!spawnPlatform) return;
+
+      const footX = clampValue(
+        mushroom.spawnX,
+        spawnPlatform.x + mushroom.w / 2 + 8,
+        spawnPlatform.x + spawnPlatform.w - mushroom.w / 2 - 8
+      );
+      mushroom.x = Math.round(footX - mushroom.w / 2);
+      mushroom.y = Math.round(platformSurfaceY(spawnPlatform) - mushroom.h);
+      const cooldownScale = stage.mushroomJumpCooldownScale || 1;
+      mushroom.vx = (Math.random() < 0.5 ? -1 : 1) * (0.9 + Math.random() * 0.85);
+      mushroom.vy = 0;
+      mushroom.facing = mushroom.vx < 0 ? -1 : 1;
+      mushroom.grounded = true;
+      mushroom.currentPlatformIndex = mushroom.spawnPlatformIndex;
+      mushroom.moveIntent = mushroom.facing;
+      mushroom.pauseTimer = 0;
+      mushroom.decisionCooldown = 16 + Math.floor(Math.random() * 44);
+      mushroom.jumpCooldown = Math.max(14, Math.floor((30 + Math.random() * 60) * cooldownScale));
+      mushroom.active = true;
+    }
+
+    function createFieldOrangeMushroom(config, index) {
+      const spawnPlatformIndex = config.platform ?? findOrangeMushroomFieldPlatformIndex(config.x);
+      const mushroom = {
+        active: true,
+        x: 0,
+        y: 0,
+        w: orangeMushroomWidth,
+        h: orangeMushroomHeight,
+        vx: 0,
+        vy: 0,
+        facing: index % 2 === 0 ? -1 : 1,
+        grounded: true,
+        currentPlatformIndex: spawnPlatformIndex,
+        spawnPlatformIndex,
+        spawnX: config.x,
+        moveIntent: index % 2 === 0 ? -1 : 1,
+        speed: (config.speed || (1.08 + (index % 4) * 0.08)) * (stage.mushroomSpeedMultiplier || 1),
+        pauseTimer: 0,
+        decisionCooldown: 0,
+        jumpCooldown: 0,
+      };
+      resetFieldOrangeMushroom(mushroom);
+      return mushroom;
+    }
+
+    function resetOrangeMushroomField() {
+      orangeMushroomField = (stage.orangeMushrooms || []).map((config, index) => createFieldOrangeMushroom(config, index));
+    }
+
+    function hopFieldOrangeMushroom(mushroom, direction = mushroom.moveIntent || mushroom.facing || 1) {
+      mushroom.grounded = false;
+      mushroom.currentPlatformIndex = null;
+      mushroom.pauseTimer = 0;
+      const cooldownScale = stage.mushroomJumpCooldownScale || 1;
+      mushroom.vx = clampValue(mushroom.vx + direction * (1.45 + Math.random() * 0.95), -5.2, 5.2);
+      mushroom.vy = -(7.4 + Math.random() * 2.6);
+      mushroom.facing = direction < 0 ? -1 : 1;
+      mushroom.moveIntent = mushroom.facing;
+      mushroom.jumpCooldown = Math.max(18, Math.floor((58 + Math.random() * 92) * cooldownScale));
+      mushroom.decisionCooldown = Math.max(18, Math.floor((36 + Math.random() * 74) * cooldownScale));
+    }
+
+    function pauseFieldOrangeMushroom(mushroom) {
+      const minFrames = stage.mushroomPauseMinFrames || 18;
+      const maxFrames = stage.mushroomPauseMaxFrames || 36;
+      mushroom.pauseTimer = Math.floor(minFrames + Math.random() * Math.max(1, maxFrames - minFrames + 1));
+      mushroom.moveIntent = 0;
+      mushroom.decisionCooldown = mushroom.pauseTimer + 12 + Math.floor(Math.random() * 28);
+    }
+
+    function updateFieldOrangeMushroom(mushroom) {
+      if (!mushroom.active) return false;
+
+      mushroom.jumpCooldown = Math.max(0, mushroom.jumpCooldown - 1);
+
+      if (mushroom.grounded) {
+        const platform = platforms[mushroom.currentPlatformIndex];
+        if (!platform || platform.floor) {
+          resetFieldOrangeMushroom(mushroom);
+          return false;
+        }
+
+        mushroom.y = platformSurfaceY(platform) - mushroom.h;
+        mushroom.decisionCooldown -= 1;
+        mushroom.pauseTimer = Math.max(0, mushroom.pauseTimer - 1);
+
+        const footX = mushroom.x + mushroom.w / 2;
+        const edgePad = Math.min(34, Math.max(18, platform.w * 0.08));
+        if (footX < platform.x + edgePad) {
+          mushroom.pauseTimer = 0;
+          mushroom.moveIntent = 1;
+          mushroom.facing = 1;
+          mushroom.decisionCooldown = Math.max(mushroom.decisionCooldown, 22);
+        } else if (footX > platform.x + platform.w - edgePad) {
+          mushroom.pauseTimer = 0;
+          mushroom.moveIntent = -1;
+          mushroom.facing = -1;
+          mushroom.decisionCooldown = Math.max(mushroom.decisionCooldown, 22);
+        } else if (mushroom.decisionCooldown <= 0) {
+          if (Math.random() < (stage.mushroomPauseChance || 0)) {
+            pauseFieldOrangeMushroom(mushroom);
+          } else {
+            mushroom.moveIntent = Math.random() < 0.5 ? -1 : 1;
+            mushroom.facing = mushroom.moveIntent;
+            mushroom.decisionCooldown = 26 + Math.floor(Math.random() * 62);
+          }
+        }
+
+        if (mushroom.pauseTimer <= 0 && mushroom.jumpCooldown <= 0 && Math.random() < (stage.mushroomHopChance || 0.018)) {
+          hopFieldOrangeMushroom(mushroom);
+        }
+      }
+
+      if (mushroom.grounded) {
+        const targetSpeed = mushroom.pauseTimer > 0 ? 0 : mushroom.moveIntent * mushroom.speed;
+        mushroom.vx += (targetSpeed - mushroom.vx) * 0.13;
+        if (mushroom.moveIntent === 0 || mushroom.pauseTimer > 0) mushroom.vx *= 0.82;
+        if (Math.abs(mushroom.vx) > 0.1) mushroom.facing = mushroom.vx < 0 ? -1 : 1;
+
+        mushroom.x += mushroom.vx;
+        mushroom.x = clampValue(mushroom.x, 0, world.width - mushroom.w);
+
+        const platform = platforms[mushroom.currentPlatformIndex];
+        const footX = mushroom.x + mushroom.w / 2;
+        if (!platform || footX < platform.x - 4 || footX > platform.x + platform.w + 4) {
+          mushroom.grounded = false;
+          mushroom.currentPlatformIndex = null;
+          mushroom.vy = 0.8;
+        }
+      } else {
+        const beforeY = mushroom.y;
+        mushroom.x += mushroom.vx;
+        mushroom.x = clampValue(mushroom.x, 0, world.width - mushroom.w);
+        mushroom.vy = Math.min(10.2, mushroom.vy + orangeMushroomGravity);
+        mushroom.y += mushroom.vy;
+
+        for (let index = 0; index < platforms.length; index++) {
+          const platform = platforms[index];
+          const surfaceY = platformSurfaceY(platform);
+          const horizontalOverlap = mushroom.x < platform.x + platform.w && mushroom.x + mushroom.w > platform.x;
+          const crossedSurface = beforeY + mushroom.h <= surfaceY + 6 && mushroom.y + mushroom.h >= surfaceY - 3;
+          if (horizontalOverlap && crossedSurface && mushroom.vy >= 0) {
+            if (platform.floor) {
+              resetFieldOrangeMushroom(mushroom);
+            } else {
+              mushroom.y = surfaceY - mushroom.h;
+              mushroom.vy = 0;
+              mushroom.grounded = true;
+              mushroom.currentPlatformIndex = index;
+              const cooldownScale = stage.mushroomJumpCooldownScale || 1;
+              mushroom.jumpCooldown = Math.max(16, Math.floor((34 + Math.random() * 80) * cooldownScale));
+              mushroom.decisionCooldown = Math.max(14, Math.floor((20 + Math.random() * 58) * cooldownScale));
+            }
+            break;
+          }
+        }
+
+        if (mushroom.y > world.height + 90) {
+          resetFieldOrangeMushroom(mushroom);
+        }
+      }
+
+      const mushroomHitBox = {
+        x: mushroom.x + 5,
+        y: mushroom.y + 4,
+        w: mushroom.w - 10,
+        h: mushroom.h - 5,
+      };
+
+      return rectsOverlap(player, mushroomHitBox) && applyDamage({ label: "주황버섯 접촉" });
+    }
+
+    function updateOrangeMushroomField() {
+      for (const mushroom of orangeMushroomField) {
+        if (updateFieldOrangeMushroom(mushroom)) return true;
+      }
+
+      return false;
     }
 
     function update() {
@@ -1502,6 +2181,9 @@ game_html = """
         if (gameOver) return;
       }
 
+      if (updateOrangeMushroom()) return;
+      if (updateOrangeMushroomField()) return;
+
       for (let i = 0; i < checkpoints.length; i++) {
         const c = checkpoints[i];
         if (rectsOverlap(player, c)) {
@@ -1533,6 +2215,11 @@ game_html = """
       }
 
       if (player.y > world.height - player.h - 6) {
+        if (stage.noBottomFloor) {
+          handlePlayerDeath("추락");
+          return;
+        }
+
         const floorSurface = world.height - 32 + platformGrassBottomOffset;
         const fallDistance = player.fallStartY === null ? 0 : floorSurface - (player.fallStartY + player.h);
         const focusFrames = player.fallFocusFrames;
@@ -1986,6 +2673,85 @@ game_html = """
       drawBadLine(h.x - 8, y + 7, h.x + 8, y + 10, "#111", 2);
     }
 
+    function selectOrangeMushroomSprite(mushroom = orangeMushroom) {
+      const directionKey = mushroom.facing < 0 ? "left" : "right";
+      const animationKey = !mushroom.grounded
+        ? "jump"
+        : Math.abs(mushroom.vx) > 0.18
+          ? "move"
+          : "stand";
+      const sprite = orangeMushroomSprites[animationKey][directionKey];
+      if (sprite.loaded || (sprite.image.complete && sprite.image.naturalWidth > 0)) return sprite;
+
+      const fallback = orangeMushroomSprites.stand[directionKey];
+      return fallback.loaded || (fallback.image.complete && fallback.image.naturalWidth > 0) ? fallback : null;
+    }
+
+    function drawOrangeMushroomEntity(mushroom, cameraY) {
+      if (!mushroom.active) return;
+
+      const screenX = mushroom.x + mushroom.w / 2;
+      const footY = mushroom.y + mushroom.h - cameraY;
+      if (footY < -90 || footY > canvas.height + 90) return;
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = "rgba(0, 0, 0, 0.26)";
+      ctx.beginPath();
+      ctx.ellipse(screenX, footY + 3, 19 * orangeMushroomSpriteScale, 4.5 * orangeMushroomSpriteScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const sprite = selectOrangeMushroomSprite(mushroom);
+      if (sprite) {
+        const bounce = mushroom.grounded && Math.abs(mushroom.vx) > 0.2
+          ? Math.abs(Math.sin(frame * 0.22)) * 2
+          : 0;
+        const drawH = Math.round((mushroom.grounded ? 48 : 52) * orangeMushroomSpriteScale);
+        const ratio = sprite.image.naturalWidth / Math.max(1, sprite.image.naturalHeight);
+        const drawW = Math.round(drawH * ratio);
+        ctx.drawImage(
+          sprite.image,
+          Math.round(screenX - drawW / 2),
+          Math.round(footY - drawH - bounce),
+          drawW,
+          drawH
+        );
+        ctx.restore();
+        return;
+      }
+
+      ctx.translate(screenX, footY);
+      ctx.scale(mushroom.facing, 1);
+      const hop = mushroom.grounded ? Math.abs(Math.sin(frame * 0.22)) * 2 : 5;
+      ctx.scale(orangeMushroomSpriteScale, orangeMushroomSpriteScale);
+      ctx.fillStyle = "#f29925";
+      ctx.strokeStyle = "#5d2a10";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(0, -32 - hop, 26, 13, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fff3ce";
+      ctx.beginPath();
+      ctx.ellipse(0, -17 - hop, 19, 22, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#18100b";
+      ctx.fillRect(-8, -24 - hop, 3, 5);
+      ctx.fillRect(7, -24 - hop, 3, 5);
+      ctx.restore();
+    }
+
+    function drawOrangeMushroom(cameraY) {
+      drawOrangeMushroomEntity(orangeMushroom, cameraY);
+    }
+
+    function drawOrangeMushroomField(cameraY) {
+      for (const mushroom of orangeMushroomField) {
+        drawOrangeMushroomEntity(mushroom, cameraY);
+      }
+    }
+
     function drawRope(rope, cameraY) {
       const y = rope.y - cameraY;
       ctx.strokeStyle = "#6b451d";
@@ -2281,8 +3047,11 @@ game_html = """
       return Math.max(drawW / 2 + 8, Math.min(world.width - drawW / 2 - 8, centerX));
     }
 
-    function drawStartNpc(cameraY) {
-      if (!hasNpcImage) return;
+    function drawStartNpc(cameraY, cameraX = 0) {
+      if (!hasNpcImage || stage.hideStartNpc) {
+        npcScreenRect = null;
+        return;
+      }
 
       const startPlatform = platforms[0];
       const npcScale = 1.08;
@@ -2294,7 +3063,7 @@ game_html = """
       const x = Math.round(centerX - drawW / 2);
       const y = Math.round(baseY - drawH - cameraY);
       const screenBaseY = Math.round(baseY - cameraY);
-      npcScreenRect = { x, y, w: drawW, h: drawH };
+      npcScreenRect = { x: x - cameraX, y, w: drawW, h: drawH };
 
       ctx.save();
       ctx.imageSmoothingEnabled = false;
@@ -2698,7 +3467,7 @@ game_html = """
       ctx.restore();
     }
 
-    function drawMiniMap(cameraY) {
+    function drawMiniMap(cameraY, cameraX = 0) {
       const x = 8;
       const y = 8;
       const w = 238;
@@ -2836,6 +3605,18 @@ game_html = """
         boundsMinY = Math.min(boundsMinY, h.minY ?? h.y - h.r);
         boundsMaxY = Math.max(boundsMaxY, h.maxY ?? h.y + h.r);
       }
+      if (orangeMushroom.active) {
+        boundsMinX = Math.min(boundsMinX, orangeMushroom.x - 24);
+        boundsMaxX = Math.max(boundsMaxX, orangeMushroom.x + orangeMushroom.w + 24);
+        boundsMinY = Math.min(boundsMinY, orangeMushroom.y - 34);
+        boundsMaxY = Math.max(boundsMaxY, orangeMushroom.y + orangeMushroom.h + 34);
+      }
+      for (const mushroom of orangeMushroomField) {
+        boundsMinX = Math.min(boundsMinX, mushroom.x - 24);
+        boundsMaxX = Math.max(boundsMaxX, mushroom.x + mushroom.w + 24);
+        boundsMinY = Math.min(boundsMinY, mushroom.y - 34);
+        boundsMaxY = Math.max(boundsMaxY, mushroom.y + mushroom.h + 34);
+      }
 
       boundsMinX = Math.max(0, boundsMinX - 24);
       boundsMaxX = Math.min(world.width, boundsMaxX + 24);
@@ -2864,12 +3645,16 @@ game_html = """
 
       const viewTop = cameraY;
       const viewBottom = cameraY + canvas.height - classicHudHeight;
+      const viewLeft = cameraX;
+      const viewRight = cameraX + canvas.width;
+      const viewX = miniX(viewLeft);
+      const viewW = Math.max(4, miniX(viewRight) - miniX(viewLeft));
       const viewY = miniY(viewTop);
       const viewH = Math.max(4, miniY(viewBottom) - miniY(viewTop));
       ctx.fillStyle = "rgba(88, 169, 255, 0.14)";
-      ctx.fillRect(mapX, viewY, mapW, viewH);
+      ctx.fillRect(viewX, viewY, viewW, viewH);
       ctx.strokeStyle = "rgba(58, 142, 255, 0.58)";
-      ctx.strokeRect(mapX + 1, viewY, mapW - 2, viewH);
+      ctx.strokeRect(viewX, viewY, viewW, viewH);
 
       for (const p of platforms) {
         const px = miniX(p.x);
@@ -2913,6 +3698,27 @@ game_html = """
         ctx.beginPath();
         ctx.arc(hx, hy, Math.max(3, h.r * 0.32), 0, Math.PI * 2);
         ctx.fill();
+      }
+
+      if (orangeMushroom.active) {
+        const ox = miniX(orangeMushroom.x + orangeMushroom.w / 2);
+        const oy = miniY(orangeMushroom.y + orangeMushroom.h / 2);
+        ctx.fillStyle = "#ff9b25";
+        ctx.beginPath();
+        ctx.arc(ox, oy, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#7b310e";
+        ctx.stroke();
+      }
+      for (const mushroom of orangeMushroomField) {
+        const ox = miniX(mushroom.x + mushroom.w / 2);
+        const oy = miniY(mushroom.y + mushroom.h / 2);
+        ctx.fillStyle = "#ff9b25";
+        ctx.beginPath();
+        ctx.arc(ox, oy, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#7b310e";
+        ctx.stroke();
       }
 
       for (const c of checkpoints) {
@@ -3124,7 +3930,10 @@ game_html = """
       ctx.font = "bold 13px Arial";
       ctx.fillText(stage.hidden ? "Hidden Challenge" : "토벤머리 용사", 108, mainY + 34);
 
-      const ascentRatio = Math.max(0, Math.min(1, 1 - player.y / world.height));
+      const routeRatio = world.width > canvas.width
+        ? Math.max(0, Math.min(1, (player.x + player.w / 2) / world.width))
+        : Math.max(0, Math.min(1, 1 - player.y / world.height));
+      const routeLabel = world.width > canvas.width ? "ROUTE" : "HEIGHT";
       drawHudPanel(252, mainY, 440, mainH, 0.98);
       drawStatusBar(263, mainY + 8, 128, "DEAD", `${player.deaths}회`, {
         ratio: 1,
@@ -3138,8 +3947,8 @@ game_html = """
         mid: "#1688df",
         dark: "#064b9a",
       });
-      drawStatusBar(547, mainY + 8, 134, "EXP", `HEIGHT ${Math.round(ascentRatio * 100)}%`, {
-        ratio: ascentRatio,
+      drawStatusBar(547, mainY + 8, 134, "EXP", `${routeLabel} ${Math.round(routeRatio * 100)}%`, {
+        ratio: routeRatio,
         light: "#f4ff6a",
         mid: "#93d423",
         dark: "#3d7b0f",
@@ -3357,10 +4166,10 @@ game_html = """
       ctx.restore();
     }
 
-    function drawGameOverScene(cameraY) {
+    function drawGameOverScene(cameraY, cameraX = 0) {
       if (!gameOver) return;
 
-      const screenX = gameOverSpot.x;
+      const screenX = gameOverSpot.x - cameraX;
       const groundY = gameOverSpot.y - cameraY;
       const fallProgress = Math.min(1, gameOverFrame / 38);
       const stoneY = -90 + (groundY - 82 + 90) * (1 - Math.pow(1 - fallProgress, 3));
@@ -3738,21 +4547,29 @@ game_html = """
 
     function render() {
       const playHeight = canvas.height - classicHudHeight;
+      const targetCameraX = Math.max(0, Math.min(world.width - canvas.width, player.x + player.w / 2 - canvas.width * 0.42));
       const targetCameraY = Math.max(0, Math.min(world.height - playHeight, player.y - playHeight * 0.65));
+      cameraX += (targetCameraX - cameraX) * 0.16;
       cameraY += (targetCameraY - cameraY) * 0.12;
       drawBackground(cameraY);
 
+      ctx.save();
+      ctx.translate(-Math.round(cameraX), 0);
       for (let i = 0; i < platforms.length; i++) drawPlatform(platforms[i], cameraY, i);
       for (const rope of ropes) drawRope(rope, cameraY);
       for (const spike of spikes) drawSpike(spike, cameraY);
       for (let i = 0; i < checkpoints.length; i++) drawCheckpoint(checkpoints[i], cameraY, i);
       for (const h of hazards) drawHazard(h, cameraY);
       drawGoal(cameraY);
-      drawStartNpc(cameraY);
+      drawOrangeMushroom(cameraY);
+      drawOrangeMushroomField(cameraY);
+      drawStartNpc(cameraY, cameraX);
       if (!gameOver) drawPlayer(cameraY);
-      drawMiniMap(cameraY);
+      ctx.restore();
+
+      drawMiniMap(cameraY, cameraX);
       drawDummyBuffs();
-      drawGameOverScene(cameraY);
+      drawGameOverScene(cameraY, cameraX);
       drawMapleTimePanel();
       drawClassicMapleHud();
 
@@ -3930,6 +4747,24 @@ components.html(
     ).replace(
         "__ELIXIR_DATA_URL__",
         elixir_data_url,
+    ).replace(
+        "__ORANGE_MUSHROOM_MOVE_LEFT_DATA_URL__",
+        orange_mushroom_move_left_data_url,
+    ).replace(
+        "__ORANGE_MUSHROOM_MOVE_RIGHT_DATA_URL__",
+        orange_mushroom_move_right_data_url,
+    ).replace(
+        "__ORANGE_MUSHROOM_JUMP_LEFT_DATA_URL__",
+        orange_mushroom_jump_left_data_url,
+    ).replace(
+        "__ORANGE_MUSHROOM_JUMP_RIGHT_DATA_URL__",
+        orange_mushroom_jump_right_data_url,
+    ).replace(
+        "__ORANGE_MUSHROOM_STAND_LEFT_DATA_URL__",
+        orange_mushroom_stand_left_data_url,
+    ).replace(
+        "__ORANGE_MUSHROOM_STAND_RIGHT_DATA_URL__",
+        orange_mushroom_stand_right_data_url,
     ),
     height=642,
     scrolling=False,
