@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
 from common.state import AgentState, RetrievedDocument
+from common.keyword_config import load_keyword_tuple
 from common.validator import validate_agent_inputs, validate_agent_outputs
 
 
@@ -69,7 +71,12 @@ Rules:
 """.strip()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-BOSS_ALIAS_CSV_PATH = REPO_ROOT / "database" / "data" / "neo4j_import" / "boss_aliases.csv"
+BOSS_ALIAS_CSV_PATH = Path(
+    os.getenv(
+        "MAPLE_BOSS_ALIAS_CSV_PATH",
+        str(REPO_ROOT / "database" / "data" / "neo4j_import" / "boss_aliases.csv"),
+    )
+)
 
 
 GRAPH_KEYWORDS = (
@@ -109,6 +116,30 @@ WEB_KEYWORDS = (
     "\ud14c\uc2a4\ud2b8\uc6d4\ub4dc",
     "\uce90\uc2dc\uc0f5",
 )
+OFFICIAL_SOURCE_TASK_TYPES = {
+    "event_information",
+    "patch_information",
+}
+QUERY_BOILERPLATE_TERMS = {
+    "대해",
+    "대해서",
+    "대한",
+    "알려줘",
+    "알려줘요",
+    "알려",
+    "설명",
+    "설명해줘",
+    "무엇",
+    "무엇인가",
+    "뭐야",
+    "뭔가",
+    "정보",
+    "정리",
+    "좀",
+    "해줘",
+    "해주세요",
+    "주세요",
+}
 
 BOSS_REWARD_KEYWORDS = (
     "\ubcf4\uc0c1",
@@ -130,6 +161,51 @@ BOSS_STRATEGY_KEYWORDS = (
     "피하는",
     "피하기",
 )
+BOSS_FEASIBILITY_KEYWORDS = (
+    "\uac00\ub2a5",
+    "\uac00\ub2a5\ud574",
+    "\uac00\ub2a5\ud560",
+    "\uac00\ub2a5\ud55c",
+    "\uac00\ub2a5 \uc5ec\ubd80",
+    "\uc7a1\uc744 \uc218",
+    "\uc7a1\uc744\uc218",
+    "\uc7a1\uc544\ub3c4",
+    "\uc7a1\ub098\uc694",
+    "\uae70 \uc218",
+    "\uae70\uc218",
+    "\ud074\ub9ac\uc5b4 \uac00\ub2a5",
+    "\uacf5\ub7b5 \uac00\ub2a5",
+    "\ub420\uae4c",
+    "\ub418\ub098",
+    "\ub418\ub098\uc694",
+    "\ub3c4\uc804",
+    "\uaca9\ud30c",
+    "\ucd5c\uc18c\ucef7",
+    "\uc2a4\ud399\ucef7",
+    "\uad8c\uc7a5\uc120",
+)
+GRAPH_KEYWORDS = load_keyword_tuple("MAPLE_RESEARCH_GRAPH_KEYWORDS", GRAPH_KEYWORDS)
+REQUIREMENT_KEYWORDS = load_keyword_tuple(
+    "MAPLE_RESEARCH_REQUIREMENT_KEYWORDS",
+    REQUIREMENT_KEYWORDS,
+)
+WEB_KEYWORDS = load_keyword_tuple("MAPLE_RESEARCH_WEB_KEYWORDS", WEB_KEYWORDS)
+BOSS_REWARD_KEYWORDS = load_keyword_tuple(
+    "MAPLE_RESEARCH_BOSS_REWARD_KEYWORDS",
+    BOSS_REWARD_KEYWORDS,
+)
+BOSS_STRATEGY_KEYWORDS = load_keyword_tuple(
+    "MAPLE_RESEARCH_BOSS_STRATEGY_KEYWORDS",
+    BOSS_STRATEGY_KEYWORDS,
+)
+BOSS_FEASIBILITY_KEYWORDS = load_keyword_tuple(
+    "MAPLE_RESEARCH_BOSS_FEASIBILITY_KEYWORDS",
+    BOSS_FEASIBILITY_KEYWORDS,
+)
+QUERY_BOILERPLATE_TERMS = set(
+    load_keyword_tuple("MAPLE_QUERY_BOILERPLATE_TERMS", QUERY_BOILERPLATE_TERMS)
+)
+
 VALID_INTENT_TAGS: tuple[ResearchIntent, ...] = (
     "general",
     "boss_strategy",
@@ -185,6 +261,10 @@ QUERY_STOPWORDS = {
     "지역",
 }
 KOREAN_PARTICLE_SUFFIXES = (
+    "으로부터",
+    "에게서",
+    "에서는",
+    "으로는",
     "으로",
     "에서",
     "에게",
@@ -193,6 +273,8 @@ KOREAN_PARTICLE_SUFFIXES = (
     "부터",
     "처럼",
     "보다",
+    "로서",
+    "로써",
     "에",
     "을",
     "를",
@@ -203,6 +285,8 @@ KOREAN_PARTICLE_SUFFIXES = (
     "의",
     "와",
     "과",
+    "도",
+    "만",
     "로",
 )
 
@@ -228,19 +312,52 @@ def graph_route_keywords() -> tuple[str, ...]:
     return (*GRAPH_KEYWORDS, *load_boss_alias_keywords())
 
 
+def query_contains_any_keyword(query: str, keywords: tuple[str, ...]) -> bool:
+    normalized_query = str(query or "").lower()
+    compact_query = re.sub(r"\s+", "", normalized_query)
+    for raw_keyword in keywords:
+        keyword = str(raw_keyword or "").strip().lower()
+        if not keyword:
+            continue
+        if keyword in normalized_query:
+            return True
+        compact_keyword = re.sub(r"\s+", "", keyword)
+        if compact_keyword and compact_keyword in compact_query:
+            return True
+    return False
+
+
+def query_has_boss_reference(query: str) -> bool:
+    normalized_query = str(query or "").lower()
+    return "\ubcf4\uc2a4" in normalized_query or query_contains_any_keyword(
+        normalized_query,
+        load_boss_alias_keywords(),
+    )
+
+
+def boss_requirement_intent_for_task(query: str, task_type: str = "") -> list[ResearchIntent]:
+    if not query_has_boss_reference(query):
+        return []
+    if str(task_type or "").strip() == "boss_strategy":
+        return ["boss_strategy", "boss_requirement"]
+    if query_contains_any_keyword(query, BOSS_FEASIBILITY_KEYWORDS):
+        return ["boss_strategy", "boss_requirement"]
+    return []
+
+
 def derive_intent_tags(query: str) -> list[ResearchIntent]:
     normalized_query = str(query or "").lower()
-    has_boss_reference = "보스" in normalized_query or any(
-        keyword.lower() in normalized_query
-        for keyword in load_boss_alias_keywords()
-    )
+    has_boss_reference = query_has_boss_reference(query)
     tags: list[ResearchIntent] = []
 
-    if has_boss_reference and any(keyword in normalized_query for keyword in BOSS_STRATEGY_KEYWORDS):
+    if has_boss_reference and (
+        query_contains_any_keyword(query, BOSS_STRATEGY_KEYWORDS)
+        or query_contains_any_keyword(query, BOSS_FEASIBILITY_KEYWORDS)
+    ):
         tags.extend(["boss_strategy", "boss_requirement"])
-    if has_boss_reference and any(keyword in normalized_query for keyword in REQUIREMENT_KEYWORDS):
+    if has_boss_reference and query_contains_any_keyword(query, REQUIREMENT_KEYWORDS):
         tags.append("boss_requirement")
-    if has_boss_reference and any(keyword in normalized_query for keyword in BOSS_REWARD_KEYWORDS):
+    if has_boss_reference and query_contains_any_keyword(query, BOSS_REWARD_KEYWORDS):
         tags.append("boss_reward")
     if any(keyword.lower() in normalized_query for keyword in WEB_KEYWORDS):
         tags.append("time_sensitive")
@@ -266,11 +383,22 @@ def merge_intent_tags(*tag_lists: list[ResearchIntent]) -> list[ResearchIntent]:
                 continue
             if tag not in merged:
                 merged.append(tag)
+    if len(merged) > 1 and "general" in merged:
+        merged = [tag for tag in merged if tag != "general"]
     return merged or ["general"]
 
 
 def route_tags_have_graph_intent(intent_tags: list[ResearchIntent]) -> bool:
     return bool(set(intent_tags).intersection(GRAPH_INTENT_TAGS))
+
+
+def route_requires_official_sources(route: ResearchRouting) -> bool:
+    task_type = str(route.get("task_type") or "").strip()
+    intent_tags = set(normalize_intent_tags(route.get("intent_tags")))
+    return bool(
+        task_type in OFFICIAL_SOURCE_TASK_TYPES
+        or "time_sensitive" in intent_tags
+    )
 
 
 def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
@@ -281,7 +409,10 @@ def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
 
     normalized_query = query.lower()
     normalized_task_type = str(task_type or "").strip()
-    intent_tags = derive_intent_tags(query)
+    intent_tags = merge_intent_tags(
+        derive_intent_tags(query),
+        boss_requirement_intent_for_task(query, normalized_task_type),
+    )
 
     structured_boss_reward = "boss_reward" in intent_tags and "time_sensitive" not in intent_tags
 
@@ -315,7 +446,7 @@ def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
         "graph_top_k": 3,
         "web_max_results": 5,
         "web_max_contexts": 5,
-        "official_only": needs_web,
+        "official_only": bool(needs_web or normalized_task_type in OFFICIAL_SOURCE_TASK_TYPES),
         "reason": reason,
         "search_query": normalize_search_query(query, query, task_type=normalized_task_type),
         "parser_source": "keyword",
@@ -369,7 +500,7 @@ def build_research_route(
         fallback_route["intent_tags"],
     )
     route = apply_route_intent_guards(query, route)
-    if route["use_web"]:
+    if route["use_web"] and route_requires_official_sources(route):
         route["official_only"] = True
     elif route["intent_tags"] == ["general"]:
         route["official_only"] = False
@@ -526,7 +657,11 @@ def apply_route_intent_guards(
     query: str,
     route: ResearchRouting,
 ) -> ResearchRouting:
-    intent_tags = merge_intent_tags(normalize_intent_tags(route.get("intent_tags")), derive_intent_tags(query))
+    intent_tags = merge_intent_tags(
+        normalize_intent_tags(route.get("intent_tags")),
+        derive_intent_tags(query),
+        boss_requirement_intent_for_task(query, str(route.get("task_type") or "")),
+    )
     guarded_route: ResearchRouting = {
         **route,
         "intent_tags": intent_tags,
@@ -680,6 +815,10 @@ def web_fallback_reason(
     if documents:
         if route["use_graph"] and not any(_is_graph_document(document) for document in documents):
             return "no_graph_evidence"
+        if has_requested_graph_requirement_evidence(route, documents, search_query):
+            return ""
+        if search_query and local_evidence_is_weak(documents, search_query):
+            return "low_local_relevance"
         if normalize_intent_tags(route.get("intent_tags")) == ["general"] and not any(
             _route_relevance_rank(document, query=search_query, route=route) > 0
             for document in documents
@@ -695,6 +834,29 @@ def web_fallback_reason(
         return "no_local_evidence"
 
     return ""
+
+
+def has_requested_graph_requirement_evidence(
+    route: ResearchRouting,
+    documents: list[RetrievedDocument],
+    query: str,
+) -> bool:
+    intent_tags = set(normalize_intent_tags(route.get("intent_tags")))
+    if "boss_requirement" not in intent_tags:
+        return False
+    if not _query_mentions_requirement(query):
+        return False
+    return any(_is_graph_requirement_document(document) for document in documents)
+
+
+def local_evidence_is_weak(documents: list[RetrievedDocument], query: str) -> bool:
+    content_terms = _query_content_terms(query)
+    if not content_terms:
+        return False
+    return not any(
+        _keyword_overlap_score(document, query, terms=content_terms) > 0
+        for document in documents
+    )
 
 
 def run_research(
@@ -823,7 +985,11 @@ def run_research(
                 search_query=search_query,
                 route=route,
             )
-            docs.extend(web_docs)
+            if web_reason == "low_local_relevance" and web_docs:
+                research_result["weak_local_document_count"] = len(docs)
+                docs = web_docs
+            else:
+                docs.extend(web_docs)
             tool_results.update(web_state.get("tool_results", {}))
             research_result["web_success"] = True
             research_result["web_document_count"] = len(web_docs)
@@ -1133,8 +1299,13 @@ def _is_snippet_fallback_document(document: RetrievedDocument) -> bool:
     return str(metadata.get("content_source") or "") == "tavily_snippet_fallback"
 
 
-def _keyword_overlap_score(document: RetrievedDocument, query: str) -> int:
-    terms = _meaningful_query_terms(query)
+def _keyword_overlap_score(
+    document: RetrievedDocument,
+    query: str,
+    *,
+    terms: list[str] | None = None,
+) -> int:
+    terms = terms if terms is not None else _meaningful_query_terms(query)
     if not terms:
         return 0
 
@@ -1176,9 +1347,35 @@ def _normalize_query_token(token: str) -> str:
     return normalized
 
 
+def _query_content_terms(query: str) -> list[str]:
+    terms: list[str] = []
+    for raw_term in re.split(r"[\s,?!.:;()\[\]{}\"'`~]+", str(query or "")):
+        term = _normalize_query_term(raw_term)
+        if len(term) < 2 or term in QUERY_BOILERPLATE_TERMS or term in terms:
+            continue
+        terms.append(term)
+    return terms
+
+
+def _normalize_query_term(raw_term: str) -> str:
+    term = re.sub(r"^[^\w가-힣]+|[^\w가-힣]+$", "", str(raw_term or "").strip().lower())
+    if not term:
+        return ""
+    if term in QUERY_BOILERPLATE_TERMS:
+        return ""
+    for suffix in KOREAN_PARTICLE_SUFFIXES:
+        if len(term) > len(suffix) + 1 and term.endswith(suffix):
+            candidate = term[: -len(suffix)]
+            if candidate and candidate not in QUERY_BOILERPLATE_TERMS:
+                return candidate
+    return term
+
+
 def _query_mentions_requirement(query: str) -> bool:
-    normalized_query = str(query or "").lower()
-    return any(keyword in normalized_query for keyword in REQUIREMENT_KEYWORDS)
+    return query_contains_any_keyword(query, REQUIREMENT_KEYWORDS) or query_contains_any_keyword(
+        query,
+        BOSS_FEASIBILITY_KEYWORDS,
+    )
 
 
 def _is_graph_requirement_document(document: RetrievedDocument) -> bool:

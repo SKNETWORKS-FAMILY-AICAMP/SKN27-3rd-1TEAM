@@ -1,21 +1,23 @@
+import os
+
 from dotenv import load_dotenv
+#from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+
+DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
+DEFAULT_LLM_MODEL = "gpt-5.4-mini"
 
 load_dotenv()
 
 
-from langchain_openai import ChatOpenAI  # noqa: E402
-from langchain_openai import OpenAIEmbeddings  # noqa: E402
-
-
 def get_embedding_model() -> OpenAIEmbeddings:
-    emb = OpenAIEmbeddings(
-        model="text-embedding-3-small"
+    return OpenAIEmbeddings(
+        model=os.getenv("OPENAI_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
     )
-    return emb
 
 
-def get_llm() -> ChatGroq:
-    llm = ChatGroq(
-        model="openai/gpt-oss-120b"
+def get_llm() -> ChatOpenAI:
+    return ChatOpenAI(
+        model=os.getenv("OPENAI_MODEL", DEFAULT_LLM_MODEL)
     )
-    return llm

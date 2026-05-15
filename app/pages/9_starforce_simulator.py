@@ -17,8 +17,10 @@ for path in (PROJECT_ROOT, SRC_ROOT):
 
 from app.common.assets import asset_path, path_to_data_uri  # noqa: E402
 from app.common.bgm import render_bgm_control_button, render_page_bgm  # noqa: E402
-from app.common.chat_render import render_top_navigation  # noqa: E402
+from app.common.chat_render import render_manual_page_if_requested, render_top_navigation  # noqa: E402
 from app.common.chat_style import render_style  # noqa: E402
+
+render_manual_page_if_requested("starforce")
 
 # ═══════════════════════════════════════════════════════
 # 1. 스타포스 데이터 (KMS 30성 기준)

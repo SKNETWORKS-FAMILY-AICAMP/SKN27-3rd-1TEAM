@@ -18,6 +18,7 @@ DEFAULT_QUESTION_OVERLAP_THRESHOLD = 0.05
 DEFAULT_REFERENCE_OVERLAP_THRESHOLD = 0.10
 DEFAULT_MIN_CONFIDENCE_ON_PASS = 0.50
 DEFAULT_MAX_RETRY_COUNT = 2
+DEFAULT_QUESTION_TERM_COVERAGE_THRESHOLD = 0.50
 
 INSUFFICIENT_INFO_PATTERNS = (
     "\uc815\ubcf4\uac00 \ubd80\uc871",
@@ -28,6 +29,57 @@ INSUFFICIENT_INFO_PATTERNS = (
     "\ucd94\uac00 \uc815\ubcf4",
     "insufficient",
     "not enough",
+)
+KOREAN_QUERY_STOPWORDS = {
+    "\uba54\uc774\ud50c",
+    "\uba54\uc774\ud50c\uc2a4\ud1a0\ub9ac",
+    "\ub300\ud574",
+    "\ub300\ud55c",
+    "\ub300\ud574\uc11c",
+    "\uc54c\ub824\uc918",
+    "\uc54c\ub824\uc918\uc694",
+    "\uc54c\ub824",
+    "\uc124\uba85",
+    "\uc124\uba85\ud574\uc918",
+    "\uc815\ubcf4",
+    "\uc815\ub9ac",
+    "\ubb34\uc5c7",
+    "\ubb34\uc5c7\uc778\uac00",
+    "\ubb50\uc57c",
+    "\ubb50\uc9c0",
+    "\uc880",
+    "\ud574\uc918",
+    "\ud574\uc8fc\uc138\uc694",
+    "\uc8fc\uc138\uc694",
+}
+KOREAN_PARTICLE_SUFFIXES = (
+    "\uc73c\ub85c\ubd80\ud130",
+    "\uc5d0\uac8c\uc11c",
+    "\uc5d0\uc11c\ub294",
+    "\uc73c\ub85c\ub294",
+    "\uc5d0\uac8c",
+    "\uc5d0\uc11c",
+    "\ubd80\ud130",
+    "\uae4c\uc9c0",
+    "\uc73c\ub85c",
+    "\ub85c\uc11c",
+    "\ub85c\uc368",
+    "\ud55c\ud14c",
+    "\ucc98\ub7fc",
+    "\ubcf4\ub2e4",
+    "\uc5d0",
+    "\uc744",
+    "\ub97c",
+    "\uc740",
+    "\ub294",
+    "\uc774",
+    "\uac00",
+    "\uc758",
+    "\uc640",
+    "\uacfc",
+    "\ub3c4",
+    "\ub9cc",
+    "\ub85c",
 )
 
 
@@ -114,6 +166,8 @@ class FinalAnswerEvalResult:
     source_count: int
     source_citation_count: int
     question_overlap: float
+    question_answer_coverage: float
+    question_context_coverage: float
     context_overlap: float
     reference_overlap: float
     confidence_score: float | None = None
@@ -139,6 +193,8 @@ class FinalAnswerEvalResult:
             "source_count": self.source_count,
             "source_citation_count": self.source_citation_count,
             "question_overlap": self.question_overlap,
+            "question_answer_coverage": self.question_answer_coverage,
+            "question_context_coverage": self.question_context_coverage,
             "context_overlap": self.context_overlap,
             "reference_overlap": self.reference_overlap,
             "confidence_score": self.confidence_score,
@@ -179,18 +235,25 @@ def evaluate_final_answer_record(
 
     question_overlap = compute_overlap(answer_text, [question])
     question_context_overlap = compute_overlap(question, contexts)
+    question_answer_coverage = compute_query_term_coverage(question, answer_text)
+    question_context_coverage = compute_query_term_coverage(question, "\n".join(contexts))
     context_overlap = compute_overlap(answer_text, contexts)
     reference_overlap = compute_overlap(answer_text, [reference] if reference else [])
 
     question_relevant = is_question_relevant(
         question_overlap=question_overlap,
         reference_overlap=reference_overlap,
+        question_answer_coverage=question_answer_coverage,
+        question_context_coverage=question_context_coverage,
         has_reference=bool(reference.strip()),
         question_overlap_threshold=question_overlap_threshold,
         reference_overlap_threshold=reference_overlap_threshold,
     ) or (
         bool(contexts)
-        and question_context_overlap >= question_overlap_threshold
+        and (
+            question_context_overlap >= question_overlap_threshold
+            or question_context_coverage >= DEFAULT_QUESTION_TERM_COVERAGE_THRESHOLD
+        )
         and has_answer
     )
     grounded_in_context = (
@@ -257,6 +320,8 @@ def evaluate_final_answer_record(
         source_count=len(sources),
         source_citation_count=source_citation_count,
         question_overlap=round(question_overlap, 6),
+        question_answer_coverage=round(question_answer_coverage, 6),
+        question_context_coverage=round(question_context_coverage, 6),
         context_overlap=round(context_overlap, 6),
         reference_overlap=round(reference_overlap, 6),
         confidence_score=confidence_score,
@@ -581,13 +646,19 @@ def sources_from_retrieved_docs(retrieved_docs: Any) -> list[dict[str, str]]:
 def is_question_relevant(
     question_overlap: float,
     reference_overlap: float,
+    question_answer_coverage: float,
+    question_context_coverage: float,
     has_reference: bool,
     question_overlap_threshold: float,
     reference_overlap_threshold: float,
 ) -> bool:
     if has_reference and reference_overlap >= reference_overlap_threshold:
         return True
-    return question_overlap >= question_overlap_threshold
+    return (
+        question_overlap >= question_overlap_threshold
+        or question_answer_coverage >= DEFAULT_QUESTION_TERM_COVERAGE_THRESHOLD
+        or question_context_coverage >= DEFAULT_QUESTION_TERM_COVERAGE_THRESHOLD
+    )
 
 
 def should_require_source_citation(
@@ -675,12 +746,40 @@ def compute_overlap(answer: str, references: list[str]) -> float:
     return len(answer_tokens.intersection(reference_tokens)) / len(answer_tokens)
 
 
-def tokenize(text: str) -> set[str]:
-    return {
-        token.lower()
-        for token in re.findall(r"[A-Za-z0-9\uac00-\ud7a3]+", text)
-        if len(token) > 1
-    }
+def compute_query_term_coverage(query: str, target: str) -> float:
+    query_terms = tokenize(query, drop_stopwords=True)
+    if not query_terms:
+        return 0.0
+    target_tokens = tokenize(target)
+    if not target_tokens:
+        return 0.0
+    return len(query_terms.intersection(target_tokens)) / len(query_terms)
+
+
+def tokenize(text: str, *, drop_stopwords: bool = True) -> set[str]:
+    tokens: set[str] = set()
+    for raw_token in re.findall(r"[A-Za-z0-9\uac00-\ud7a3]+", text):
+        token = normalize_eval_token(raw_token)
+        if len(token) <= 1:
+            continue
+        if drop_stopwords and token in KOREAN_QUERY_STOPWORDS:
+            continue
+        tokens.add(token)
+    return tokens
+
+
+def normalize_eval_token(raw_token: str) -> str:
+    token = str(raw_token or "").strip().lower()
+    if not token:
+        return ""
+    if token in KOREAN_QUERY_STOPWORDS:
+        return token
+    for suffix in KOREAN_PARTICLE_SUFFIXES:
+        if len(token) > len(suffix) + 1 and token.endswith(suffix):
+            candidate = token[: -len(suffix)]
+            if candidate:
+                return candidate
+    return token
 
 
 def get_first_value(row: dict[str, Any], *keys: str) -> Any:
