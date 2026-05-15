@@ -1,29 +1,17 @@
 from __future__ import annotations
 
-import json
-import os
 import re
-import sys
 from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, List
-from dotenv import load_dotenv
-
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.abspath(os.path.join(current_dir, "../../"))
-sys.path.append(project_root)
 
 
-
-from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
-from common.get_model import get_llm
-from common.prompt import master_prompt
 from common.state import AgentState
 from common.validator import validate_agent_inputs, validate_agent_outputs
 
-load_dotenv()
+
 class DamageSimulationInput(BaseModel):
     """Input schema for relative damage simulation."""
 
@@ -97,6 +85,24 @@ _STAT_TARGETS = {
     "starforce": 22,
 }
 
+DEFAULT_BOSS_DEFENSE_RATE = 300.0
+TARGET_BOSS_IED = 95.0
+TARGET_CRIT_DAMAGE = 100.0
+DAMAGE_SCORE_SCALE = 1_000_000
+
+BOTTLENECK_LABELS = {
+    "combat_power": "전투력",
+    "main_stat": "주스탯",
+    "primary_attack": "공격력/마력",
+    "boss_damage": "보공+데미지 배율",
+    "ignore_def": "방무 실효딜",
+    "crit_expected": "크리 기대값",
+    "arcane_force": "아케인포스",
+    "authentic_force": "어센틱포스",
+    "union_level": "유니온",
+    "starforce": "스타포스",
+}
+
 _STARFORCE_TARGET_RULES = [
     # Mirrored from Neo4j EquipmentCatalog item_type=equipment_growth_rule.
     {"min_level": 200, "max_level": 219, "category": "all", "minimum": 10, "recommended": 12},
@@ -167,6 +173,37 @@ def _ratio(value: float, target: float) -> float:
     if target <= 0:
         return 1.0
     return max(0.0, min(value / target, 1.0))
+
+
+def _percent_multiplier(value: float) -> float:
+    return 1.0 + max(value, 0.0) / 100.0
+
+
+def _critical_expected_multiplier(crit_rate: float, crit_damage: float) -> float:
+    crit_chance = max(0.0, min(crit_rate, 100.0)) / 100.0
+    # MapleStory critical damage has a built-in variable base range. Use 35% as the midpoint.
+    crit_damage_multiplier = 0.35 + max(crit_damage, 0.0) / 100.0
+    return 1.0 + crit_chance * crit_damage_multiplier
+
+
+def _defense_damage_multiplier(ignore_def: float, boss_defense_rate: float = DEFAULT_BOSS_DEFENSE_RATE) -> float:
+    ied = max(0.0, min(ignore_def, 100.0)) / 100.0
+    defense = max(0.0, boss_defense_rate) / 100.0
+    return max(0.05, 1.0 - defense * (1.0 - ied))
+
+
+def _stat_attack_proxy(main_stat: int, primary_attack: int) -> float:
+    if main_stat <= 0 or primary_attack <= 0:
+        return 0.0
+    # Real range uses weapon constants and secondary stat. The state only has consolidated main stat,
+    # so this keeps the core 4*main_stat*attack structure and omits unavailable class constants.
+    return (4.0 * main_stat * primary_attack) / 100.0
+
+
+def _force_readiness(current: float, target: float) -> float:
+    if target <= 0:
+        return 1.0
+    return max(0.0, min(current / target, 1.5))
 
 
 def _safe_round(value: float, digits: int = 4) -> float:
@@ -365,7 +402,7 @@ def _empty_calculator_result(message: str) -> Dict[str, Any]:
     return {
         "stat_summary": {
             "damage_score": 0.0,
-            "formula": "relative_growth_comparison_score",
+            "formula": "maplestory_boss_effective_damage_proxy",
             "data_reliability": "calculation_failed_or_missing_data",
             "error": message,
         },
@@ -378,24 +415,6 @@ def _empty_calculator_result(message: str) -> Dict[str, Any]:
         },
         "bottleneck_analysis": {},
     }
-
-
-def _parse_json_object(content: str) -> Dict[str, Any]:
-    text = content.strip()
-    if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
-    try:
-        parsed = json.loads(text)
-    except json.JSONDecodeError:
-        match = re.search(r"\{[\s\S]*\}", text)
-        if not match:
-            return {}
-        try:
-            parsed = json.loads(match.group(0))
-        except json.JSONDecodeError:
-            return {}
-    return parsed if isinstance(parsed, dict) else {}
 
 
 @tool(args_schema=DamageSimulationInput)
@@ -416,29 +435,34 @@ def simulate_damage_score(
     starforce: int = 0,
     union_level: int = 0,
 ) -> Dict[str, Any]:
-    """Calculate a deterministic relative damage score for growth comparison."""
+    """Calculate a deterministic boss-effective damage score for growth comparison."""
 
     primary_attack = max(attack_power, magic_power)
-    stat_factor = max(main_stat, 1) / 10_000
-    attack_factor = max(primary_attack, 1) / 1_000
-    damage_factor = 1 + max(damage, 0) / 100
-    boss_factor = 1 + max(boss_damage, 0) / 100
-    final_damage_factor = 1 + max(final_damage, 0) / 100
-    crit_factor = 1 + min(max(crit_rate, 0), 100) / 100 * max(crit_damage, 0) / 100
-    ignore_def_factor = 1 / max(0.3, 1 - min(max(ignore_def, 0), 100) / 100 * 0.3)
-    force_factor = 1 + min(arcane_force / 1_320, 1) * 0.05 + min(authentic_force / 730, 1) * 0.05
-    union_factor = 1 + min(union_level / 8_500, 1) * 0.04
-    damage_score = (
-        stat_factor
-        * attack_factor
-        * damage_factor
-        * boss_factor
-        * final_damage_factor
-        * crit_factor
-        * ignore_def_factor
-        * force_factor
-        * union_factor
+    stat_attack_proxy = _stat_attack_proxy(main_stat, primary_attack)
+    normal_damage_multiplier = _percent_multiplier(damage)
+    boss_damage_multiplier = 1.0 + (max(damage, 0.0) + max(boss_damage, 0.0)) / 100.0
+    final_damage_multiplier = _percent_multiplier(final_damage)
+    crit_multiplier = _critical_expected_multiplier(crit_rate, crit_damage)
+    boss_defense_multiplier = _defense_damage_multiplier(ignore_def)
+
+    normal_effective_damage = (
+        stat_attack_proxy
+        * normal_damage_multiplier
+        * final_damage_multiplier
+        * crit_multiplier
     )
+    boss_effective_damage = (
+        stat_attack_proxy
+        * boss_damage_multiplier
+        * final_damage_multiplier
+        * crit_multiplier
+        * boss_defense_multiplier
+    )
+    damage_score = boss_effective_damage / DAMAGE_SCORE_SCALE
+    normal_damage_score = normal_effective_damage / DAMAGE_SCORE_SCALE
+    arcane_force_readiness = _force_readiness(arcane_force, _STAT_TARGETS["arcane_force"])
+    authentic_force_readiness = _force_readiness(authentic_force, _STAT_TARGETS["authentic_force"])
+    union_readiness = _ratio(union_level, _STAT_TARGETS["union_level"])
 
     return {
         "character_level": character_level,
@@ -457,9 +481,27 @@ def simulate_damage_score(
         "authentic_force": authentic_force,
         "starforce": starforce,
         "union_level": union_level,
+        "stat_attack_proxy": _safe_round(stat_attack_proxy, 2),
+        "normal_damage_score": _safe_round(normal_damage_score, 6),
+        "boss_effective_damage_score": _safe_round(damage_score, 6),
         "damage_score": _safe_round(damage_score, 6),
-        "formula": "relative_growth_comparison_score",
-        "assumption": "실제 DPM이 아니라 성장 전후 비교를 위한 상대 딜 점수입니다.",
+        "formula": "maplestory_boss_effective_damage_proxy",
+        "formula_components": {
+            "stat_attack_proxy": _safe_round(stat_attack_proxy, 2),
+            "normal_damage_multiplier": _safe_round(normal_damage_multiplier, 4),
+            "boss_damage_multiplier": _safe_round(boss_damage_multiplier, 4),
+            "final_damage_multiplier": _safe_round(final_damage_multiplier, 4),
+            "critical_expected_multiplier": _safe_round(crit_multiplier, 4),
+            "boss_defense_rate_assumption": DEFAULT_BOSS_DEFENSE_RATE,
+            "boss_defense_damage_multiplier": _safe_round(boss_defense_multiplier, 4),
+            "arcane_force_readiness": _safe_round(arcane_force_readiness, 4),
+            "authentic_force_readiness": _safe_round(authentic_force_readiness, 4),
+            "union_readiness": _safe_round(union_readiness, 4),
+        },
+        "assumption": (
+            "실제 DPM이 아니라 보스전 성장 비교용 근사값입니다. "
+            "스탯공격력은 4*주스탯*공마 구조를 쓰고, 직업별 무기상수/보조스탯/스킬 퍼뎀/공속/쿨타임은 state에 없어 제외합니다."
+        ),
         "data_reliability": "state_input_relative_formula",
     }
 
@@ -574,8 +616,8 @@ def estimate_growth_cost_period(
                     "target": target,
                     "action": "주요 장비 잠재 목표 등급 달성",
                     "expected_damage_gain_percent": gain_percent,
-                    "expected_score_after": _safe_round(base_score * 1.035, 6),
-                    "expected_cp_gain": int(combat_power * 0.035),
+                    "expected_score_after": _safe_round(base_score * (1 + gain_percent / 100), 6),
+                    "expected_cp_gain": int(combat_power * gain_percent / 100),
                     "estimated_cost_meso": cost,
                     "estimated_days": _estimated_days(cost, daily_meso_budget),
                     "efficiency_score": _safe_round(gain_percent / (cost / 1_000_000_000), 3),
@@ -627,16 +669,36 @@ def calculate_bottleneck_scores(
 ) -> Dict[str, float]:
     """Calculate 0 to 1 growth bottleneck scores. Higher means more urgent."""
 
+    components = _value(stat_summary, "formula_components", {}) or {}
+    current_crit = _critical_expected_multiplier(
+        _number(stat_summary, "crit_rate"),
+        _number(stat_summary, "crit_damage"),
+    )
+    target_crit = _critical_expected_multiplier(100, TARGET_CRIT_DAMAGE)
+    current_defense_factor = _number(
+        components,
+        "boss_defense_damage_multiplier",
+        _defense_damage_multiplier(_number(stat_summary, "ignore_def")),
+    )
+    target_defense_factor = _defense_damage_multiplier(TARGET_BOSS_IED)
+    current_boss_multiplier = 1.0 + (
+        max(_number(stat_summary, "damage"), 0.0)
+        + max(_number(stat_summary, "boss_damage"), 0.0)
+    ) / 100.0
+    target_boss_multiplier = 1.0 + (
+        max(_number(stat_summary, "damage"), 0.0)
+        + _STAT_TARGETS["boss_damage"]
+    ) / 100.0
+
     scores = {
         "combat_power": 1 - _ratio(_number(stat_summary, "combat_power"), _STAT_TARGETS["combat_power"]),
         "main_stat": 1 - _ratio(_number(stat_summary, "main_stat"), _STAT_TARGETS["main_stat"]),
         "primary_attack": 1 - _ratio(_number(stat_summary, "primary_attack"), _STAT_TARGETS["primary_attack"]),
-        "boss_damage": 1 - _ratio(_number(stat_summary, "boss_damage"), _STAT_TARGETS["boss_damage"]),
-        "ignore_def": 1 - _ratio(_number(stat_summary, "ignore_def"), _STAT_TARGETS["ignore_def"]),
-        "crit_rate": 1 - _ratio(_number(stat_summary, "crit_rate"), _STAT_TARGETS["crit_rate"]),
-        "crit_damage": 1 - _ratio(_number(stat_summary, "crit_damage"), _STAT_TARGETS["crit_damage"]),
-        "arcane_force": 1 - _ratio(_number(stat_summary, "arcane_force"), _STAT_TARGETS["arcane_force"]),
-        "authentic_force": 1 - _ratio(_number(stat_summary, "authentic_force"), _STAT_TARGETS["authentic_force"]),
+        "boss_damage": 1 - _ratio(current_boss_multiplier, target_boss_multiplier),
+        "ignore_def": 1 - _ratio(current_defense_factor, target_defense_factor),
+        "crit_expected": 1 - _ratio(current_crit, target_crit),
+        "arcane_force": 1 - _ratio(_number(components, "arcane_force_readiness", 0), 1.0),
+        "authentic_force": 1 - _ratio(_number(components, "authentic_force_readiness", 0), 1.0),
         "union_level": 1 - _ratio(_number(stat_summary, "union_level"), _STAT_TARGETS["union_level"]),
         "starforce": 1
         - _ratio(
@@ -672,8 +734,14 @@ def _calculator_state_payload(state: AgentState) -> Dict[str, Any]:
         "character": {
             "character_name": _value(state, "character_name", ""),
             "world_name": _value(state, "world_name", ""),
+            "level": _value(stat_summary, "character_level", 0),
             "combat_power": _value(stat_summary, "combat_power", 0),
             "main_stat": _value(stat_summary, "main_stat", 0),
+            "primary_attack": _value(stat_summary, "primary_attack", 0),
+            "boss_damage": _value(stat_summary, "boss_damage", 0),
+            "ignore_def": _value(stat_summary, "ignore_def", 0),
+            "crit_rate": _value(stat_summary, "crit_rate", 0),
+            "crit_damage": _value(stat_summary, "crit_damage", 0),
             "damage_score": _value(stat_summary, "damage_score", 0),
         },
         "stat_summary": stat_summary,
@@ -755,28 +823,6 @@ def run_calculator(
     return new_state
 
 
-CALCULATOR_TOOLS = [
-    simulate_damage_score,
-    summarize_equipment_contribution,
-    estimate_growth_cost_period,
-    calculate_bottleneck_scores,
-]
-
-CALCULATOR_STATE_SYSTEM_PROMPT = f"""
-{master_prompt}
-
-너는 메이플스토리 계산 에이전트이다.
-다음의 룰은 꼭 지켜야 한다.
-- 툴과 AgentState에 이미 기록된 계산 결과만 사용한다.
-- 절대로 사용자에게 보여줄 최종 답변 문장을 만들지 않는다.
-- 절대로 캐릭터 스탯, 장비 수치, 비용, 기간을 임의로 새로 만들지 않는다.
-- 너는 딜 시뮬레이션 및 성장 비용/기간 예측 수치 계산 결과를 정해진 state에 넣는 절차의 일부이다.
-- Return only a JSON object for AgentState update.
-- Allowed top-level keys: stat_summary, equipment_summary, bottleneck_analysis, llm_interpretation.
-- stat_summary/equipment_summary/bottleneck_analysis는 기존 계산 결과를 보존하고, 필요한 설명용 메타데이터만 보강한다.
-""".strip()
-
-
 def _format_meso(value: Any) -> str:
     amount = int(_parse_number(value, 0))
     if amount >= 100_000_000:
@@ -786,195 +832,364 @@ def _format_meso(value: Any) -> str:
     return f"{amount:,} 메소"
 
 
+def _format_percent(value: Any) -> str:
+    number = _parse_number(value, 0)
+    if number == int(number):
+        return f"{int(number)}%"
+    return f"{number:.2f}".rstrip("0").rstrip(".") + "%"
+
+
+def _format_score(value: Any, digits: int = 4) -> str:
+    number = _parse_number(value, 0)
+    if digits <= 0:
+        return f"{int(round(number)):,}"
+    return f"{number:.{digits}f}".rstrip("0").rstrip(".")
+
+
+def _growth_action_detail(item: Dict[str, Any]) -> Dict[str, Any]:
+    cp_gain = int(_parse_number(item.get("expected_cp_gain"), 0))
+    damage_gain = _parse_number(item.get("expected_damage_gain_percent"), 0)
+    cost = int(_parse_number(item.get("estimated_cost_meso"), 0))
+    days = int(_parse_number(item.get("estimated_days"), 0))
+    efficiency = _parse_number(item.get("efficiency_score"), 0)
+    details = []
+    if cp_gain:
+        details.append(f"예상 전투력 +{cp_gain:,}")
+    if damage_gain:
+        details.append(f"예상 데미지 +{_format_percent(damage_gain)}")
+    if cost:
+        details.append(f"예상 비용 {_format_meso(cost)}")
+    if days:
+        details.append(f"예상 기간 {days}일")
+    if efficiency:
+        details.append(f"효율 점수 {_format_score(efficiency)}")
+
+    return {
+        "target": item.get("target") or "성장 항목",
+        "action": item.get("action") or "성장 진행",
+        "reason": ", ".join(details) if details else "계산된 성장 후보입니다.",
+        "expected_cp_gain": cp_gain,
+        "expected_damage_gain_percent": _safe_round(damage_gain, 2),
+        "estimated_cost_meso": cost,
+        "estimated_cost_text": _format_meso(cost) if cost else "",
+        "estimated_days": days,
+        "efficiency_score": _safe_round(efficiency, 3),
+        "expected_score_after": item.get("expected_score_after"),
+        "basis": item.get("basis"),
+    }
+
+
+def _ranked_bottleneck_details(state: AgentState, limit: int = 5) -> List[Dict[str, Any]]:
+    bottlenecks = _value(state, "bottleneck_analysis", {}) or {}
+    if not isinstance(bottlenecks, dict):
+        return []
+    ranked = sorted(
+        (
+            (str(key), _parse_number(value, 0))
+            for key, value in bottlenecks.items()
+            if isinstance(value, (int, float))
+            and not str(key).startswith("growth_option:")
+            and _parse_number(value, 0) > 0.05
+        ),
+        key=lambda item: item[1],
+        reverse=True,
+    )
+    details = []
+    for key, score in ranked[:limit]:
+        label = BOTTLENECK_LABELS.get(key, key)
+        details.append(
+            {
+                "key": key,
+                "label": label,
+                "urgency_score": _safe_round(score, 4),
+                "reason": f"{label} 병목 점수 {_format_score(score)}. 1에 가까울수록 현재 목표 대비 보완 우선도가 높습니다.",
+            }
+        )
+    return details
+
+
+def _damage_formula_details(stat_summary: Dict[str, Any]) -> List[str]:
+    components = _value(stat_summary, "formula_components", {}) or {}
+    if not isinstance(components, dict) or not components:
+        return []
+
+    return [
+        (
+            "보스 유효딜 점수 = "
+            "스탯공격력 프록시 * 보스 공격 배율 * 최종 데미지 배율 * "
+            "크리 기대 배율 * 방무 실효딜 계수 / 1,000,000 구조로 계산했습니다."
+        ),
+        (
+            "스탯공격력 프록시 "
+            f"{_format_score(_value(components, 'stat_attack_proxy'), 2)} "
+            "= 4 * 주스탯 * 주공격력 / 100 구조로 계산했습니다."
+        ),
+        (
+            "보스 공격 배율 "
+            f"{_format_score(_value(components, 'boss_damage_multiplier'))} "
+            "= 1 + (데미지 + 보스 데미지) / 100 입니다."
+        ),
+        f"최종 데미지 배율은 {_format_score(_value(components, 'final_damage_multiplier'))} 입니다.",
+        f"크리 기대 배율은 {_format_score(_value(components, 'critical_expected_multiplier'))} 입니다.",
+        (
+            "방무 실효딜 계수는 "
+            f"{_format_score(_value(components, 'boss_defense_damage_multiplier'))} "
+            f"(보스 방어율 {_format_score(_value(components, 'boss_defense_rate_assumption'), 0)}% 가정)입니다."
+        ),
+    ]
+
+
+def _calculator_handoff_context(
+    payload: Dict[str, Any],
+    top_items: List[Dict[str, Any]],
+    bottlenecks: List[Dict[str, Any]],
+    formula_lines: List[str],
+) -> str:
+    stat_summary = payload.get("stat_summary") or {}
+    character = payload.get("character") or {}
+    lines = [
+        "Calculator detailed handoff:",
+        (
+            f"캐릭터 계산 스냅샷: {character.get('character_name') or 'unknown'}, "
+            f"전투력 {_format_score(_value(stat_summary, 'combat_power'), 0)}, "
+            f"주스탯 {_format_score(_value(stat_summary, 'main_stat'), 0)}, "
+            f"보스 데미지 {_format_percent(_value(stat_summary, 'boss_damage'))}, "
+            f"방무 {_format_percent(_value(stat_summary, 'ignore_def'))}, "
+            f"보스 유효딜 점수 {_format_score(_value(stat_summary, 'damage_score'), 6)}."
+        ),
+    ]
+    if formula_lines:
+        lines.append("계산 구성: " + " / ".join(formula_lines[:6]))
+    if bottlenecks:
+        lines.append(
+            "성장 병목 우선순위: "
+            + ", ".join(
+                f"{item['label']}({item['urgency_score']})"
+                for item in bottlenecks[:4]
+            )
+            + "."
+        )
+    if top_items:
+        lines.append(
+            "계산된 성장 후보: "
+            + "; ".join(
+                f"{item['target']} - {item['action']} ({item['reason']})"
+                for item in top_items[:3]
+            )
+            + "."
+        )
+    lines.append(
+        "계산 한계: 실제 DPM이 아니라 state에 있는 스탯/장비/성장 후보 기반의 보스전 상대 지표이며, 직업별 무기상수와 스킬 운용은 제외했습니다."
+    )
+    return "\n".join(lines)
+
+
+def _calculator_final_answer_context(interpretation: Dict[str, Any]) -> str:
+    character = interpretation.get("character_snapshot") or {}
+    top_actions = interpretation.get("top_growth_actions") or []
+    bottlenecks = interpretation.get("top_bottlenecks") or []
+    formula_lines = interpretation.get("damage_formula_summary") or []
+    caveats = interpretation.get("caveats") or []
+
+    lines = [
+        "Calculator final answer guide:",
+        "아래 값은 calculator가 AgentState의 캐릭터 스탯/장비/유니온 입력만 사용해 만든 계산 결과입니다. calculator-only 질문에서는 이 값을 우선 근거로 답변하세요.",
+        "성장 후보가 존재하면 장비 계산이 수행된 상태이므로, 장비 정보가 없다고 단정하지 말고 아래 후보를 기준으로 추천하세요.",
+        "## 계산 스냅샷",
+        (
+            f"- 캐릭터: {character.get('character_name') or 'unknown'}"
+            f" / 레벨 {_format_score(character.get('level'), 0)}"
+            f" / 전투력 {_format_score(character.get('combat_power'), 0)}"
+            f" / 주스탯 {_format_score(character.get('main_stat'), 0)}"
+            f" / 보스 데미지 {_format_percent(character.get('boss_damage'))}"
+            f" / 방무 {_format_percent(character.get('ignore_def'))}"
+            f" / 보스 유효딜 점수 {_format_score(character.get('damage_score'), 6)}"
+        ),
+    ]
+
+    if top_actions:
+        lines.extend(
+            [
+                "## calculator 추천 성장 후보",
+                "| 우선 | 대상 | 액션 | 예상 전투력 | 예상 데미지 | 비용 | 기간 | 효율 |",
+                "| ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for index, action in enumerate(top_actions[:5], start=1):
+            cp_gain = int(_parse_number(action.get("expected_cp_gain"), 0))
+            damage_gain = _parse_number(action.get("expected_damage_gain_percent"), 0)
+            cost = int(_parse_number(action.get("estimated_cost_meso"), 0))
+            days = int(_parse_number(action.get("estimated_days"), 0))
+            efficiency = _parse_number(action.get("efficiency_score"), 0)
+            lines.append(
+                "| "
+                f"{index} | {action.get('target') or ''} | {action.get('action') or ''} | "
+                f"+{cp_gain:,} | {_format_percent(damage_gain)} | {_format_meso(cost)} | "
+                f"{days}일 | {_format_score(efficiency)} |"
+            )
+
+    if bottlenecks:
+        lines.extend(
+            [
+                "## 계산상 병목 우선순위",
+                "| 우선 | 항목 | 병목 점수 | 의미 |",
+                "| ---: | --- | ---: | --- |",
+            ]
+        )
+        for index, item in enumerate(bottlenecks[:5], start=1):
+            lines.append(
+                "| "
+                f"{index} | {item.get('label') or item.get('key') or ''} | "
+                f"{_format_score(item.get('urgency_score'))} | "
+                "1에 가까울수록 목표 대비 보완 우선도가 높음 |"
+            )
+
+    if formula_lines:
+        lines.append("## 계산식 근거")
+        for line in formula_lines[:6]:
+            lines.append(f"- {line}")
+
+    if caveats:
+        lines.append("## 계산 한계")
+        for caveat in caveats[:2]:
+            lines.append(f"- {caveat}")
+
+    return "\n".join(lines)
+
+
+def _calculator_recommended_actions(interpretation: Dict[str, Any]) -> List[Dict[str, Any]]:
+    actions = []
+    for index, item in enumerate(interpretation.get("top_growth_actions") or [], start=1):
+        if not isinstance(item, dict):
+            continue
+        reason = str(item.get("reason") or "").strip()
+        action = str(item.get("action") or "성장 진행").strip()
+        description = f"{action}. {reason}" if reason else action
+        actions.append(
+            {
+                "category": "CALCULATOR_GROWTH",
+                "target": str(item.get("target") or "성장 항목"),
+                "priority": index,
+                "expected_cp_gain": int(_parse_number(item.get("expected_cp_gain"), 0)),
+                "description": description,
+            }
+        )
+    return actions[:5]
+
+
+def _should_expose_calculator_context(state: AgentState) -> bool:
+    plan = _value(state, "plan", []) or []
+    if isinstance(plan, list) and "analystic" in plan:
+        return False
+    return True
+
+
+def _append_calculator_answer_context(state: AgentState, interpretation: Dict[str, Any]) -> AgentState:
+    if not _should_expose_calculator_context(state):
+        return state
+
+    context_block = _calculator_final_answer_context(interpretation)
+    marker = "Calculator final answer guide:"
+    new_state = dict(state)
+    existing_context = str(_value(new_state, "context", "") or "").strip()
+    if marker not in existing_context:
+        new_state["context"] = (
+            f"{existing_context}\n\n{context_block}"
+            if existing_context
+            else context_block
+        )
+
+    existing_actions = [
+        action
+        for action in list(_value(new_state, "recommended_actions", []) or [])
+        if isinstance(action, dict)
+    ]
+    seen = {
+        (str(action.get("category") or ""), str(action.get("target") or ""))
+        for action in existing_actions
+    }
+    for action in _calculator_recommended_actions(interpretation):
+        identity = (str(action.get("category") or ""), str(action.get("target") or ""))
+        if identity in seen:
+            continue
+        seen.add(identity)
+        existing_actions.append(action)
+    if existing_actions:
+        new_state["recommended_actions"] = sorted(
+            existing_actions,
+            key=lambda action: int(_parse_number(action.get("priority"), 999)),
+        )
+    return new_state
+
+
 def _fallback_calculator_interpretation(state: AgentState) -> Dict[str, Any]:
     payload = _calculator_state_payload(state)
     forecast = payload["equipment_summary"].get("growth_forecast", []) or []
-    top_items = []
-    for item in forecast[:3]:
-        target = item.get("target") or "성장 항목"
-        action = item.get("action") or "성장 진행"
-        cp_gain = int(_parse_number(item.get("expected_cp_gain"), 0))
-        cost = _format_meso(item.get("estimated_cost_meso"))
-        days = int(_parse_number(item.get("estimated_days"), 0))
-        top_items.append(
-            {
-                "target": target,
-                "action": action,
-                "reason": f"예상 전투력 +{cp_gain:,}, 예상 비용 {cost}, 예상 기간 {days}일",
-                "expected_cp_gain": cp_gain,
-            }
-        )
+    top_items = [_growth_action_detail(item) for item in forecast[:3] if isinstance(item, dict)]
+    top_bottlenecks = _ranked_bottleneck_details(state)
+    formula_lines = _damage_formula_details(payload.get("stat_summary") or {})
 
     if top_items:
         summary = "전투력 상승 효율은 " + ", ".join(str(item["target"]) for item in top_items) + " 순서가 높습니다."
     else:
         summary = "계산 가능한 성장 후보가 충분하지 않습니다."
+    if top_bottlenecks:
+        summary += " 현재 계산상 가장 큰 병목은 " + ", ".join(item["label"] for item in top_bottlenecks[:3]) + "입니다."
 
     return {
         "query_intent": "장비/성장 후보별 전투력 상승량 비교",
         "calculation_scope": "현재 캐릭터 스탯, 장비 약점, 성장 예측값 요약",
         "priority_summary": summary,
+        "character_snapshot": payload.get("character") or {},
+        "damage_formula_summary": formula_lines,
+        "top_bottlenecks": top_bottlenecks,
         "top_growth_actions": top_items,
         "caveats": [
             "전투력 상승량은 프로젝트의 상대 성장 공식 기반 추정입니다.",
             "실제 상승량은 잠재 옵션, 세트 효과, 버프, 이벤트, 강화 운에 따라 달라질 수 있습니다.",
         ],
-        "analytics_handoff_context": summary,
+        "analytics_handoff_context": _calculator_handoff_context(payload, top_items, top_bottlenecks, formula_lines),
         "source": "deterministic_fallback",
     }
 
 
-def _calculator_interpretation_prompt(state: AgentState) -> str:
-    payload = _calculator_state_payload(state)
-    return "\n".join(
-        [
-            master_prompt.strip(),
-            "",
-            "You are the calculator interpretation layer.",
-            "The numeric calculation is already finished by deterministic code.",
-            "Do not call tools. Do not invent new stats, costs, combat power gains, boss requirements, or item names.",
-            "Your job is only to classify the calculation request and write a short handoff summary for analytics.",
-            "Return only a JSON object with these keys:",
-            "- query_intent: short Korean phrase",
-            "- calculation_scope: short Korean phrase",
-            "- priority_summary: one Korean sentence",
-            "- top_growth_actions: array of at most 3 objects from the provided growth_forecast, each with target, action, reason, expected_cp_gain",
-            "- caveats: array of 1-2 short Korean caveats",
-            "- analytics_handoff_context: 2-4 Korean sentences analytics can reuse",
-            "",
-            f"Input JSON: {json.dumps(payload, ensure_ascii=False, default=str)}",
-        ]
-    )
-
-
-def _normalize_llm_interpretation(parsed: Dict[str, Any], state: AgentState) -> Dict[str, Any]:
-    fallback = _fallback_calculator_interpretation(state)
-    if not parsed:
-        return fallback
-
-    result = {
-        "query_intent": str(parsed.get("query_intent") or fallback["query_intent"]),
-        "calculation_scope": str(parsed.get("calculation_scope") or fallback["calculation_scope"]),
-        "priority_summary": str(parsed.get("priority_summary") or fallback["priority_summary"]),
-        "analytics_handoff_context": str(
-            parsed.get("analytics_handoff_context") or fallback["analytics_handoff_context"]
-        ),
-        "source": "llm_summary",
-    }
-
-    caveats = parsed.get("caveats")
-    result["caveats"] = [str(item) for item in caveats[:2]] if isinstance(caveats, list) else fallback["caveats"]
-
-    allowed_forecasts = {}
-    for item in ((_value(state.get("equipment_summary") or {}, "growth_forecast", []) or [])[:10]):
-        if not isinstance(item, dict):
-            continue
-        target = str(item.get("target") or "")
-        if target and target not in allowed_forecasts:
-            allowed_forecasts[target] = item
-    top_actions = []
-    for item in parsed.get("top_growth_actions", []) if isinstance(parsed.get("top_growth_actions"), list) else []:
-        if not isinstance(item, dict):
-            continue
-        target = str(item.get("target") or "")
-        source = allowed_forecasts.get(target)
-        if not source:
-            continue
-        cp_gain = int(_parse_number(source.get("expected_cp_gain"), 0))
-        top_actions.append(
-            {
-                "target": target,
-                "action": str(item.get("action") or source.get("action") or ""),
-                "reason": str(item.get("reason") or f"예상 전투력 +{cp_gain:,}"),
-                "expected_cp_gain": cp_gain,
-            }
-        )
-    result["top_growth_actions"] = top_actions[:3] or fallback["top_growth_actions"]
-    return result
-
-
-def _generate_agent_state_update(
-    state: AgentState,
-    model: str | BaseChatModel | None,
-) -> Dict[str, Any]:
-    if model is None or isinstance(model, str) or not hasattr(model, "invoke"):
-        model = get_llm()
-
-    response = model.invoke(_calculator_interpretation_prompt(state))
-    content = getattr(response, "content", response)
-    if isinstance(content, list):
-        content = "\n".join(str(item) for item in content)
-    interpretation = _normalize_llm_interpretation(_parse_json_object(str(content)), state)
-    return {"llm_interpretation": interpretation}
-
-
-def _merge_calculator_state_update(state: AgentState, agent_update: Dict[str, Any]) -> AgentState:
-    if not agent_update:
+def _attach_calculator_interpretation(state: AgentState, interpretation: Dict[str, Any]) -> AgentState:
+    if not interpretation:
         return state
 
     new_state = dict(state)
-    if isinstance(agent_update.get("stat_summary"), dict):
-        new_state["stat_summary"] = {
-            **agent_update["stat_summary"],
-            **(_value(new_state, "stat_summary", {}) or {}),
-        }
-    if isinstance(agent_update.get("equipment_summary"), dict):
-        new_state["equipment_summary"] = {
-            **agent_update["equipment_summary"],
-            **(_value(new_state, "equipment_summary", {}) or {}),
-        }
-    if isinstance(agent_update.get("bottleneck_analysis"), dict):
-        new_state["bottleneck_analysis"] = {
-            **(_value(new_state, "bottleneck_analysis", {}) or {}),
-            **{
-                str(key): float(value)
-                for key, value in agent_update["bottleneck_analysis"].items()
-                if isinstance(value, (int, float))
-            },
-        }
-
-    llm_interpretation = agent_update.get("llm_interpretation") or {}
-    if llm_interpretation:
-        tool_results = dict(_value(new_state, "tool_results", {}) or {})
-        calculator_result = dict(_value(tool_results, "calculator", {}) or {})
-        calculator_result["llm_interpretation"] = llm_interpretation
-        if agent_update.get("llm_interpretation_error"):
-            calculator_result["llm_interpretation_error"] = str(agent_update["llm_interpretation_error"])
-        tool_results["calculator"] = calculator_result
-        new_state["tool_results"] = tool_results
-    return new_state
+    tool_results = dict(_value(new_state, "tool_results", {}) or {})
+    calculator_result = dict(_value(tool_results, "calculator", {}) or {})
+    calculator_result["llm_interpretation"] = interpretation
+    tool_results["calculator"] = calculator_result
+    new_state["tool_results"] = tool_results
+    return _append_calculator_answer_context(new_state, interpretation)
 
 
 def calculator_agent(
-    model: str | BaseChatModel | None = None,
+    model: Any | None = None,
     *,
     state: AgentState,
     daily_meso_budget: int = 150_000_000,
 ) -> AgentState:
-    """Run calculator node with create_agent tools and return AgentState-compatible fields."""
+    """Run calculator node and attach a deterministic analytics handoff."""
 
+    _ = model  # Kept for call compatibility; calculator output is deterministic.
     user_query = state["user_query"]
 
     state = run_calculator(state, daily_meso_budget=daily_meso_budget)
     if _calculator_has_usable_result(state):
-        try:
-            if model is None:
-                model = get_llm()
-            agent_update = _generate_agent_state_update(state, model)
-        except Exception as exc:
-            agent_update = {
-                "llm_interpretation": _fallback_calculator_interpretation(state),
-                "llm_interpretation_error": exc,
-            }
-    else:
-        agent_update = {}
+        state = _attach_calculator_interpretation(
+            state,
+            _fallback_calculator_interpretation(state),
+        )
 
-    state = _merge_calculator_state_update(state, agent_update)
     validate_agent_outputs("calculator", state)
     return {
         **state,
         "user_query": user_query,
     }
+
 
 # if __name__ == "__main__":
 #     input_state = {
