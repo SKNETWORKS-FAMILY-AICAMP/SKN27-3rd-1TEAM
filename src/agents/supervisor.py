@@ -216,6 +216,28 @@ RESEARCH_FEEDBACK_MARKERS = (
 # 이 마커가 feedback에 이미 들어 있으면 또 다시 LLM 재호출을 시도하지 않고
 # 곧장 keyword 기반 fallback으로 research를 강제 삽입한다 (무한 루프 방지).
 RESEARCH_REPLAN_MARKER = "plan omitted research"
+EVALUATION_RESEARCH_FEEDBACK_MARKERS = (
+    "not relevant",
+    "not grounded",
+    "has no source",
+    "missing_source",
+    "missing source",
+    "question_mismatch",
+    "question mismatch",
+    "wrong_context",
+    "wrong context",
+    "context mismatch",
+    "source missing",
+)
+EVALUATION_RESEARCH_FAILURE_TYPES = (
+    "question_mismatch",
+    "missing_context",
+    "ungrounded",
+    "missing_source",
+    "invalid_source_reliability",
+)
+SUPERVISOR_RESEARCH_RETRY_RESULT_KEY = "supervisor_research_retry"
+MAX_SUPERVISOR_RESEARCH_RETRY_COUNT = 1
 # 위 replan을 요청할 때 LLM에게 전달할 영어 feedback 메시지.
 # "research가 빠졌으니 다시 짜라, 근거 없으면 web fallback 써라"는 지시.
 RESEARCH_REPLAN_FEEDBACK = (
@@ -327,6 +349,90 @@ def capability_bool(response_dict: dict, key: str) -> bool:
 
 def has_research_evidence_state(state: AgentState) -> bool:
     return bool(str(state.get("context") or "").strip() or state.get("retrieved_docs"))
+
+
+def evaluation_feedback_requires_research(state: AgentState, feedback: str) -> bool:
+    if not str(feedback or "").strip():
+        return False
+    tool_results = state.get("tool_results") or {}
+    evaluation_result = {}
+    if isinstance(tool_results, dict):
+        raw_evaluation_result = tool_results.get("evaluation") or {}
+        if isinstance(raw_evaluation_result, dict):
+            evaluation_result = raw_evaluation_result
+    failure_type = str(evaluation_result.get("failure_type") or "").strip()
+    if failure_type in EVALUATION_RESEARCH_FAILURE_TYPES:
+        return True
+    warnings = evaluation_result.get("warnings") or []
+    warning_text = (
+        " ".join(str(warning) for warning in warnings)
+        if isinstance(warnings, list)
+        else str(warnings)
+    )
+    lowered_feedback = str(feedback or "").lower()
+    lowered_warning_text = warning_text.lower()
+    return any(
+        marker in lowered_feedback or marker in lowered_warning_text
+        for marker in EVALUATION_RESEARCH_FEEDBACK_MARKERS
+    )
+
+
+def feedback_requires_research_signal(state: AgentState, feedback: str) -> bool:
+    lowered_feedback = str(feedback or "").lower()
+    return any(
+        marker in lowered_feedback
+        for marker in RESEARCH_FEEDBACK_MARKERS
+    ) or evaluation_feedback_requires_research(state, feedback)
+
+
+def supervisor_research_retry_count(state: AgentState) -> int:
+    tool_results = state.get("tool_results") or {}
+    if not isinstance(tool_results, dict):
+        return 0
+    retry_result = tool_results.get(SUPERVISOR_RESEARCH_RETRY_RESULT_KEY)
+    if not isinstance(retry_result, dict):
+        return 0
+    try:
+        return int(retry_result.get("count") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def research_web_already_attempted(state: AgentState) -> bool:
+    tool_results = state.get("tool_results") or {}
+    if not isinstance(tool_results, dict):
+        return False
+    research_result = tool_results.get("research") or {}
+    if not isinstance(research_result, dict):
+        return False
+    return bool(
+        research_result.get("web_success")
+        or research_result.get("web_fallback_used")
+        or research_result.get("web_reason")
+    )
+
+
+def should_retry_research_after_evaluation(state: AgentState, feedback: str) -> bool:
+    if not evaluation_feedback_requires_research(state, feedback):
+        return False
+    if research_web_already_attempted(state):
+        return False
+    return supervisor_research_retry_count(state) < MAX_SUPERVISOR_RESEARCH_RETRY_COUNT
+
+
+def mark_supervisor_research_retry(
+    state: AgentState,
+    tool_results: dict,
+    feedback: str,
+) -> dict:
+    retry_count = supervisor_research_retry_count(state) + 1
+    updated_tool_results = dict(tool_results)
+    updated_tool_results[SUPERVISOR_RESEARCH_RETRY_RESULT_KEY] = {
+        "count": retry_count,
+        "reason": "evaluation_feedback_requires_research",
+        "feedback": str(feedback or "")[:500],
+    }
+    return updated_tool_results
 
 
 def research_route_task_type(query: str, task_type: str) -> str:
@@ -520,10 +626,8 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
     existing_plan = list(state.get("plan") or [])
     feedback = str(state.get("feedback") or "")
     tool_results = dict(state.get("tool_results") or {})
-    feedback_requires_research = any(
-        marker in feedback.lower()
-        for marker in RESEARCH_FEEDBACK_MARKERS
-    )
+    feedback_requires_research = feedback_requires_research_signal(state, feedback)
+    retry_research_after_evaluation = should_retry_research_after_evaluation(state, feedback)
     completed_agents = list(state.get("completed_agents", []) or [])
     completed_agent = existing_plan[0] if existing_plan else None
     remaining_plan = existing_plan[1:] if existing_plan else []
@@ -536,6 +640,7 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
         feedback = ""
         tool_results.pop("evaluation", None)
         feedback_requires_research = False
+        retry_research_after_evaluation = False
     requires_search = False
     # 계산 키워드는 LLM 없이도 판정 가능하므로 fallback에서 직접 체크한다.
     requires_calculation = any(keyword in contextualized_query for keyword in CALCULATION_TRIGGER_KEYWORDS)
@@ -562,7 +667,11 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
         completed_agents.append(completed_agent)
 
     should_continue_plan = bool(
-        existing_plan and (not feedback_requires_research or has_research_evidence)
+        existing_plan
+        and (
+            not feedback_requires_research
+            or (has_research_evidence and not retry_research_after_evaluation)
+        )
     )
 
     if is_chitchat_query(contextualized_query):
@@ -593,7 +702,10 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
             requires_calculation = True
         # 필요 신호를 순서대로 plan에 반영한다. final_answer는 항상 마지막에 붙인다.
         plan = []
-        if requires_search or (feedback_requires_research and not has_research_evidence):
+        if requires_search or (
+            feedback_requires_research
+            and (not has_research_evidence or retry_research_after_evaluation)
+        ):
             plan.append("research")
         if requires_calculation:
             plan.append("calculator")
@@ -620,7 +732,10 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
 
         # 필요 신호를 순서대로 plan에 반영한다. final_answer는 항상 마지막에 붙인다.
         plan = []
-        if requires_search or (feedback_requires_research and not has_research_evidence):
+        if requires_search or (
+            feedback_requires_research
+            and (not has_research_evidence or retry_research_after_evaluation)
+        ):
             plan.append("research")
         if requires_calculation:
             plan.append("calculator")
@@ -651,6 +766,9 @@ def _fallback_supervisor_response(state: AgentState, error: Exception | None = N
 
     if error is not None:
         errors.append(f"supervisor llm failed; used fallback route: {error}")
+
+    if plan and plan[0] == "research" and retry_research_after_evaluation:
+        tool_results = mark_supervisor_research_retry(state, tool_results, feedback)
 
     # supervisor 노드가 평소 반환하는 AgentState 필드와 같은 형태로 맞춰 downstream 노드를 단순화한다.
     return {
@@ -783,10 +901,8 @@ def _guard_research_plan(
     except Exception as exc:
         errors = [*errors, f"supervisor route research guard failed: {exc}"]
 
-    feedback_requires_research = any(
-        marker in feedback.lower()
-        for marker in RESEARCH_FEEDBACK_MARKERS
-    )
+    feedback_requires_research = feedback_requires_research_signal(state, feedback)
+    retry_research_after_evaluation = should_retry_research_after_evaluation(state, feedback)
     has_research_evidence = bool(
         str(state.get("context") or "").strip()
         or state.get("retrieved_docs")
@@ -796,6 +912,8 @@ def _guard_research_plan(
         completed_agent == "research"
         or ("research" in state.get("completed_agents", []) and has_research_evidence)
     )
+    if retry_research_after_evaluation:
+        research_already_done = False
     # 검색 필요 신호가 있는데 plan에 research가 없고 아직 검색도 안 끝난 경우만 보정 대상.
     needs_research_replan = (
         (requires_search or route_requires_research or feedback_requires_research)
@@ -804,6 +922,11 @@ def _guard_research_plan(
     )
 
     if not needs_research_replan:
+        return plan, retry_count, errors, None
+
+    if retry_research_after_evaluation:
+        errors = [*errors, "supervisor evaluation feedback required research retry"]
+        plan = ["research", *[agent for agent in plan if agent != "research"]]
         return plan, retry_count, errors, None
 
     if route_requires_research and not requires_search:
@@ -1096,6 +1219,9 @@ feedback: {feedback}
     if completed_agent and completed_agent not in completed_agents:
         # 이번 supervisor 재진입 직전에 끝난 agent를 완료 목록에 기록한다.
         completed_agents = [*completed_agents, completed_agent]
+
+    if next_agent == "research" and should_retry_research_after_evaluation(state, feedback):
+        tool_results = mark_supervisor_research_retry(state, tool_results, feedback)
 
     # downstream 노드가 읽을 라우팅 필드를 state에 병합해 반환한다.
     return {

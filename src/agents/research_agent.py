@@ -109,6 +109,55 @@ WEB_KEYWORDS = (
     "\ud14c\uc2a4\ud2b8\uc6d4\ub4dc",
     "\uce90\uc2dc\uc0f5",
 )
+OFFICIAL_SOURCE_TASK_TYPES = {
+    "event_information",
+    "patch_information",
+}
+QUERY_BOILERPLATE_TERMS = {
+    "대해",
+    "대해서",
+    "대한",
+    "알려줘",
+    "알려줘요",
+    "알려",
+    "설명",
+    "설명해줘",
+    "무엇",
+    "무엇인가",
+    "뭐야",
+    "뭔가",
+    "정보",
+    "정리",
+    "좀",
+    "해줘",
+    "해주세요",
+    "주세요",
+}
+KOREAN_PARTICLE_SUFFIXES = (
+    "으로부터",
+    "에게서",
+    "에서는",
+    "으로는",
+    "에게",
+    "에서",
+    "부터",
+    "까지",
+    "으로",
+    "로서",
+    "로써",
+    "와",
+    "과",
+    "을",
+    "를",
+    "은",
+    "는",
+    "이",
+    "가",
+    "에",
+    "도",
+    "만",
+    "로",
+)
 
 BOSS_REWARD_KEYWORDS = (
     "\ubcf4\uc0c1",
@@ -232,6 +281,15 @@ def route_tags_have_graph_intent(intent_tags: list[ResearchIntent]) -> bool:
     return bool(set(intent_tags).intersection(GRAPH_INTENT_TAGS))
 
 
+def route_requires_official_sources(route: ResearchRouting) -> bool:
+    task_type = str(route.get("task_type") or "").strip()
+    intent_tags = set(normalize_intent_tags(route.get("intent_tags")))
+    return bool(
+        task_type in OFFICIAL_SOURCE_TASK_TYPES
+        or "time_sensitive" in intent_tags
+    )
+
+
 def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
     """질문을 보고 DB/Graph/Web 중 어떤 검색을 쓸지 고릅니다.
 
@@ -274,7 +332,7 @@ def classify_research_route(query: str, task_type: str = "") -> ResearchRouting:
         "graph_top_k": 3,
         "web_max_results": 5,
         "web_max_contexts": 5,
-        "official_only": True,
+        "official_only": bool(needs_web or normalized_task_type in OFFICIAL_SOURCE_TASK_TYPES),
         "reason": reason,
         "search_query": normalize_search_query(query, query, task_type=normalized_task_type),
         "parser_source": "keyword",
@@ -328,7 +386,7 @@ def build_research_route(
         fallback_route["intent_tags"],
     )
     route = apply_route_intent_guards(query, route)
-    if route["use_web"]:
+    if route["use_web"] and route_requires_official_sources(route):
         route["official_only"] = True
     route["parser_source"] = "llm"
     return route, {"used_llm": True, "fallback_used": False}
@@ -622,10 +680,7 @@ def web_fallback_reason(
     if documents:
         if route["use_graph"] and not any(_is_graph_document(document) for document in documents):
             return "no_graph_evidence"
-        if search_query and not any(
-            _keyword_overlap_score(document, search_query) > 0
-            for document in documents
-        ):
+        if search_query and local_evidence_is_weak(documents, search_query):
             return "low_local_relevance"
         return ""
 
@@ -635,6 +690,16 @@ def web_fallback_reason(
         return "no_local_evidence"
 
     return ""
+
+
+def local_evidence_is_weak(documents: list[RetrievedDocument], query: str) -> bool:
+    content_terms = _query_content_terms(query)
+    if not content_terms:
+        return False
+    return not any(
+        _keyword_overlap_score(document, query, terms=content_terms) > 0
+        for document in documents
+    )
 
 
 def run_research(
@@ -763,7 +828,11 @@ def run_research(
                 search_query=search_query,
                 route=route,
             )
-            docs.extend(web_docs)
+            if web_reason == "low_local_relevance" and web_docs:
+                research_result["weak_local_document_count"] = len(docs)
+                docs = web_docs
+            else:
+                docs.extend(web_docs)
             tool_results.update(web_state.get("tool_results", {}))
             research_result["web_success"] = True
             research_result["web_document_count"] = len(web_docs)
@@ -1056,12 +1125,13 @@ def _is_snippet_fallback_document(document: RetrievedDocument) -> bool:
     return str(metadata.get("content_source") or "") == "tavily_snippet_fallback"
 
 
-def _keyword_overlap_score(document: RetrievedDocument, query: str) -> int:
-    terms = [
-        term.strip().lower()
-        for term in re.split(r"[\s,?!.]+", str(query or ""))
-        if len(term.strip()) >= 2
-    ]
+def _keyword_overlap_score(
+    document: RetrievedDocument,
+    query: str,
+    *,
+    terms: list[str] | None = None,
+) -> int:
+    terms = terms if terms is not None else _query_content_terms(query)
     if not terms:
         return 0
 
@@ -1074,6 +1144,30 @@ def _keyword_overlap_score(document: RetrievedDocument, query: str) -> int:
         ]
     ).lower()
     return sum(1 for term in terms if term in haystack)
+
+
+def _query_content_terms(query: str) -> list[str]:
+    terms: list[str] = []
+    for raw_term in re.split(r"[\s,?!.:;()\[\]{}\"'`~]+", str(query or "")):
+        term = _normalize_query_term(raw_term)
+        if len(term) < 2 or term in QUERY_BOILERPLATE_TERMS or term in terms:
+            continue
+        terms.append(term)
+    return terms
+
+
+def _normalize_query_term(raw_term: str) -> str:
+    term = re.sub(r"^[^\w가-힣]+|[^\w가-힣]+$", "", str(raw_term or "").strip().lower())
+    if not term:
+        return ""
+    if term in QUERY_BOILERPLATE_TERMS:
+        return ""
+    for suffix in KOREAN_PARTICLE_SUFFIXES:
+        if len(term) > len(suffix) + 1 and term.endswith(suffix):
+            candidate = term[: -len(suffix)]
+            if candidate and candidate not in QUERY_BOILERPLATE_TERMS:
+                return candidate
+    return term
 
 
 def _query_mentions_requirement(query: str) -> bool:
