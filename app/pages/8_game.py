@@ -826,7 +826,6 @@ game_html = """
         height: 2220,
         tint: "#f3d1ff",
         ascentShrink: true,
-        looseCheckpoints: true,
         hidden: true,
         start: { x: 70, y: 2118 },
         goal: { x: 704, y: 54, w: 166, h: 96 },
@@ -962,15 +961,6 @@ game_html = """
         const platform = stagePlatforms[platformIndex];
         if (!platform) return { ...checkpoint };
 
-        if (stageConfig.looseCheckpoints) {
-          return {
-            ...checkpoint,
-            platform: platformIndex,
-            x: Math.round(Math.max(platform.x - 12, Math.min(platform.x + platform.w - checkpoint.w + 12, checkpoint.x))),
-            y: Math.round(platformSurfaceY(platform) - 1),
-          };
-        }
-
         return {
           ...checkpoint,
           platform: platformIndex,
@@ -1098,6 +1088,7 @@ game_html = """
       grounded: false,
       checkpoint: { ...stage.start },
       checkpointKey: "start",
+      checkpointIndex: -1,
       deaths: 0,
       hp: 705,
       maxHp: 705,
@@ -1166,6 +1157,7 @@ game_html = """
       cameraY = Math.max(0, Math.min(world.height - playHeight, startSpot.y - playHeight * 0.65));
       player.checkpoint = { ...startSpot };
       player.checkpointKey = "start";
+      player.checkpointIndex = -1;
       player.deaths = 0;
       player.hp = player.maxHp;
       player.mp = player.maxMp;
@@ -1315,6 +1307,16 @@ game_html = """
 
     function getCheckpointKey(index) {
       return `${currentStage}:${index}`;
+    }
+
+    function getCheckpointRespawnSpot(checkpoint) {
+      const platform = checkpoint.platform !== undefined ? platforms[checkpoint.platform] : null;
+      const surfaceY = checkpointSurfaceY(checkpoint);
+      const centerX = platform ? platform.x + platform.w / 2 : checkpoint.x + checkpoint.w / 2;
+      return {
+        x: Math.round(centerX - player.w / 2),
+        y: Math.round(surfaceY - player.h),
+      };
     }
 
     function update() {
@@ -1504,9 +1506,15 @@ game_html = """
         const c = checkpoints[i];
         if (rectsOverlap(player, c)) {
           const checkpointKey = getCheckpointKey(i);
-          player.checkpoint = { x: c.x - 10, y: Math.round(checkpointSurfaceY(c) - player.h) };
+          if (i < player.checkpointIndex) continue;
+
+          const checkpointSpot = getCheckpointRespawnSpot(c);
           const newlySaved = player.checkpointKey !== checkpointKey;
-          player.checkpointKey = checkpointKey;
+          if (i > player.checkpointIndex || newlySaved) {
+            player.checkpoint = checkpointSpot;
+            player.checkpointKey = checkpointKey;
+            player.checkpointIndex = i;
+          }
 
           const readyAt = checkpointHealReadyAt.get(checkpointKey) || 0;
           if (frame >= readyAt && player.mp < player.maxMp) {
@@ -2053,7 +2061,8 @@ game_html = """
       const x = c.x + c.w / 2;
       const bob = Math.sin(frame * 0.06 + index * 1.7) * 5;
       const y = baseY - cameraY - 34 + bob;
-      const active = Math.abs(player.checkpoint.x - (c.x - 10)) < 1 && Math.abs(player.checkpoint.y - Math.round(baseY - player.h)) < 1;
+      const respawnSpot = getCheckpointRespawnSpot(c);
+      const active = Math.abs(player.checkpoint.x - respawnSpot.x) < 1 && Math.abs(player.checkpoint.y - respawnSpot.y) < 1;
       const checkpointKey = getCheckpointKey(index);
       const healReadyAt = checkpointHealReadyAt.get(checkpointKey) || 0;
       const healReady = frame >= healReadyAt;
